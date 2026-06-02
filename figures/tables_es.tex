@@ -1,0 +1,65 @@
+% Tablas (versión en español) para el artículo-perla de formalización.
+% Requiere \usepackage{booktabs,amsmath,amssymb} y \usepackage[table]{xcolor}
+% en el preámbulo, más los colores ggteal / ggband.
+
+% ---------- Tabla 1: resultados formalizados ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Los resultados formalizados (Lean~4 / Mathlib). Todos los teoremas
+  están libres de \texttt{sorry} y son no vacíos; \texttt{\#print axioms} reporta
+  solo \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.}
+  \label{tab:results}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Nombre Lean}} & \textcolor{white}{\textbf{Enunciado}} & \textcolor{white}{\textbf{Estado}} \\
+    \midrule
+    \rowcolor{ggband}
+    \texttt{godsil\_gutman} & $\sum_{\mathrm{cfg}}\det(xI-A_{\mathrm{cfg}})=\#\mathrm{cfg}\cdot\mu_G$ & probado \\
+    \texttt{matchingPoly} (+infra) & $\mu_G=\sum_k(-1)^k m_k\,x^{n-2k}$ (sin formalización previa) & definido \\
+    \rowcolor{ggband}
+    \texttt{matchingNumber\_recurrence} & $m_{k+1}(G)=m_{k+1}(G{-}v)+\sum_{u\sim v} m_k(G{-}v{-}u)$ & probado \\
+    \texttt{charpoly\_twoLift} & $\det\!\bigl(xI-\bigl[\begin{smallmatrix}B&C\\C&B\end{smallmatrix}\bigr]\bigr)=\mu_{B+C}\,\mu_{B-C}$ & probado \\
+    \rowcolor{ggband}
+    \texttt{signAvg\_ne\_zero\_iff} & el signo-monomio sobrevive $\iff$ multiplicidades pares & probado \\
+    \texttt{sum\_signOf\_prod\_pow} & núcleo de proyección de paridad $\mathbb{Z}/2$ (nivel de momentos) & probado \\
+    \midrule
+    \emph{Heilmann--Lieb} & $\text{raíces}(\mu_G)\subseteq[-2\sqrt{\Delta-1},\,2\sqrt{\Delta-1}]$ & futuro \\
+    \rowcolor{ggband}
+    \emph{familias entrelazadas} & $\exists$ signo con $\lambda_{\max}\le\lambda_{\max}(\overline{\,\cdot\,})$ & futuro \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+% ---------- Tabla 2: comprobaciones numéricas ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Comprobaciones numéricas de las identidades formalizadas (SymPy,
+  exacto). Izquierda: el polinomio característico promedio sobre todos los signos
+  $\pm1$ es igual a $\mu_G$ (Godsil--Gutman). Derecha: el $d$-ésimo momento
+  espectral promedio es igual al número de paseos cerrados de paridad par (aquí
+  $d=4$).}
+  \label{tab:checks}
+  \begin{tabular}{@{}llcc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{$G$}} & \textcolor{white}{\textbf{$2^{-|E|}\!\sum_{\mathrm{signos}}\det(xI-A_s)$}} & \textcolor{white}{\textbf{$=\mu_G$?}} & \textcolor{white}{\textbf{$\overline{\mathrm{tr}(A_s^{4})}=P_4$}} \\
+    \midrule
+    \rowcolor{ggband}
+    $K_3$ & $x^{3}-3x$         & $\checkmark$ & $18$ \\
+    $C_4$ & $x^{4}-4x^{2}+2$   & $\checkmark$ & $24$ \\
+    \rowcolor{ggband}
+    $C_5$ & $x^{5}-5x^{3}+5x$  & $\checkmark$ & $30$ \\
+    $K_4$ & $x^{4}-6x^{2}+3$   & $\checkmark$ & $60$ \\
+    \rowcolor{ggband}
+    $K_{3,3}$ & $x^{6}-9x^{4}+18x^{2}-6$ & $\checkmark$ & $90$ \\
+    Petersen & $x^{10}-15x^{8}+75x^{6}-145x^{4}+90x^{2}-6$ & $\checkmark$ & $150$ \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}

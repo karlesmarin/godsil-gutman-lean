@@ -5,12 +5,17 @@
 % scope stated exactly (the Socratic anti-fissure rules are honoured verbatim).
 % =====================================================================
 \documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref}
+\usepackage{xurl}
 \usepackage[table]{xcolor}
 \definecolor{ggteal}{HTML}{1B6F8C}
 \definecolor{ggband}{HTML}{DCE7EB}
 \definecolor{ggamber}{HTML}{E08A1E}
 \usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2em}
 \graphicspath{{figures/}}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
@@ -21,7 +26,7 @@
 
 \title{\bf Random Signs into Matchings\\[3pt]
   \large\normalfont A Godsil--Gutman identity, formalized in Lean~4}
-\author{Carles Mar\'in\thanks{The Lean formalization was carried out with Claude (Anthropic) as an AI research instrument; all design decisions, mathematics, and claims are the author's responsibility.}\\[3pt]
+\author{Carles Mar\'in\thanks{Formalized with AI assistance (Claude, Anthropic); the mathematics and all claims are the author's responsibility. The methodology is discussed in Section~\ref{sec:implications}.}\\[3pt]
   \normalsize Independent researcher\\
   \normalsize \texttt{karlesmarin@gmail.com}}
 \date{June 2026}
@@ -34,7 +39,7 @@ I report a machine-checked formalization, in Lean~4 / Mathlib, of the
 Godsil--Gutman identity: the average characteristic polynomial of a uniformly
 random $\pm1$ signing of a graph is its \emph{matching polynomial}.
 Along the way I formalize the matching polynomial itself and its deletion
-recurrence---to my knowledge, the first such development in any proof
+recurrence, for which I could find no prior formalization in any proof
 assistant. I then isolate the one ingredient that makes the proof work, a
 $\Z/2$ \emph{sign-averaging} fact ($\sum_{s=\pm1}s^{k}=2\,[k\text{ even}]$), and
 show that the \emph{same} formal lemma underlies a second, moment-level
@@ -168,8 +173,15 @@ vertex-disjoint and $n=|V|$.
 
 Mathlib has a rich theory of simple graphs and of characteristic polynomials,
 but no matching polynomial; building it (and proving its deletion recurrence)
-was a prerequisite, and is, to my knowledge, the first such infrastructure in
-a proof assistant.
+was a prerequisite, and I could find no prior formalization of it in any proof
+assistant.\footnote{I searched for a prior formalization of the matching
+polynomial across the major proof assistants (June~2026): Mathlib (Lean), the
+Archive of Formal Proofs (Isabelle), the Coq/MathComp ecosystem, HOL~Light, and
+Agda. \emph{Matchings} as edge sets are formalized---for instance
+maximum-cardinality and stable matching in the AFP, and Hall's theorem in Lean
+and Coq---but I found no formalization of the matching \emph{polynomial} $\mu_G$,
+its coefficients $m_k$, or its deletion recurrence. The search was best-effort,
+not exhaustive; hence ``to my knowledge''.}
 
 % ---------------------------------------------------------------
 \section{How a machine proves Godsil--Gutman}
@@ -421,8 +433,8 @@ an expected characteristic polynomial over $\pm1$ signs appears. This is the
 implication I can state most firmly: a handful of new, certified foundations.
 
 \paragraph{A stepping stone toward formalized Ramanujan existence.}
-The Marcus--Spielman--Srivastava theorem---Ramanujan graphs of every
-degree---is celebrated, and no proof assistant has yet touched it. This paper
+The Marcus--Spielman--Srivastava theorem on Ramanujan graphs of every degree is
+celebrated, and no proof assistant has, to my knowledge, yet touched it. This paper
 formalizes its structural half and maps the analytic half
 (Section~\ref{sec:future}) to scale. Should the landmark ever be built, these
 are foundations it can stand on, and the map may spare the next person the
@@ -478,16 +490,19 @@ complete and checked answer (Godsil--Gutman), to the small $\Z/2$ fact that
 makes it tick, to a second identity that shares that fact, and to the matrix
 bridge that points it all at Ramanujan graphs. None of these results is new
 mathematics; the contribution is that they are now machine-verified, that the
-matching polynomial exists in a prover for the first time, and that the shared
-engine is visible in the dependency graph rather than asserted. The deep half
+matching polynomial is now available in a prover where I could find no prior
+formalization of it, and that the shared engine is visible in the dependency
+graph rather than asserted. The deep half
 of the story---Heilmann--Lieb and interlacing families---remains ahead of me,
 mapped but unbuilt. I offer this as a pearl and an invitation.
 
-\paragraph{Artifacts.} All Lean sources (\lean{sorry}-free; \lean{\#print
-axioms} reporting only \lean{propext}, \lean{Classical.choice},
-\lean{Quot.sound}), the figures of this paper, and the numerical cross-checks of
-Table~\ref{tab:checks} are available at
-\url{https://github.com/karlesmarin/godsil-gutman-lean}.
+\paragraph{Artifacts.} All Lean sources (\lean{sorry}-free, depending only on the
+three standard axioms; see Table~\ref{tab:results}), the figures of this paper,
+and the numerical cross-checks of Table~\ref{tab:checks} are available at:
+\begin{center}
+\url{https://github.com/karlesmarin/godsil-gutman-lean}\\[2pt]
+archived at \textsc{doi}~\href{https://doi.org/10.5281/zenodo.20517350}{10.5281/zenodo.20517350}
+\end{center}
 
 \bibliographystyle{plain}
 \bibliography{references}

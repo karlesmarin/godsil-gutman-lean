@@ -102,9 +102,14 @@ If you use this development, please cite the paper (preprint, June 2026):
   author = {Mar\'in, Carles},
   title  = {Random Signs into Matchings: A Godsil--Gutman Identity, Formalized in Lean 4},
   year   = {2026},
-  note   = {Lean 4 formalization, \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+  doi    = {10.5281/zenodo.20517350},
+  note   = {Lean 4 formalization (English + Spanish editions), \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
+
+Archived on Zenodo: [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350).
+The paper is included in English (`godsil-gutman-lean.pdf`) and Spanish
+(`godsil-gutman-lean-es.pdf`).
 
 ## Author and license
 

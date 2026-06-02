@@ -18,7 +18,7 @@
     \midrule
     \rowcolor{ggband}
     \texttt{godsil\_gutman} & $\sum_{\mathrm{cfg}}\det(xI-A_{\mathrm{cfg}})=\#\mathrm{cfg}\cdot\mu_G$ & proven \\
-    \texttt{matchingPoly} (+infra) & $\mu_G=\sum_k(-1)^k m_k\,x^{n-2k}$ (first in any prover) & defined \\
+    \texttt{matchingPoly} (+infra) & $\mu_G=\sum_k(-1)^k m_k\,x^{n-2k}$ (no prior formalization found) & defined \\
     \rowcolor{ggband}
     \texttt{matchingNumber\_recurrence} & $m_{k+1}(G)=m_{k+1}(G{-}v)+\sum_{u\sim v} m_k(G{-}v{-}u)$ & proven \\
     \texttt{charpoly\_twoLift} & $\det\!\bigl(xI-\bigl[\begin{smallmatrix}B&C\\C&B\end{smallmatrix}\bigr]\bigr)=\mu_{B+C}\,\mu_{B-C}$ & proven \\
@@ -54,6 +54,10 @@
     $C_4$ & $x^{4}-4x^{2}+2$   & $\checkmark$ & $24$ \\
     \rowcolor{ggband}
     $C_5$ & $x^{5}-5x^{3}+5x$  & $\checkmark$ & $30$ \\
+    $K_4$ & $x^{4}-6x^{2}+3$   & $\checkmark$ & $60$ \\
+    \rowcolor{ggband}
+    $K_{3,3}$ & $x^{6}-9x^{4}+18x^{2}-6$ & $\checkmark$ & $90$ \\
+    Petersen & $x^{10}-15x^{8}+75x^{6}-145x^{4}+90x^{2}-6$ & $\checkmark$ & $150$ \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
