@@ -1,0 +1,215 @@
+% References for the graph-zeta / matching-polynomial / Godsil-Gutman
+% formalization pearl (ITP/CPP target). Gathered 2026-06-02.
+% [VERIFY] = citation detail not fully confirmed from primary source; check before submission.
+
+% ===== Core mathematics being formalized =====
+
+@article{GodsilGutman1981,
+  author  = {Godsil, C. D. and Gutman, I.},
+  title   = {On the theory of the matching polynomial},
+  journal = {Journal of Graph Theory},
+  volume  = {5},
+  number  = {2},
+  pages   = {137--144},
+  year    = {1981},
+  doi     = {10.1002/jgt.3190050203}
+}
+
+@article{HeilmannLieb1972,
+  author  = {Heilmann, O. J. and Lieb, E. H.},
+  title   = {Theory of monomer-dimer systems},
+  journal = {Communications in Mathematical Physics},
+  volume  = {25},
+  pages   = {190--232},
+  year    = {1972},
+  doi     = {10.1007/BF01877590}
+}
+
+@article{Bass1992,
+  author  = {Bass, H.},
+  title   = {The Ihara--Selberg zeta function of a tree lattice},
+  journal = {International Journal of Mathematics},
+  volume  = {3},
+  number  = {6},
+  pages   = {717--797},
+  year    = {1992},
+  doi     = {10.1142/S0129167X92000357}
+}
+
+@article{Ihara1966,
+  author  = {Ihara, Y.},
+  title   = {On discrete subgroups of the two by two projective linear group over $\mathfrak{p}$-adic fields},
+  journal = {Journal of the Mathematical Society of Japan},
+  volume  = {18},
+  pages   = {219--235},
+  year    = {1966}
+}
+
+% ===== Marcus--Spielman--Srivastava / Ramanujan / interlacing =====
+
+@article{MSS2015a,
+  author  = {Marcus, Adam W. and Spielman, Daniel A. and Srivastava, Nikhil},
+  title   = {Interlacing families {I}: Bipartite Ramanujan graphs of all degrees},
+  journal = {Annals of Mathematics},
+  volume  = {182},
+  number  = {1},
+  pages   = {307--325},
+  year    = {2015},
+  doi     = {10.4007/annals.2015.182.1.7}
+}
+
+@article{MSS2015b,
+  author  = {Marcus, Adam W. and Spielman, Daniel A. and Srivastava, Nikhil},
+  title   = {Interlacing families {II}: Mixed characteristic polynomials and the {K}adison--{S}inger problem},
+  journal = {Annals of Mathematics},
+  volume  = {182},
+  number  = {1},
+  pages   = {327--350},
+  year    = {2015},
+  doi     = {10.4007/annals.2015.182.1.8}
+}
+
+@article{LPS1988,
+  author  = {Lubotzky, A. and Phillips, R. and Sarnak, P.},
+  title   = {Ramanujan graphs},
+  journal = {Combinatorica},
+  volume  = {8},
+  number  = {3},
+  pages   = {261--277},
+  year    = {1988},
+  doi     = {10.1007/BF02126799}
+}
+
+@misc{RamanujanInterlacing2024,
+  author = {[VERIFY authors]},
+  title  = {Ramanujan Graphs and Interlacing Families},
+  year   = {2024},
+  eprint = {2412.20721},
+  archivePrefix = {arXiv}
+}
+
+% ===== Graph zeta functions, Bass's theorem, random-matrix statistics =====
+
+@book{Terras2011,
+  author    = {Terras, Audrey},
+  title     = {Zeta Functions of Graphs: A Stroll through the Garden},
+  series    = {Cambridge Studies in Advanced Mathematics},
+  volume    = {128},
+  publisher = {Cambridge University Press},
+  year      = {2011},
+  isbn      = {9780521113670}
+}
+
+@article{FoataZeilberger1999,
+  author  = {Foata, D. and Zeilberger, D.},
+  title   = {A combinatorial proof of {B}ass's evaluations of the {I}hara--{S}elberg zeta function for graphs},
+  journal = {Transactions of the American Mathematical Society},
+  volume  = {351},
+  number  = {6},
+  year    = {1999},
+  note    = {arXiv:math/9806037}
+}
+
+@phdthesis{Newland2005,
+  author = {Newland, Derek},
+  title  = {Kernels in the Selberg trace formula on the $k$-regular tree and zeros of the Ihara zeta function},
+  school = {University of California, San Diego},
+  year   = {2005}
+}
+
+% ===== Recent extensions (paper "elevation" hooks, 2024--2025) =====
+
+@article{GeomMeanSignings2025,
+  author  = {[VERIFY authors]},
+  title   = {[VERIFY title -- geometric mean of characteristic polynomials of signed graphs / pseudo-characteristic function]},
+  journal = {Filomat},
+  volume  = {39},
+  number  = {7},
+  pages   = {2171--2177},
+  year    = {2025},
+  doi     = {10.2298/FIL2507171A}
+}
+
+@misc{Veronese2024,
+  author = {[VERIFY authors]},
+  title  = {Veronese sections and interlacing matrices of polynomials and formal power series},
+  year   = {2024},
+  eprint = {2404.12989},
+  archivePrefix = {arXiv}
+}
+
+% ===== Formalization / proof assistants (venue context) =====
+
+@inproceedings{Mathlib2020,
+  author    = {{The mathlib Community}},
+  title     = {The {L}ean mathematical library},
+  booktitle = {Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP 2020)},
+  pages     = {367--381},
+  year      = {2020},
+  doi       = {10.1145/3372885.3373824}
+}
+
+@inproceedings{Lean4_2021,
+  author    = {de Moura, Leonardo and Ullrich, Sebastian},
+  title     = {The {L}ean 4 theorem prover and programming language},
+  booktitle = {Automated Deduction -- CADE 28},
+  series    = {LNCS},
+  volume    = {12699},
+  pages     = {625--635},
+  year      = {2021},
+  doi       = {10.1007/978-3-030-79876-5_37}
+}
+
+% Landmark formalizations (for "formalized deep mathematics" context):
+@misc{PFR2023,
+  author = {[VERIFY authors -- Tao et al., the PFR formalization team]},
+  title  = {The polynomial {F}reiman--{R}uzsa conjecture (Lean formalization)},
+  year   = {2023},
+  note   = {[VERIFY citation form -- blog/repo/paper]}
+}
+
+@article{ChenVanDamBu2023,
+  author  = {Chen, Lixiang and van Dam, Edwin R. and Bu, Changjiang},
+  title   = {Spectra of power hypergraphs and signed graphs via parity-closed walks},
+  journal = {Linear Algebra and its Applications},
+  year    = {2023},
+  note    = {arXiv:2302.10496}
+}
+
+% ===== Lean combinatorics / graph-theory formalizations (positioning) =====
+
+@inproceedings{DilliesMehta2022,
+  author    = {Dillies, Ya\"el and Mehta, Bhavik},
+  title     = {Formalising {S}zemer\'edi's Regularity Lemma in {L}ean},
+  booktitle = {13th International Conference on Interactive Theorem Proving (ITP 2022)},
+  series    = {LIPIcs},
+  volume    = {237},
+  year      = {2022},
+  doi       = {10.4230/LIPIcs.ITP.2022.9}
+}
+
+@misc{GusakovMehtaMiller2021,
+  author = {Gusakov, Alena and Mehta, Bhavik and Miller, Kyle},
+  title  = {Formalizing {H}all's Marriage Theorem in {L}ean},
+  year   = {2021},
+  eprint = {2101.00127},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{Mehta2022KruskalKatona,
+  author    = {Mehta, Bhavik},
+  title     = {Formalising the {K}ruskal--{K}atona Theorem in {L}ean},
+  booktitle = {Intelligent Computer Mathematics (CICM 2022)},
+  series    = {LNCS},
+  volume    = {13467},
+  year      = {2022},
+  doi       = {10.1007/978-3-031-16681-5_5}
+}
+
+@inproceedings{Mehta2023Sharkovsky,
+  author    = {Mehta, Bhavik},
+  title     = {Formalising {S}harkovsky's Theorem (Proof Pearl)},
+  booktitle = {Proceedings of the 12th ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP 2023)},
+  year      = {2023},
+  doi       = {10.1145/3573105.3575676}
+}

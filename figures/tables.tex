@@ -1,0 +1,60 @@
+% Professional tables for the formalization-pearl paper.
+% Requires \usepackage{booktabs,amsmath,amssymb} and \usepackage[table]{xcolor}
+% in the main preamble, plus colors ggteal / ggband defined there.
+
+% ---------- Table 1: formalised results ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{The formalised results (Lean~4 / Mathlib). All theorems are
+  \texttt{sorry}-free and non-vacuous; \texttt{\#print axioms} reports only
+  \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.}
+  \label{tab:results}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Lean name}} & \textcolor{white}{\textbf{Statement}} & \textcolor{white}{\textbf{Status}} \\
+    \midrule
+    \rowcolor{ggband}
+    \texttt{godsil\_gutman} & $\sum_{\mathrm{cfg}}\det(xI-A_{\mathrm{cfg}})=\#\mathrm{cfg}\cdot\mu_G$ & proven \\
+    \texttt{matchingPoly} (+infra) & $\mu_G=\sum_k(-1)^k m_k\,x^{n-2k}$ (first in any prover) & defined \\
+    \rowcolor{ggband}
+    \texttt{matchingNumber\_recurrence} & $m_{k+1}(G)=m_{k+1}(G{-}v)+\sum_{u\sim v} m_k(G{-}v{-}u)$ & proven \\
+    \texttt{charpoly\_twoLift} & $\det\!\bigl(xI-\bigl[\begin{smallmatrix}B&C\\C&B\end{smallmatrix}\bigr]\bigr)=\mu_{B+C}\,\mu_{B-C}$ & proven \\
+    \rowcolor{ggband}
+    \texttt{signAvg\_ne\_zero\_iff} & sign-monomial survives $\iff$ multiplicities even & proven \\
+    \texttt{sum\_signOf\_prod\_pow} & $\mathbb{Z}/2$ parity-projection kernel (moment level) & proven \\
+    \midrule
+    \emph{Heilmann--Lieb} & $\mathrm{roots}(\mu_G)\subseteq[-2\sqrt{\Delta-1},\,2\sqrt{\Delta-1}]$ & future \\
+    \rowcolor{ggband}
+    \emph{interlacing families} & $\exists$ signing with $\lambda_{\max}\le\lambda_{\max}(\overline{\,\cdot\,})$ & future \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+% ---------- Table 2: numerical cross-checks ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Numerical cross-checks of the formalised identities (SymPy, exact).
+  Left: the average characteristic polynomial of all $\pm1$ signings equals
+  $\mu_G$ (Godsil--Gutman). Right: the average $d$-th spectral moment equals the
+  number of parity-closed walks (here $d=4$).}
+  \label{tab:checks}
+  \begin{tabular}{@{}llcc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{$G$}} & \textcolor{white}{\textbf{$2^{-|E|}\!\sum_{\mathrm{signings}}\det(xI-A_s)$}} & \textcolor{white}{\textbf{$=\mu_G$?}} & \textcolor{white}{\textbf{$\overline{\mathrm{tr}(A_s^{4})}=P_4$}} \\
+    \midrule
+    \rowcolor{ggband}
+    $K_3$ & $x^{3}-3x$         & $\checkmark$ & $18$ \\
+    $C_4$ & $x^{4}-4x^{2}+2$   & $\checkmark$ & $24$ \\
+    \rowcolor{ggband}
+    $C_5$ & $x^{5}-5x^{3}+5x$  & $\checkmark$ & $30$ \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}

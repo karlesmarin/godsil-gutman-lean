@@ -1,0 +1,23 @@
+# Lake build artifacts / cache (large, never commit)
+/.lake/
+/build/
+*.olean
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor / OS cruft
+*~
+.DS_Store
