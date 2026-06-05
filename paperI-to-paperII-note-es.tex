@@ -1,0 +1,74 @@
+% Nota de cubierta independiente: dirige al lector de la Parte I hacia la Parte II.
+% NO modifica el PDF publicado de la Parte I; pensada para anteponer / adjuntar / usar como nota.
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noquoting]{babel}
+\usepackage{amsmath,amssymb,graphicx,hyperref}
+\usepackage{xurl}
+\usepackage[table]{xcolor}
+\definecolor{ggteal}{HTML}{1B6F8C}
+\definecolor{ggband}{HTML}{DCE7EB}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{microtype}
+\usepackage[most]{tcolorbox}
+\usepackage{parskip}
+\pagestyle{empty}
+\hypersetup{colorlinks=true,linkcolor=ggteal,urlcolor=ggteal}
+\newcommand{\lean}[1]{\texttt{#1}}
+
+\begin{document}
+
+{\centering
+{\large\bfseries Nota al lector de la Parte~I}\\[2pt]
+{\color{ggteal}\rule{0.5\textwidth}{0.8pt}}\\[6pt]
+{\itshape La secuela propuesta al final de este art\'iculo ya est\'a escrita.}\\[14pt]
+}
+
+La Parte~I (\emph{De signos aleatorios a emparejamientos}) cerr\'o con una propuesta
+y una promesa: demostrar el \textbf{teorema de Heilmann--Lieb} no mediante la
+maquinaria de familias entrelazadas, sino a trav\'es del \textbf{\'arbol de caminos
+de Godsil}, y---\emph{``si este art\'iculo tiene una secuela, esta es su primera
+frase.''} Esa secuela ya existe.
+
+\textbf{Parte~II --- \emph{Desplegar un grafo en un \'arbol: una demostraci\'on
+verificada por m\'aquina del teorema de Heilmann--Lieb en Lean~4}} lleva a cabo la
+propuesta por completo. Construye el \'arbol de caminos, demuestra la divisibilidad
+$\mu_G \mid \mu_{T(G,u)}$ (cruzando el \'unico muro de elaboraci\'on en el que la
+ruta del \'arbol de caminos se hab\'ia detenido), establece la identidad del bosque
+y demuestra la cota de Ramanujan a partir de una estimaci\'on de Gershgorin
+ponderado. Ambas mitades son \lean{sorry}-libres.
+
+\begin{tcolorbox}[colframe=ggteal,colback=ggband!40,arc=3pt,boxrule=0.9pt]
+\centering
+Para todo grafo finito $G$, el polinomio de emparejamientos $\mu_G$ tiene todas sus
+ra\'ices reales; y si $2\le\Delta$ y todo v\'ertice tiene grado $\le\Delta$, toda
+ra\'iz de $\mu_G$ est\'a en
+\[
+  \bigl[-2\sqrt{\Delta-1},\;2\sqrt{\Delta-1}\bigr].
+\]
+\end{tcolorbox}
+
+Este es exactamente el punto final que la Parte~I cartografi\'o como trabajo futuro
+(``La siguiente piedra''): el primer Heilmann--Lieb verificado por m\'aquina, que
+completa el programa del \'arbol de caminos. Como en la Parte~I, la matem\'atica es
+cl\'asica y no se reclama ning\'un teorema nuevo; la aportaci\'on es la
+formalizaci\'on.
+
+\bigskip
+{\color{ggteal}\rule{\textwidth}{0.4pt}}\\[4pt]
+\textbf{D\'onde encontrar la Parte~II.}
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item Fuentes y ambos PDFs (ingl\'es + espa\~nol):
+  \url{https://github.com/karlesmarin/godsil-gutman-lean}
+\item Archivada en Zenodo: DOI \texttt{10.5281/zenodo.XXXXXXXX} \emph{(a rellenar al
+  publicar)}.
+\end{itemize}
+
+\vfill
+{\footnotesize\color{gray}
+Carles Mar\'in, \texttt{karlesmarin@gmail.com}. Esta nota acompa\~na, y no altera, la
+Parte~I archivada (DOI de Zenodo \texttt{10.5281/zenodo.20517350}).}
+
+\end{document}

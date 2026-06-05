@@ -1,0 +1,68 @@
+% Standalone one-page cover note: points readers of Part I to Part II.
+% Does NOT modify the published Part I PDF; meant to be prepended / attached / used as a note.
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,graphicx,hyperref}
+\usepackage{xurl}
+\usepackage[table]{xcolor}
+\definecolor{ggteal}{HTML}{1B6F8C}
+\definecolor{ggband}{HTML}{DCE7EB}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{microtype}
+\usepackage[most]{tcolorbox}
+\usepackage{parskip}
+\pagestyle{empty}
+\hypersetup{colorlinks=true,linkcolor=ggteal,urlcolor=ggteal}
+\newcommand{\lean}[1]{\texttt{#1}}
+
+\begin{document}
+
+{\centering
+{\large\bfseries A note to the reader of Part~I}\\[2pt]
+{\color{ggteal}\rule{0.5\textwidth}{0.8pt}}\\[6pt]
+{\itshape The sequel proposed at the end of this paper is now written.}\\[14pt]
+}
+
+Part~I (\emph{Random Signs into Matchings}) closed with a proposal and a promise:
+to prove the \textbf{Heilmann--Lieb theorem} not through interlacing machinery but
+through \textbf{Godsil's path tree}, and---\emph{``if this paper has a sequel, this
+is its first sentence.''} That sequel now exists.
+
+\textbf{Part~II --- \emph{Unfolding a Graph into a Tree: A Machine-Checked Proof of
+the Heilmann--Lieb Theorem in Lean~4}} carries out the proposal in full. It builds
+the path tree, proves the divisibility $\mu_G \mid \mu_{T(G,u)}$ (crossing the one
+elaboration wall the path-tree route had stalled at), establishes the forest
+identity, and proves the Ramanujan bound from a weighted Gershgorin estimate. Both
+halves are \lean{sorry}-free.
+
+\begin{tcolorbox}[colframe=ggteal,colback=ggband!40,arc=3pt,boxrule=0.9pt]
+\centering
+For every finite graph $G$, the matching polynomial $\mu_G$ is real-rooted; and if
+$2\le\Delta$ and every vertex has degree $\le\Delta$, every root of $\mu_G$ lies in
+\[
+  \bigl[-2\sqrt{\Delta-1},\;2\sqrt{\Delta-1}\bigr].
+\]
+\end{tcolorbox}
+
+This is exactly the endpoint that Part~I mapped as future work
+(``The next stone''): the first machine-checked Heilmann--Lieb, completing the
+path-tree program. As in Part~I, the mathematics is classical and no new theorem is
+claimed; the contribution is the formalization.
+
+\bigskip
+{\color{ggteal}\rule{\textwidth}{0.4pt}}\\[4pt]
+\textbf{Where to find Part~II.}
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item Sources and both PDFs (English + Spanish):
+  \url{https://github.com/karlesmarin/godsil-gutman-lean}
+\item Archived on Zenodo: DOI \texttt{10.5281/zenodo.XXXXXXXX} \emph{(to be filled
+  on release)}.
+\end{itemize}
+
+\vfill
+{\footnotesize\color{gray}
+Carles Mar\'in, \texttt{karlesmarin@gmail.com}. This note accompanies, and does not
+alter, the archived Part~I (Zenodo DOI \texttt{10.5281/zenodo.20517350}).}
+
+\end{document}
