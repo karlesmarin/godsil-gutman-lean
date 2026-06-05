@@ -15,16 +15,6 @@
   doi     = {10.1002/jgt.3190050203}
 }
 
-@article{HeilmannLieb1972,
-  author  = {Heilmann, O. J. and Lieb, E. H.},
-  title   = {Theory of monomer-dimer systems},
-  journal = {Communications in Mathematical Physics},
-  volume  = {25},
-  pages   = {190--232},
-  year    = {1972},
-  doi     = {10.1007/BF01877590}
-}
-
 @article{Bass1992,
   author  = {Bass, H.},
   title   = {The Ihara--Selberg zeta function of a tree lattice},
@@ -212,4 +202,102 @@
   booktitle = {Proceedings of the 12th ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP 2023)},
   year      = {2023},
   doi       = {10.1145/3573105.3575676}
+}
+
+% ---- Path-tree route to Heilmann–Lieb + matching measure (added 2026-06-03) ----
+
+@book{Godsil1993,
+  author    = {Godsil, Chris D.},
+  title     = {Algebraic Combinatorics},
+  publisher = {Chapman \& Hall},
+  year      = {1993},
+  note      = {Path tree, $\mu_G \mid \mu_{T_a(G)}$, real-rootedness of the matching polynomial}
+}
+
+@article{Godsil1981Matchings,
+  author  = {Godsil, Chris D.},
+  title   = {Matchings and walks in graphs},
+  journal = {Journal of Graph Theory},
+  volume  = {5},
+  number  = {3},
+  pages   = {285--297},
+  year    = {1981},
+  doi     = {10.1002/jgt.3190050310},
+  note    = {Tree-like walks; moments of matching-polynomial roots = closed tree-like walks; the two-vertex SOS path identity}
+}
+
+@article{HeilmannLieb1972,
+  author  = {Heilmann, Ole J. and Lieb, Elliott H.},
+  title   = {Theory of monomer-dimer systems},
+  journal = {Communications in Mathematical Physics},
+  volume  = {25},
+  pages   = {190--232},
+  year    = {1972},
+  doi     = {10.1007/BF01877590}
+}
+
+@article{AbertCsikvariFrenkelKun2016,
+  author  = {Ab\'ert, Mikl\'os and Csikv\'ari, P\'eter and Frenkel, P\'eter E. and Kun, G\'abor},
+  title   = {Matchings in {B}enjamini--{S}chramm convergent graph sequences},
+  journal = {Transactions of the American Mathematical Society},
+  volume  = {368},
+  number  = {6},
+  pages   = {4197--4218},
+  year    = {2016},
+  doi     = {10.1090/tran/6464},
+  note    = {Introduces the matching measure (uniform law on roots of the matching polynomial)}
+}
+
+@article{CsikvariFrenkel2016MatchingMeasure,
+  author  = {Csikv\'ari, P\'eter and Frenkel, P\'eter E.},
+  title   = {Matching measure, {B}enjamini--{S}chramm convergence and the monomer-dimer free energy},
+  journal = {Journal of Statistical Physics},
+  year    = {2016},
+  eprint  = {1405.6740},
+  archivePrefix = {arXiv},
+  doi     = {10.1007/s10955-015-1309-7}
+}
+
+@article{CsikvariTreeLikeWalks,
+  author  = {Csikv\'ari, P\'eter},
+  title   = {Counting matchings and tree-like walks in regular graphs},
+  journal = {Combinatorics, Probability and Computing},
+  doi     = {10.1017/S0963548309990678},
+  note    = {Algorithmic count of closed tree-like walks; moments of the matching polynomial}
+}
+
+@misc{PartI,
+  author       = {Mar\'in, Carles},
+  title        = {Random Signs into Matchings: A {Godsil--Gutman} Identity, Formalized in {Lean~4}},
+  year         = {2026},
+  howpublished = {Zenodo},
+  doi          = {10.5281/zenodo.20517350},
+  note         = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+
+@article{Stevanovic2003,
+  author  = {Stevanovi\'c, Dragan},
+  title   = {Bounding the largest eigenvalue of trees in terms of the largest vertex degree},
+  journal = {Linear Algebra and its Applications},
+  volume  = {360},
+  pages   = {35--42},
+  year    = {2003},
+  doi     = {10.1016/S0024-3795(02)00442-1},
+  note    = {Elementary proof that a tree of maximum degree $\Delta$ has spectral radius $< 2\sqrt{\Delta-1}$}
+}
+
+@misc{LevinSurvey,
+  author       = {Levin, Shai},
+  title        = {Infinite Families of {Ramanujan} Graphs: An Open Problem in Graph Theory},
+  year         = {2023},
+  howpublished = {Expository survey},
+  note         = {\url{https://science.capetown/ramanujan.pdf}; non-bipartite Ramanujan graphs of all degrees remain open, and the interlacing-families method is limited there}
+}
+
+@misc{PartII,
+  author       = {Mar\'in, Carles},
+  title        = {Unfolding a Graph into a Tree: A Machine-Checked Proof of the {Heilmann--Lieb} Theorem in {Lean~4}},
+  year         = {2026},
+  howpublished = {Zenodo (forthcoming)},
+  note         = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }

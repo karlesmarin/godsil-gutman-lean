@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this formalization, please cite the relevant paper (Part I and/or Part II)."
+title: "The Path-Tree Program: Godsil–Gutman and Heilmann–Lieb in Lean 4"
+abstract: >-
+  A machine-checked formalization in Lean 4 / Mathlib of the Godsil–Gutman identity
+  (Part I) and the Heilmann–Lieb theorem (Part II): the matching polynomial of a
+  finite graph is real-rooted, with all roots in the Ramanujan band
+  [-2*sqrt(Delta-1), 2*sqrt(Delta-1)] for maximum degree Delta >= 2. All headline
+  theorems are sorry-free.
+type: software
+authors:
+  - family-names: "Marín"
+    given-names: "Carles"
+    email: "karlesmarin@gmail.com"
+    affiliation: "Independent researcher"
+repository-code: "https://github.com/karlesmarin/godsil-gutman-lean"
+license: Apache-2.0
+date-released: "2026-06-05"
+keywords:
+  - "Lean 4"
+  - "Mathlib"
+  - "formalization of mathematics"
+  - "matching polynomial"
+  - "Heilmann–Lieb theorem"
+  - "Godsil–Gutman identity"
+  - "path tree"
+  - "Ramanujan graphs"
+  - "spectral graph theory"
+references:
+  - type: article
+    title: "Random Signs into Matchings: A Godsil–Gutman Identity, Formalized in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20517350"
+    notes: "Part I"
+  - type: article
+    title: "Unfolding a Graph into a Tree: A Machine-Checked Proof of the Heilmann–Lieb Theorem in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    notes: "Part II (Zenodo DOI forthcoming)"

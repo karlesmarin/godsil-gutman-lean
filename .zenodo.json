@@ -1,0 +1,41 @@
+{
+  "title": "Unfolding a Graph into a Tree: A Machine-Checked Proof of the Heilmann–Lieb Theorem in Lean 4 (Part II)",
+  "upload_type": "publication",
+  "publication_type": "article",
+  "description": "<p>A machine-checked formalization, in Lean 4 / Mathlib, of the <strong>Heilmann–Lieb theorem</strong>: the matching polynomial &mu;_G of every finite graph is real-rooted, and for maximum degree &Delta; &ge; 2 all its roots lie in the Ramanujan band [&minus;2&radic;(&Delta;&minus;1), 2&radic;(&Delta;&minus;1)]. The proof follows Godsil's path tree: unfold G into the tree T(G,u) of its paths (where the matching polynomial equals a characteristic polynomial), and transport back along the divisibility &mu;_G | &mu;_{T(G,u)}; the root bound is proved from scratch by a weighted Gershgorin / Collatz&ndash;Wielandt argument reduced to two facts about distances in a tree. All headline theorems are sorry-free (axioms: propext, Classical.choice, Quot.sound). This is Part II, the sequel to <em>Random Signs into Matchings</em> (Part I, doi:10.5281/zenodo.20517350). It formalizes classical mathematics and claims no new theorem; the novelty is the formalization, supported by a search of the Lean/Mathlib, Isabelle/AFP and Coq/mathcomp ecosystems. English and Spanish editions are included.</p>",
+  "creators": [
+    {
+      "name": "Marín, Carles",
+      "affiliation": "Independent researcher"
+    }
+  ],
+  "access_right": "open",
+  "license": "Apache-2.0",
+  "keywords": [
+    "Lean 4",
+    "Mathlib",
+    "formalization of mathematics",
+    "interactive theorem proving",
+    "matching polynomial",
+    "Heilmann–Lieb theorem",
+    "Godsil path tree",
+    "Ramanujan graphs",
+    "spectral graph theory",
+    "Collatz–Wielandt",
+    "real-rooted polynomials"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.20517350",
+      "relation": "isContinuationOf",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    },
+    {
+      "identifier": "https://github.com/karlesmarin/godsil-gutman-lean",
+      "relation": "isSupplementedBy",
+      "scheme": "url"
+    }
+  ],
+  "notes": "Lean toolchain leanprover/lean4:v4.30.0-rc2; Mathlib pinned in lakefile.lean. Build with `lake exe cache get && lake build`. Formalized with AI assistance (Claude, Anthropic) under a build-as-oracle loop; the Lean kernel is the final arbiter and all claims are the author's responsibility."
+}

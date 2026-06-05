@@ -1,123 +1,141 @@
-# Random Signs into Matchings — Godsil–Gutman in Lean 4
+# The Path-Tree Program — Godsil–Gutman & Heilmann–Lieb in Lean 4
 
-A machine-checked formalization, in **Lean 4 / Mathlib**, of the **Godsil–Gutman
-identity**: the average characteristic polynomial of a uniformly random `±1`
-signing of a graph is its **matching polynomial**. Along the way it provides the
-first formalization of the matching polynomial and its deletion recurrence in any
-proof assistant, isolates the `ℤ/2` sign-averaging fact that makes the proof
-work, and formalizes the Bilu–Linial 2-lift spectral decomposition that bridges
-the result to Ramanujan graphs.
+A machine-checked formalization, in **Lean 4 / Mathlib**, of two classical results
+about the **matching polynomial** of a graph and the road between them, in two
+papers:
 
-The accompanying paper is **[`godsil-gutman-lean.pdf`](godsil-gutman-lean.pdf)**
-(source `godsil-gutman-lean.tex`).
+- **Paper I — *Random Signs into Matchings*** ([`godsil-gutman-lean.pdf`](godsil-gutman-lean.pdf)):
+  the **Godsil–Gutman identity** — the average characteristic polynomial of a
+  uniformly random `±1` signing of a graph is its **matching polynomial** — plus
+  the first formalization of the matching polynomial and its deletion recurrence in
+  any proof assistant, and the Bilu–Linial 2-lift decomposition.
+- **Paper II — *Unfolding a Graph into a Tree*** ([`heilmann-lieb-lean.pdf`](heilmann-lieb-lean.pdf)):
+  the **Heilmann–Lieb theorem** — `μ_G` is real-rooted, and for maximum degree
+  `Δ ≥ 2` all its roots lie in the Ramanujan band `[−2√(Δ−1), 2√(Δ−1)]` — proved
+  via Godsil's path tree, the divisibility `μ_G ∣ μ_{T(G,u)}`, the forest identity,
+  and a weighted Gershgorin / Collatz–Wielandt argument.
 
-> This is a *pearl*, not a landmark. The headline theorems are `sorry`-free; the
-> deep half of the Marcus–Spielman–Srivastava program (Heilmann–Lieb
-> real-rootedness, interlacing families) is **mapped, not formalized** — see
-> *Scope* below.
+Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
+are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
+`Quot.sound`.
+
+> *Honesty note.* This is a formalization of classical mathematics; it proves no
+> new theorem and claims none. The "first formalization" claim is supported by a
+> search of the Lean/Mathlib, Isabelle/AFP and Coq/mathcomp ecosystems, not by an
+> exhaustive byte-level audit.
 
 ## What is formalized
 
-All theorems below are `sorry`-free. `#print axioms` reports only the three
-standard Mathlib axioms: `propext`, `Classical.choice`, `Quot.sound`.
+All theorems below are `sorry`-free (axioms: `propext`, `Classical.choice`,
+`Quot.sound`).
+
+### Paper I — Godsil–Gutman
 
 | Lean name | Statement | File |
 |---|---|---|
-| `godsil_gutman` | `∑_cfg det(xI − A_cfg) = #cfg · μ_G` (average charpoly = matching polynomial) | `MSS/GodsilGutman.lean` |
+| `godsil_gutman` | `∑_cfg det(xI − A_cfg) = #cfg · μ_G` | `MSS/GodsilGutman.lean` |
 | `matchingPoly` (+ infra) | `μ_G = ∑_k (−1)^k m_k x^{n−2k}` — first in any prover | `MatchingPoly.lean` |
 | `matchingNumber_recurrence` | `m_{k+1}(G) = m_{k+1}(G−v) + ∑_{u∼v} m_k(G−v−u)` | `MatchingPoly.lean` |
-| `charpoly_twoLift` | `det(xI − [[B,C],[C,B]]) = det(xI−(B+C))·det(xI−(B−C))` (Bilu–Linial) | `MSS/TwoLift.lean` |
-| `signAvg_ne_zero_iff` | a sign-monomial survives the `±1` average ⟺ every multiplicity is even | `MSS/GodsilGutman.lean` |
-| `sum_signOf_prod_pow` | the `ℤ/2` parity-projection kernel (moment level) | `MSS/GodsilGutman.lean` |
+| `charpoly_twoLift` | Bilu–Linial 2-lift charpoly factorization | `MSS/TwoLift.lean` |
 
-## Scope (done vs. future)
+### Paper II — Heilmann–Lieb (the path-tree route)
 
-**Done (and checked):** Godsil–Gutman; the matching polynomial and its deletion
-recurrence; the `ℤ/2` sign-averaging engine and its two consumers
-(characteristic-polynomial level = Godsil–Gutman, moment level =
-parity-closed-walk kernel of Chen–van Dam–Bu); the Bilu–Linial 2-lift charpoly
-factorization.
+| Lean name | Statement | File |
+|---|---|---|
+| `matchingPoly_realRooted` | `μ_G` is real-rooted, every finite `G` | `MSS/ForestRealRooted.lean` |
+| `matchingPoly_bounded` | roots of `μ_G` in `[−2√(Δ−1), 2√(Δ−1)]` (`2 ≤ Δ`, `deg ≤ Δ`) | `MSS/HeilmannLiebBound.lean` |
+| `connected_matchingPoly_dvd_pathTree` | `μ_G ∣ μ_{T(G,u)}` (Godsil divisibility) | `MSS/ForestComponents.lean` |
+| `matchingPoly_forest_eq_charpoly` | `μ_F = charpoly(A_F)` on a forest | `MSS/ForestRealRooted.lean` |
+| `pathTree_isAcyclic` | the path tree `T(G,u)` is a forest | `MSS/PathTree.lean` |
+| `collatzWielandt` | weighted Gershgorin eigenvalue bound | `MSS/HeilmannLiebBound.lean` |
+| `forest_bounded_proof` | forest matching roots in the band | `MSS/HeilmannLiebBound.lean` |
+| `forest_adj_dist_pm_one`, `forest_le_one_parent` | the two tree-distance facts | `MSS/HeilmannLiebBound.lean` |
 
-**Future (mapped, not formalized):** Heilmann–Lieb — `roots(μ_G) ⊆
-[−2√(Δ−1), 2√(Δ−1)]` — via Godsil's path-tree; and the interlacing-families step.
-The paper (§"The next stone") documents the proposed path-tree route in detail.
-`RealStable.lean` contains exploratory real-rootedness infrastructure toward that
-step; it is `sorry`-free but the Heilmann–Lieb *bound* itself is not yet a theorem.
+The **full Heilmann–Lieb theorem** (both halves) is now machine-checked; what
+Paper I listed as "future, mapped" is done. Still future: the
+interlacing-families existence step and the signing/2-lift correspondence that
+would yield a formalized proof that Ramanujan graphs exist (Paper II, Q1).
 
 ## Repository layout
 
 ```
-MatchingPoly.lean        matching polynomial μ_G, matching number, deletion recurrence
-RealStable.lean          RealRooted predicate + closure algebra + Interlaces (toward Heilmann–Lieb)
-MSS/Basic.lean           signed adjacency matrix
+RealStable.lean             RealRooted / BoundedBy predicates + closure algebra
+MatchingPoly.lean           matching polynomial μ_G, matching number, deletion recurrence
+RamanujanBound.lean         the band edge 2√(k−1) (bruhatTitsBound) and its algebra
+MSS/Basic.lean              signed adjacency matrix
 MSS/ExpectedCharpoly.lean   the average (expected) characteristic polynomial
-MSS/GodsilGutman.lean    the Godsil–Gutman identity + the ℤ/2 engine
-MSS/TwoLift.lean         Bilu–Linial 2-lift spectral decomposition (pure-matrix form)
+MSS/GodsilGutman.lean       the Godsil–Gutman identity + the ℤ/2 engine
+MSS/TwoLift.lean            Bilu–Linial 2-lift spectral decomposition
+MSS/MatchingSum.lean        matching-sum / permutation-expansion machinery
+MSS/PathTree.lean           Godsil's path tree + acyclicity
+MSS/Divisibility.lean       μ_G ∣ μ_{T(G,u)} (the divisibility brick)
+MSS/ForestComponents.lean   connected divisibility + component decomposition
+MSS/ForestRealRooted.lean   forest identity, T5/T6 real-rootedness
+MSS/HeilmannLieb.lean       interlacing/geometric real-stability engine
+MSS/HeilmannLiebBound.lean  the Ramanujan bound (Collatz–Wielandt + tree facts)
 
-godsil-gutman-lean.tex   the paper (source)
-godsil-gutman-lean.pdf   the paper (compiled)
-references.bib           bibliography
-figures/                 figure scripts (matplotlib/sympy/networkx) + PDFs/PNGs + tables.tex
+godsil-gutman-lean{,-es}.{tex,pdf}   Paper I (EN / ES)
+heilmann-lieb-lean{,-es}.{tex,pdf}   Paper II (EN / ES)
+references.bib                        bibliography
+figures/                              figure scripts + PDFs + tables.tex (per paper)
 ```
 
-## Building the Lean code
+## Building
 
-Requires [`elan`](https://github.com/leanprover/elan) (Lean toolchain manager).
-The toolchain is pinned in `lean-toolchain` (`leanprover/lean4:v4.30.0-rc2`) and
-Mathlib is pinned in `lakefile.lean` to a specific revision.
+Requires [`elan`](https://github.com/leanprover/elan). The toolchain is pinned in
+`lean-toolchain` (`leanprover/lean4:v4.30.0-rc2`); Mathlib is pinned in
+`lakefile.lean`.
 
 ```bash
-lake exe cache get      # download prebuilt Mathlib oleans (recommended)
-lake build              # build RealStable, MatchingPoly, and MSS/*
+lake exe cache get      # prebuilt Mathlib oleans (recommended)
+lake build              # RealStable, MatchingPoly, RamanujanBound, MSS/*
 ```
 
-To inspect the axiom footprint of the headline theorem:
+Axiom footprint of the headline theorems:
 
 ```lean
 import MSS.GodsilGutman
-#print axioms SimpleGraph.MSS.godsil_gutman
--- propext, Classical.choice, Quot.sound
+import MSS.HeilmannLiebBound
+open SimpleGraph
+#print axioms SimpleGraph.MSS.godsil_gutman          -- Paper I
+#print axioms SimpleGraph.matchingPoly_realRooted     -- Paper II
+#print axioms SimpleGraph.matchingPoly_bounded        -- Paper II
+-- each: propext, Classical.choice, Quot.sound
 ```
 
-## Reproducing the figures and tables
+## Figures and numerical cross-checks
 
-```bash
-cd figures
-python fig1_godsil_gutman.py     # Godsil–Gutman on K3
-python fig2_ramanujan_bound.py   # Heilmann–Lieb Ramanujan band
-python fig3_zmod2_principle.py   # the ℤ/2 engine dependency
-python fig4_path_tree.py         # Godsil's path-tree (the proposed next step)
-```
-
-Each writes a `.pdf` and a 300-dpi `.png`. Requires `matplotlib`, `sympy`,
-`networkx`. The numerical cross-checks in the paper's Table 2 are exact (SymPy).
-`figures/README.md` documents the honesty notes baked into each asset.
+Paper I figures: `figures/fig{1_godsil_gutman,2_ramanujan_bound,3_zmod2_principle,4_path_tree}.py`.
+Paper II figures and SageMath cross-checks:
+`figures/{hl_figures.py,hl_figures2.py,wallA_mss.py,wallA_squared.py}`.
 
 ## Citing
-
-If you use this development, please cite the paper (preprint, June 2026):
 
 ```bibtex
 @misc{Marin2026GodsilGutmanLean,
   author = {Mar\'in, Carles},
   title  = {Random Signs into Matchings: A Godsil--Gutman Identity, Formalized in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20517350},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026HeilmannLiebLean,
+  author = {Mar\'in, Carles},
+  title  = {Unfolding a Graph into a Tree: A Machine-Checked Proof of the Heilmann--Lieb Theorem in Lean 4},
   year   = {2026},
-  doi    = {10.5281/zenodo.20517350},
-  note   = {Lean 4 formalization (English + Spanish editions), \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+  note   = {Zenodo (forthcoming); \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
 
-Archived on Zenodo: [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350).
-The paper is included in English (`godsil-gutman-lean.pdf`) and Spanish
-(`godsil-gutman-lean-es.pdf`).
+Paper I is archived on Zenodo:
+[10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350). Paper II's DOI
+will be added on release.
 
 ## Author and license
 
-**Carles Marín** (independent researcher, `karlesmarin@gmail.com`).
-
-The Lean formalization was carried out with Claude (Anthropic) as an AI research
-instrument; all design decisions, mathematics, and claims are the author's
-responsibility. A build-as-oracle loop verified or rejected each lemma against
-the Lean kernel, which has the last word.
+**Carles Marín** (independent researcher, `karlesmarin@gmail.com`). The Lean
+formalization was carried out with Claude (Anthropic) as an AI research instrument
+under a build-as-oracle loop: the assistant proposed definitions and proofs, the
+Lean kernel verified or rejected each, and all design decisions, mathematics and
+claims are the author's responsibility. The kernel has the last word.
 
 Licensed under the **Apache License 2.0** — see [`LICENSE`](LICENSE).

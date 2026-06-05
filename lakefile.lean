@@ -25,7 +25,14 @@ lean_lib «MatchingPoly» where
   -- First such infrastructure in any proof assistant.
 
 @[default_target]
+lean_lib «RamanujanBound» where
+  -- The Bruhat–Tits / Ramanujan band edge 2·√(k−1) and its algebra (Paper II).
+
+@[default_target]
 lean_lib «MSS» where
-  -- Signed adjacency (Basic), expected characteristic polynomial (ExpectedCharpoly),
-  -- the Godsil–Gutman identity (GodsilGutman), and the Bilu–Linial 2-lift (TwoLift).
+  -- Paper I: signed adjacency (Basic), expected characteristic polynomial
+  -- (ExpectedCharpoly), the Godsil–Gutman identity (GodsilGutman), the 2-lift (TwoLift).
+  -- Paper II: the path tree (PathTree), divisibility (Divisibility), the forest
+  -- identity and real-rootedness (MatchingSum, ForestComponents, ForestRealRooted),
+  -- and the Heilmann–Lieb root bound (HeilmannLieb, HeilmannLiebBound).
   globs := #[.submodules `MSS]

@@ -120,6 +120,52 @@ theorem matchingPoly_bot_realRooted :
     have h := MSS.realRooted_X_sub_C (0 : ℝ); simpa using h
   exact Submonoid.pow_mem _ hX _
 
+/-! ## Degree and monicity of `μ(G)` -/
+
+/-- `μ(G)` with its leading (`k = 0`) term `X^n` split off. The `k=0` summand is
+`C((-1)^0 · m_0) X^{n-0} = X^n` (since `m_0 = 1`); the rest are the lower terms. -/
+theorem matchingPoly_eq_X_pow_add_erase (G : SimpleGraph V) [DecidableRel G.Adj] :
+    G.matchingPoly =
+      X ^ Fintype.card V
+      + ∑ k ∈ (Finset.range (Fintype.card V / 2 + 1)).erase 0,
+          C ((-1 : ℝ) ^ k * (G.matchingNumber k : ℝ)) * X ^ (Fintype.card V - 2 * k) := by
+  rw [matchingPoly, ← Finset.add_sum_erase _ _ (Finset.mem_range.mpr (Nat.succ_pos _))]
+  congr 1
+  rw [matchingNumber_zero]
+  simp
+
+/-- The non-leading terms of `μ(G)` all have degree `< n = |V|`: term `k ≥ 1` has
+degree `≤ n - 2k < n`. -/
+theorem matchingPoly_erase_degree_lt (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (∑ k ∈ (Finset.range (Fintype.card V / 2 + 1)).erase 0,
+        C ((-1 : ℝ) ^ k * (G.matchingNumber k : ℝ)) * X ^ (Fintype.card V - 2 * k)).degree
+      < (Fintype.card V : WithBot ℕ) := by
+  apply lt_of_le_of_lt (degree_sum_le _ _)
+  rw [Finset.sup_lt_iff (WithBot.bot_lt_coe _)]
+  intro k hk
+  rw [Finset.mem_erase, Finset.mem_range] at hk
+  refine lt_of_le_of_lt (degree_C_mul_X_pow_le _ _) ?_
+  exact_mod_cast (by omega : Fintype.card V - 2 * k < Fintype.card V)
+
+/-- **`μ(G)` is monic.** Its leading term is the `k=0` summand `X^n`. -/
+theorem matchingPoly_monic (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (G.matchingPoly).Monic := by
+  rw [matchingPoly_eq_X_pow_add_erase]
+  exact (monic_X_pow _).add_of_left
+    (by rw [degree_X_pow]; exact matchingPoly_erase_degree_lt G)
+
+/-- **`deg μ(G) = n = |V|`.** -/
+theorem matchingPoly_degree (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (G.matchingPoly).degree = (Fintype.card V : WithBot ℕ) := by
+  rw [matchingPoly_eq_X_pow_add_erase,
+      degree_add_eq_left_of_degree_lt
+        (by rw [degree_X_pow]; exact matchingPoly_erase_degree_lt G),
+      degree_X_pow]
+
+@[simp] theorem matchingPoly_natDegree (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (G.matchingPoly).natDegree = Fintype.card V :=
+  natDegree_eq_of_degree_eq_some (matchingPoly_degree G)
+
 /-! ## Vertex deletion (first cala of the matching recurrence) -/
 
 /-- **Vertex deletion, edge level.** `G.deleteIncidenceSet v` (Mathlib) is `G` with
@@ -242,6 +288,78 @@ theorem mem_matchingsOfCard {G : SimpleGraph V} [DecidableRel G.Adj] {k : ℕ}
     s ∈ G.matchingsOfCard k ↔ s ⊆ G.edgeFinset ∧ s.card = k ∧ IsMatchingSet s := by
   simp only [matchingsOfCard, Finset.mem_filter, Finset.mem_powersetCard]
   tauto
+
+/-! ## Isomorphism invariance of `μ` -/
+
+section Iso
+variable {G} {W : Type*} [Fintype W] [DecidableEq W] {H : SimpleGraph W}
+  [DecidableRel G.Adj] [DecidableRel H.Adj]
+
+/-- A graph isomorphism carries `k`-matchings to `k`-matchings (image under `Sym2.map e`):
+edges go to edges (`map_mem_edgeSet_iff`), the matching condition is preserved (`e` injective
+on vertices), and the cardinality is unchanged (`Sym2.map e` injective). -/
+theorem image_map_mem_matchingsOfCard (e : G ≃g H) {k : ℕ} {s : Finset (Sym2 V)}
+    (hs : s ∈ G.matchingsOfCard k) : s.image (Sym2.map ⇑e) ∈ H.matchingsOfCard k := by
+  rw [mem_matchingsOfCard] at hs ⊢
+  obtain ⟨hsub, hcard, hmatch⟩ := hs
+  refine ⟨?_, ?_, ?_⟩
+  · intro x hx
+    rw [Finset.mem_image] at hx
+    obtain ⟨y, hy, rfl⟩ := hx
+    rw [SimpleGraph.mem_edgeFinset, e.map_mem_edgeSet_iff, ← SimpleGraph.mem_edgeFinset]
+    exact hsub hy
+  · rw [Finset.card_image_of_injective _ (Sym2.map.injective e.injective), hcard]
+  · intro a ha b hb hab w hwa hwb
+    rw [Finset.mem_image] at ha hb
+    obtain ⟨a', ha', rfl⟩ := ha
+    obtain ⟨b', hb', rfl⟩ := hb
+    rw [Sym2.mem_map] at hwa hwb
+    obtain ⟨wa, hwa', rfl⟩ := hwa
+    obtain ⟨wb, hwb', hwe⟩ := hwb
+    have hwab : wb = wa := e.injective hwe
+    exact hmatch a' ha' b' hb' (fun h => hab (by rw [h])) wa hwa' (hwab ▸ hwb')
+
+/-- The matching numbers are isomorphism invariants. -/
+theorem matchingNumber_iso (e : G ≃g H) (k : ℕ) :
+    G.matchingNumber k = H.matchingNumber k := by
+  unfold matchingNumber
+  apply Finset.card_bij'
+    (fun s _ => s.image (Sym2.map ⇑e)) (fun t _ => t.image (Sym2.map ⇑e.symm))
+  · -- left_inv (hi/hj are still metavariables here; the equation does not mention them)
+    intro s _
+    rw [Finset.image_image, ← Sym2.map_comp, e.symm_comp_self, Sym2.map_id, Finset.image_id]
+  · -- right_inv
+    intro t _
+    rw [Finset.image_image, ← Sym2.map_comp,
+        show (⇑e ∘ ⇑e.symm) = (id : W → W) from funext e.apply_symm_apply,
+        Sym2.map_id, Finset.image_id]
+  · -- hi
+    exact fun s hs => image_map_mem_matchingsOfCard e hs
+  · -- hj
+    exact fun t ht => image_map_mem_matchingsOfCard e.symm ht
+
+/-- **`μ` is an isomorphism invariant.** This lets the matching polynomial of each subtree
+`T(G−u, b)` be read off through the structural iso `prependRoot_grows`, en route to the
+root-decomposition product `μ(T−r) = X·∏_{b∼u} μ(T(G−u,b))`. -/
+theorem matchingPoly_iso (e : G ≃g H) : G.matchingPoly = H.matchingPoly := by
+  unfold matchingPoly
+  rw [Fintype.card_congr e.toEquiv]
+  exact Finset.sum_congr rfl fun k _ => by rw [matchingNumber_iso e k]
+
+end Iso
+
+/-- **`μ` is independent of the `Fintype`/`Decidable` instances.** All three are
+`Subsingleton`s, so `μ(G)` computed with any pair of instance choices agree. This lets a
+`matchingPoly` term produced by one elaboration path (e.g. an iso transport) be matched
+against one produced by another (e.g. a direct `Σ`-decomposition) *propositionally*, without
+forcing `isDefEq` to `whnf`-reduce the polynomial — which over a `Σ`-type blows the heartbeat
+budget. -/
+theorem matchingPoly_inst_irrel {V : Type*} (fV₁ fV₂ : Fintype V)
+    (G : SimpleGraph V) (rG₁ rG₂ : DecidableRel G.Adj) :
+    @matchingPoly V fV₁ G rG₁ = @matchingPoly V fV₂ G rG₂ := by
+  cases Subsingleton.elim fV₁ fV₂
+  cases Subsingleton.elim rG₁ rG₂
+  rfl
 
 /-- **The branch-(b) bijection.** For a neighbour `u ∼ v`, the `(k+1)`-matchings of
 `G` that cover `v` via the edge `{v,u}` are in bijection (erase / insert that
@@ -428,6 +546,61 @@ theorem matchingPartition_coeff (G : SimpleGraph V) [DecidableRel G.Adj] (d : �
   · rw [if_neg hd, Finset.mem_range, not_lt] at *
     rw [matchingNumber_eq_zero_of_card_lt G (by omega), Nat.cast_zero]
 
+/-! ## The bridge `μ ↔ P`: `reflect_card μ(G) = P(G) ∘ (−X²)`
+
+The matching polynomial `μ(G,x) = Σ (-1)^k m_k x^{n-2k}` and the partition function
+`P(G,X) = Σ m_k X^k` are reverses of each other after the substitution `X ↦ -X²`:
+reflecting `μ(G)` at degree `n` sends `X^{n-2k} ↦ X^{2k}`, exactly `P(G)` evaluated at
+`-X²` (the sign `(-1)^k` coming from `(-X²)^k`). This is the load-bearing identity that
+transfers the real-rootedness / root-bound of `P` (where the interlacing machinery lives)
+to `μ` (where Heilmann–Lieb states the Ramanujan band), and it makes `μ` multiplicative on
+disjoint unions out of the clean `P`-multiplicativity. -/
+theorem matchingPoly_reflect_card (G : SimpleGraph V) [DecidableRel G.Adj] :
+    Polynomial.reflect (Fintype.card V) (G.matchingPoly)
+      = (G.matchingPartition).comp (C (-1) * X ^ 2) := by
+  classical
+  -- reflect and comp both distribute over the defining finite sums
+  have refl_sum : ∀ (s : Finset ℕ) (f : ℕ → ℝ[X]),
+      Polynomial.reflect (Fintype.card V) (∑ i ∈ s, f i)
+        = ∑ i ∈ s, Polynomial.reflect (Fintype.card V) (f i) := by
+    intro s f
+    refine Finset.induction_on s (by simp) ?_
+    intro a s ha ih
+    rw [Finset.sum_insert ha, reflect_add, ih, Finset.sum_insert ha]
+  have comp_sum : ∀ (s : Finset ℕ) (f : ℕ → ℝ[X]),
+      (∑ i ∈ s, f i).comp (C (-1) * X ^ 2) = ∑ i ∈ s, (f i).comp (C (-1) * X ^ 2) := by
+    intro s f
+    refine Finset.induction_on s (by simp) ?_
+    intro a s ha ih
+    rw [Finset.sum_insert ha, add_comp, ih, Finset.sum_insert ha]
+  -- the left side, term by term: `reflect (C c_k X^{n-2k}) = C c_k X^{2k}`
+  have hL : Polynomial.reflect (Fintype.card V) (G.matchingPoly)
+      = ∑ k ∈ Finset.range (Fintype.card V / 2 + 1),
+          C ((-1 : ℝ) ^ k * (G.matchingNumber k : ℝ)) * X ^ (2 * k) := by
+    rw [matchingPoly, refl_sum]
+    refine Finset.sum_congr rfl fun k hk => ?_
+    rw [Finset.mem_range] at hk
+    rw [reflect_C_mul_X_pow, revAt_le (Nat.sub_le _ _)]
+    congr 2
+    omega
+  -- the right side, term by term: `(C m_k X^k) ∘ (-X²) = C ((-1)^k m_k) X^{2k}`,
+  -- with the upper terms (`2k > n`) vanishing because `m_k = 0` there
+  have hR : (G.matchingPartition).comp (C (-1) * X ^ 2)
+      = ∑ k ∈ Finset.range (Fintype.card V / 2 + 1),
+          C ((-1 : ℝ) ^ k * (G.matchingNumber k : ℝ)) * X ^ (2 * k) := by
+    rw [matchingPartition, comp_sum,
+        ← Finset.sum_subset (s₁ := Finset.range (Fintype.card V / 2 + 1))
+          (s₂ := Finset.range (Fintype.card V + 1))
+          (by intro x hx; rw [Finset.mem_range] at hx ⊢; omega)]
+    · refine Finset.sum_congr rfl fun k _ => ?_
+      rw [mul_comp, C_comp, pow_comp, X_comp, mul_pow, ← C_pow, ← pow_mul, C_mul]
+      ring
+    · intro k _ hk2
+      rw [Finset.mem_range, not_lt] at hk2
+      rw [matchingNumber_eq_zero_of_card_lt G (by omega), Nat.cast_zero]
+      simp
+  rw [hL, hR]
+
 /-- **The clean recurrence.** Deleting a vertex `v`:
 ```
   P(G) = P(G − v) + X · ∑_{u ∼ v} P(G − v − u).
@@ -448,6 +621,96 @@ theorem matchingPartition_recurrence (G : SimpleGraph V) [DecidableRel G.Adj] (v
     rw [matchingNumber_recurrence G v e]
     push_cast
     ring
+
+/-! ## The signed vertex-deletion recurrence for `μ` (lifts the clean `P` recurrence) -/
+
+/-- `reflect` distributes over a finite sum. -/
+theorem reflect_finsetSum {ι : Type*} (N : ℕ) (s : Finset ι) (f : ι → ℝ[X]) :
+    Polynomial.reflect N (∑ i ∈ s, f i) = ∑ i ∈ s, Polynomial.reflect N (f i) := by
+  classical
+  refine Finset.induction_on s (by simp) ?_
+  intro a s ha ih
+  rw [Finset.sum_insert ha, reflect_add, ih, Finset.sum_insert ha]
+
+/-- `comp` distributes over a finite sum (in the composed polynomial). -/
+theorem comp_finsetSum {ι : Type*} (s : Finset ι) (f : ι → ℝ[X]) (r : ℝ[X]) :
+    (∑ i ∈ s, f i).comp r = ∑ i ∈ s, (f i).comp r := by
+  classical
+  refine Finset.induction_on s (by simp) ?_
+  intro a s ha ih
+  rw [Finset.sum_insert ha, add_comp, ih, Finset.sum_insert ha]
+
+/-- Reflecting `X²·μ(G)` at degree `n+2` lands on `reflect_n μ(G)` (both `= P(G)∘(−X²)`):
+the extra `X²` is exactly absorbed by the two-larger reflection degree. -/
+theorem reflect_card_add_two_Xsq_mul (G : SimpleGraph V) [DecidableRel G.Adj] :
+    Polynomial.reflect (Fintype.card V + 2) (X ^ 2 * G.matchingPoly)
+      = Polynomial.reflect (Fintype.card V) G.matchingPoly := by
+  rw [matchingPoly, Finset.mul_sum, reflect_finsetSum, reflect_finsetSum]
+  refine Finset.sum_congr rfl fun k hk => ?_
+  rw [Finset.mem_range] at hk
+  rw [mul_left_comm, ← pow_add, reflect_C_mul_X_pow, reflect_C_mul_X_pow,
+      revAt_le (by omega), revAt_le (Nat.sub_le _ _)]
+  congr 2
+  omega
+
+/-- Reflecting `μ(G)` at degree `n+2` introduces one factor `X²` over `reflect_n μ(G)`. -/
+theorem reflect_card_add_two (G : SimpleGraph V) [DecidableRel G.Adj] :
+    Polynomial.reflect (Fintype.card V + 2) G.matchingPoly
+      = X ^ 2 * Polynomial.reflect (Fintype.card V) G.matchingPoly := by
+  rw [matchingPoly, reflect_finsetSum, reflect_finsetSum, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun k hk => ?_
+  rw [Finset.mem_range] at hk
+  rw [reflect_C_mul_X_pow, reflect_C_mul_X_pow, revAt_le (by omega),
+      revAt_le (Nat.sub_le _ _), mul_left_comm, ← pow_add]
+  congr 2
+  omega
+
+/-- **The signed vertex-deletion recurrence** `X²·μ(G) = X²·μ(G−v) − Σ_{u∼v} μ(G−v−u)`
+(`matchingPoly_recurrence_target`). Proved by reflecting at degree `n+2` (an injection,
+via `reflect_reflect`) and using the `μ ↔ P` bridge to reduce to the already-proved clean
+partition recurrence `matchingPartition_recurrence`, pushed through `comp (−X²)`. This is
+the engine of Godsil's identity `μ(G)·μ(T−r) = μ(G−a)·μ(T)`, hence of the path-tree
+divisibility `μ(G) ∣ μ(T(G,u))`. -/
+theorem matchingPoly_recurrence (G : SimpleGraph V) [DecidableRel G.Adj] (v : V) :
+    matchingPoly_recurrence_target G v := by
+  unfold matchingPoly_recurrence_target
+  have hinj : Function.Injective
+      (Polynomial.reflect (Fintype.card V + 2) : ℝ[X] → ℝ[X]) := fun p q hpq => by
+    have h := congrArg (Polynomial.reflect (Fintype.card V + 2)) hpq
+    rwa [reflect_reflect, reflect_reflect] at h
+  rw [eq_sub_iff_add_eq]
+  apply hinj
+  rw [reflect_add, reflect_finsetSum]
+  simp only [reflect_card_add_two_Xsq_mul, reflect_card_add_two, matchingPoly_reflect_card]
+  rw [matchingPartition_recurrence G v, add_comp, mul_comp, X_comp, comp_finsetSum,
+      ← Finset.mul_sum]
+  simp only [C_neg, C_1]
+  ring
+
+/-- **Divisibility transfer — the algebraic core of Godsil's path-tree induction.**
+Given Godsil's identity `μ(G)·μ(T−r) = μ(G−a)·μ(T)` (`hid`) and the inductive divisibility
+`μ(G−a) ∣ μ(T−r)` (`hdvd`), with `μ(G−a) ≠ 0`, conclude `μ(G) ∣ μ(T)`. Pure `ℝ[X]`
+cancellation: `μ(T−r) = μ(G−a)·Q ⟹ μ(G−a)·μ(T) = μ(G−a)·(μ(G)·Q)`, cancel `μ(G−a)`. -/
+theorem dvd_of_godsil_identity {μG μGa μT μTr : ℝ[X]} (hGa : μGa ≠ 0)
+    (hid : μG * μTr = μGa * μT) (hdvd : μGa ∣ μTr) : μG ∣ μT := by
+  obtain ⟨Q, hQ⟩ := hdvd
+  refine ⟨Q, mul_left_cancel₀ hGa ?_⟩
+  rw [← hid, hQ]; ring
+
+/-- **The Σ/∏ rearrangement at the inductive step of Godsil's identity.** Indexing over the
+neighbours `b ∼ u`, write `μGu = μ(G−u)`, `d b = μ((G−u)−b)`, `t b = μ(T(G−u,b))` and
+`s b = μ(T(G−u,b) − r_b)`. Given the per-neighbour inductive hypothesis
+`μGu · s b = d b · t b` (Godsil's identity on the smaller graph `G−u` at `b`), the tree-side
+sum `μGu · Σ_b s b·∏_{b'≠b} t b'` collapses to `(Σ_b d b)·∏_b t b` — exactly what equates the
+tree recurrence's defect term with the `G` recurrence's after the root decomposition `(D)`.
+Each summand: `μGu·(s b·∏_{≠b} t) = (d b·t b)·∏_{≠b} t = d b·∏_all t` via `mul_prod_erase`. -/
+theorem godsil_sum_prod_rearrange {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {R : Type*} [CommRing R] (μGu : R) (d s t : ι → R)
+    (hIH : ∀ b, μGu * s b = d b * t b) :
+    μGu * ∑ b, s b * ∏ b' ∈ Finset.univ.erase b, t b' = (∑ b, d b) * ∏ b, t b := by
+  rw [Finset.mul_sum, Finset.sum_mul]
+  refine Finset.sum_congr rfl fun b _ => ?_
+  rw [← mul_assoc, hIH, mul_assoc, Finset.mul_prod_erase _ t (Finset.mem_univ b)]
 
 /-! ## Heilmann–Lieb by interlacing — the summit (base case + spine) -/
 

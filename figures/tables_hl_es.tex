@@ -1,0 +1,51 @@
+% Tablas a color para el documento Heilmann--Lieb (Paper II), versión española.
+% Requiere: \usepackage[table]{xcolor}; colores ggteal, ggband, ggamber en el preámbulo.
+
+\begin{table}[t]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{7pt}
+\rowcolors{2}{ggband}{white}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.345\textwidth} >{\raggedright\arraybackslash}p{0.46\textwidth} c@{}}
+\rowcolor{ggteal}
+\textcolor{white}{\bf Teorema en Lean} & \textcolor{white}{\bf Enunciado} & \textcolor{white}{\bf sin \lean{sorry}} \\
+\lean{matchingPoly\_realRooted} & $\mu_G$ tiene todas sus raíces reales, todo $G$ finito & \checkmark \\
+\lean{matchingPoly\_bounded} & raíces de $\mu_G$ en $[-2\sqrt{\Delta-1},2\sqrt{\Delta-1}]$ ($2\le\Delta$, $\deg\le\Delta$) & \checkmark \\
+\lean{connected\_matchingPoly\_dvd\_pathTree} & $\mu_G \mid \mu_{T(G,u)}$ (divisibilidad, ladrillo) & \checkmark \\
+\lean{matchingPoly\_forest\_eq\_charpoly} & $\mu_F=\operatorname{charpoly}(A_F)$ en un bosque & \checkmark \\
+\lean{collatzWielandt} & cota de autovalores tipo Gershgorin ponderado & \checkmark \\
+\lean{forest\_bounded\_proof} & raíces del matching de un bosque en la banda & \checkmark \\
+\lean{forest\_adj\_dist\_pm\_one} & vecinos difieren en distancia-al-raíz por $1$ & \checkmark \\
+\lean{forest\_le\_one\_parent} & $\le 1$ vecino más cerca del raíz & \checkmark \\
+\lean{pathTree\_degree\_le} & $\deg T(G,u)\le \deg G$ & \checkmark \\
+\end{tabular}
+\caption{Los resultados verificados por máquina de este artículo, en Lean~4 / Mathlib. Cada
+entrada es \lean{sorry}-libre; \lean{\#print axioms} sobre cada una reporta solo \lean{propext},
+\lean{Classical.choice}, \lean{Quot.sound} (sin \lean{sorryAx}). Cadena de herramientas
+\lean{leanprover/lean4:v4.30.0-rc2}, clon local de Mathlib; verificado con \lean{lake build MSS}
+(salida~0).}
+\label{tab:results}
+\end{table}
+
+\begin{table}[t]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{9pt}
+\rowcolors{2}{ggband}{white}
+\begin{tabular}{@{}l c c c c c@{}}
+\rowcolor{ggteal}
+\textcolor{white}{\bf grafo $G$} & \textcolor{white}{$n$} & \textcolor{white}{$\Delta$} &
+\textcolor{white}{$2\sqrt{\Delta-1}$} & \textcolor{white}{$\max_i|\rho_i|$} & \textcolor{white}{en banda} \\
+camino $P_6$       & 6 & 2 & 2.0000 & 1.8019 & \checkmark \\
+ciclo $C_6$        & 6 & 2 & 2.0000 & 1.9319 & \checkmark \\
+estrella $K_{1,5}$ & 6 & 5 & 4.0000 & 2.2361 & \checkmark \\
+completo $K_5$     & 5 & 4 & 3.4641 & 2.8570 & \checkmark \\
+Petersen           & 10 & 3 & 2.8284 & 2.6314 & \checkmark \\
+cubo $Q_3$         & 8 & 3 & 2.8284 & 2.5779 & \checkmark \\
+\end{tabular}
+\caption{Confirmación numérica de la cota (\lean{matchingPoly\_bounded}). Para cada grafo,
+$\Delta$ es el grado máximo, $2\sqrt{\Delta-1}$ el borde de la banda de Ramanujan, y
+$\max_i|\rho_i|$ la mayor magnitud entre las raíces $\rho_i$ de $\mu_G$ (calculadas exactamente).
+Todo valor cumple $\max_i|\rho_i|\le 2\sqrt{\Delta-1}$. Calculado en SageMath.}
+\label{tab:numeric}
+\end{table}

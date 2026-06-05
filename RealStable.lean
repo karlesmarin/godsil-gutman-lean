@@ -13,6 +13,7 @@ public import Mathlib.Data.Finset.Sort
 public import Mathlib.Data.Real.Basic
 public import Mathlib.Topology.Algebra.Polynomial
 public import Mathlib.Topology.Order.IntermediateValue
+public import Mathlib.Analysis.Polynomial.Order
 
 /-!
 # Real-rooted polynomials and interlacing — foundation for Marcus–Spielman–Srivastava
@@ -84,6 +85,13 @@ theorem RealRooted.prod {ι : Type*} {s : Finset ι} {f : ι → Polynomial ℝ}
     (h : ∀ i ∈ s, RealRooted (f i)) : RealRooted (∏ i ∈ s, f i) :=
   Submonoid.prod_mem _ h
 
+/-- **A (nonzero) divisor of a real-rooted polynomial is real-rooted.** If `p ∣ q` and `q` splits
+over `ℝ` (with `q ≠ 0`), the roots of `p` are a sub-multiset of those of `q`, hence all real.
+Thin wrapper around `Polynomial.Splits.of_dvd`. This is the engine of the connected→real-rooted
+step (T5): `μ(G) ∣ μ(pathTree)`, and the path tree is a forest. -/
+theorem RealRooted.of_dvd (hq : RealRooted q) (hq0 : q ≠ 0) (hpq : p ∣ q) : RealRooted p :=
+  Polynomial.Splits.of_dvd hq hq0 hpq
+
 /-- **Root-count characterisation.** A real polynomial is real-rooted iff its
 multiset of (real) roots has cardinality equal to its degree — i.e. it has
 exactly `natDegree` real roots counted with multiplicity. -/
@@ -113,6 +121,28 @@ def BoundedBy (p : Polynomial ℝ) (B : ℝ) : Prop :=
   RealRooted p ∧ ∀ x : ℝ, p.IsRoot x → |x| ≤ B
 
 theorem BoundedBy.realRooted {B : ℝ} (h : BoundedBy p B) : RealRooted p := h.1
+
+/-- **A (nonzero) divisor of a `BoundedBy B` polynomial is `BoundedBy B`.** Real-rootedness transfers
+by `RealRooted.of_dvd`, and every root of the divisor `q` is a root of `p` (write `p = q * c`), so it
+inherits the `|·| ≤ B` bound. This is the Heilmann–Lieb transfer step: `μ(G) ∣ μ(T(G,u))`, and the
+path tree `T(G,u)` is a forest whose adjacency eigenvalues lie in `[−B, B]`. -/
+theorem BoundedBy.of_dvd {B : ℝ} (hp : BoundedBy p B) (hp0 : p ≠ 0) (hqp : q ∣ p) :
+    BoundedBy q B := by
+  refine ⟨hp.1.of_dvd hp0 hqp, fun x hx => ?_⟩
+  refine hp.2 x ?_
+  obtain ⟨c, rfl⟩ := hqp
+  rw [IsRoot, eval_mul]
+  rw [IsRoot] at hx
+  rw [hx, zero_mul]
+
+/-- **`BoundedBy B` is closed under finite products.** A root of `∏ fᵢ` is a root of some factor
+(`ℝ[X]` is a domain), hence bounded by `B`; real-rootedness multiplies (`RealRooted.prod`). -/
+theorem BoundedBy.prod {ι : Type*} {s : Finset ι} {f : ι → Polynomial ℝ} {B : ℝ}
+    (h : ∀ i ∈ s, BoundedBy (f i) B) : BoundedBy (∏ i ∈ s, f i) B := by
+  refine ⟨RealRooted.prod (fun i hi => (h i hi).1), fun x hx => ?_⟩
+  rw [IsRoot, eval_prod, Finset.prod_eq_zero_iff] at hx
+  obtain ⟨i, hi, hxi⟩ := hx
+  exact (h i hi).2 x hxi
 
 /-- **Fundamental constructor / fusion brick.** A product of linears
 `∏ (X - C aᵢ)` whose roots `aᵢ` all lie in `[-B, B]` is `BoundedBy B`. Both the
@@ -479,6 +509,215 @@ theorem realRooted_of_factor_per_gap (f : Polynomial ℝ) (hf0 : f ≠ 0) (n : �
     RealRooted f :=
   realRooted_of_alternating f hf0 n hdeg x hmono
     (eval_alternating_of_factor_per_gap f n x hfac)
+
+/-! ### Packaging: from "unique simple root in a gap" to the per-gap factorisation -/
+
+/-- **Per-gap factorisation from a unique simple root.** If `r ∈ [u,v]` is a *simple* root of
+`f` (`rootMultiplicity = 1`) and the *only* root of `f` on `[u,v]`, then `f = (X − r)·q` with the
+cofactor `q` root-free on `[u,v]`. This is the combinatorial packaging step that feeds
+`realRooted_of_factor_per_gap`: a root-free cofactor would force a double root at `r`
+(contradicting simplicity) or a second root in the gap (contradicting uniqueness). -/
+theorem factor_of_unique_simple_root_on_Icc (f : Polynomial ℝ) (hf : f ≠ 0) {u v r : ℝ}
+    (hr : f.IsRoot r) (hsimple : f.rootMultiplicity r = 1)
+    (huniq : ∀ z ∈ Set.Icc u v, f.IsRoot z → z = r) :
+    ∃ q : Polynomial ℝ, f = (X - C r) * q ∧ ∀ z ∈ Set.Icc u v, ¬ q.IsRoot z := by
+  obtain ⟨q, hq⟩ := dvd_iff_isRoot.mpr hr
+  refine ⟨q, hq, fun z hz hqz => ?_⟩
+  have hqz0 : q.eval z = 0 := hqz
+  have hfz : f.IsRoot z := by rw [IsRoot, hq, eval_mul, hqz0, mul_zero]
+  obtain rfl := huniq z hz hfz
+  obtain ⟨q', hq'⟩ := dvd_iff_isRoot.mpr hqz
+  have hdvd2 : (X - C z) ^ 2 ∣ f := ⟨q', by rw [hq, hq', sq]; ring⟩
+  have := (le_rootMultiplicity_iff hf).mpr hdvd2
+  omega
+
+/-- **Counting: one root per gap ⟹ exactly one, simple, unique.** A polynomial `f ≠ 0` of degree
+`≤ n` with at least one root in each of the `n` disjoint open gaps `(xᵢ, xᵢ₊₁)` of a strictly
+increasing sequence has, in each gap, exactly one root — simple and the only root of `f` on the
+closed gap. The `n` gap-roots are distinct (disjoint increasing gaps), so `f` has `≥ n` distinct
+roots; with `card roots ≤ deg ≤ n` they account for everything, each simple. Combined with
+`factor_of_unique_simple_root_on_Icc` this supplies the data `realRooted_of_factor_per_gap` needs. -/
+theorem unique_simple_root_per_gap (f : Polynomial ℝ) (hf : f ≠ 0) (n : ℕ)
+    (hdeg : f.natDegree ≤ n) (x : Fin (n + 1) → ℝ) (hmono : StrictMono x)
+    (hroot : ∀ i : Fin n, ∃ r, x i.castSucc < r ∧ r < x i.succ ∧ f.IsRoot r) :
+    ∀ i : Fin n, ∃ r, x i.castSucc < r ∧ r < x i.succ ∧ f.IsRoot r ∧
+      f.rootMultiplicity r = 1 ∧
+      ∀ z ∈ Set.Icc (x i.castSucc) (x i.succ), f.IsRoot z → z = r := by
+  choose r hr1 hr2 hr3 using hroot
+  -- `r` is strictly monotone: it lands in disjoint increasing gaps
+  have hsuccle : ∀ {i j : Fin n}, i < j → x i.succ ≤ x j.castSucc := fun {i j} hij =>
+    hmono.monotone (by
+      have : i.val < j.val := hij
+      rw [Fin.le_def, Fin.val_succ, Fin.coe_castSucc]; omega)
+  have hrmono : StrictMono r := fun i j hij =>
+    ((hr2 i).trans_le (hsuccle hij)).trans (hr1 j)
+  -- the `n` gap-roots account for all roots of `f`
+  have himg : (Finset.univ.image r) ⊆ f.roots.toFinset := fun a ha => by
+    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp ha
+    exact Multiset.mem_toFinset.mpr (Polynomial.mem_roots'.mpr ⟨hf, hr3 i⟩)
+  have hcardimg : (Finset.univ.image r).card = n := by
+    rw [Finset.card_image_of_injective _ hrmono.injective, Finset.card_univ, Fintype.card_fin]
+  have hcardeq : f.roots.toFinset.card = n :=
+    le_antisymm (le_trans (le_trans (Multiset.toFinset_card_le _) (Polynomial.card_roots' f)) hdeg)
+      (hcardimg ▸ Finset.card_le_card himg)
+  have himgeq : Finset.univ.image r = f.roots.toFinset :=
+    Finset.eq_of_subset_of_card_le himg (by rw [hcardeq, hcardimg])
+  have hcardroots : Multiset.card f.roots = n :=
+    le_antisymm (le_trans (Polynomial.card_roots' f) hdeg)
+      (hcardeq ▸ Multiset.toFinset_card_le f.roots)
+  -- every distinct root is simple (sum of multiplicities = #distinct roots)
+  have hcount1 : ∀ a ∈ f.roots.toFinset, f.roots.count a = 1 := by
+    refine fun a ha => ((Finset.sum_eq_sum_iff_of_le
+      (fun b hb => Multiset.one_le_count_iff_mem.mpr (Multiset.mem_toFinset.mp hb))).mp ?_ a ha).symm
+    rw [Finset.sum_const, smul_eq_mul, mul_one, Multiset.toFinset_sum_count_eq, hcardroots, hcardeq]
+  intro i
+  refine ⟨r i, hr1 i, hr2 i, hr3 i, ?_, fun z hz hfz => ?_⟩
+  · rw [← Polynomial.count_roots]
+    exact hcount1 _ (Multiset.mem_toFinset.mpr (Polynomial.mem_roots'.mpr ⟨hf, hr3 i⟩))
+  · obtain ⟨j, _, hzj⟩ := Finset.mem_image.mp
+      (himgeq ▸ Multiset.mem_toFinset.mpr (Polynomial.mem_roots'.mpr ⟨hf, hfz⟩))
+    subst hzj
+    rcases lt_trichotomy j i with hji | rfl | hji
+    · exact absurd (lt_of_lt_of_le (hr2 j) (hsuccle hji)) (not_lt.mpr hz.1)
+    · rfl
+    · exact absurd (lt_of_le_of_lt hz.2 (lt_of_le_of_lt (hsuccle hji) (hr1 j))) (lt_irrefl _)
+
+/-- **★ Geometric interlacing ⟹ real-rooted — the engine, assembled.** A polynomial `f ≠ 0` of
+degree `≤ n` with at least one root in each of the `n` gaps of a strictly increasing sequence is
+real-rooted. Chains the packaging (`unique_simple_root_per_gap` → `factor_of_unique_simple_root_on_Icc`)
+into the analytic engine (`realRooted_of_factor_per_gap`). This is exactly the content the old
+`f_alternates_at_g_roots` stub stood for: once a common interlacer supplies one root of `f` per gap,
+real-rootedness follows. The combinatorial bridge of the HKO / Heilmann–Lieb route, now closed. -/
+theorem realRooted_of_root_per_gap (f : Polynomial ℝ) (hf : f ≠ 0) (n : ℕ)
+    (hdeg : f.natDegree ≤ n) (x : Fin (n + 1) → ℝ) (hmono : StrictMono x)
+    (hroot : ∀ i : Fin n, ∃ r, x i.castSucc < r ∧ r < x i.succ ∧ f.IsRoot r) :
+    RealRooted f := by
+  refine realRooted_of_factor_per_gap f hf n hdeg x hmono (fun i => ?_)
+  obtain ⟨r, hr1, hr2, hrr, hsimple, huniq⟩ := unique_simple_root_per_gap f hf n hdeg x hmono hroot i
+  obtain ⟨q, hfq, hqno⟩ := factor_of_unique_simple_root_on_Icc f hf hrr hsimple huniq
+  exact ⟨r, q, hr1, hr2, hfq, hqno⟩
+
+/-! ### The recurrence step `X·p − q` (Hermite–Biehler) — algebraic hinge -/
+
+/-- **The recurrence collapses at a root of `p`.** `(X·p − q)(s) = −q(s)` when `p(s) = 0`. The
+combination `X·p − q` is the matching/orthogonal-polynomial three-term recurrence shape; at the
+roots of `p` it reads off `−q`, transferring `q`'s sign pattern. -/
+theorem eval_X_mul_sub_at_isRoot (p q : Polynomial ℝ) {s : ℝ} (hs : p.IsRoot s) :
+    (X * p - q).eval s = - q.eval s := by
+  have hps : p.eval s = 0 := hs
+  rw [eval_sub, eval_mul, eval_X, hps, mul_zero, zero_sub]
+
+/-- **`X·p − q` inherits `q`'s alternation at `p`'s roots.** On two roots `s, t` of `p`,
+`(X·p−q)(s)·(X·p−q)(t) = q(s)·q(t)` (each factor is `−q`, the signs square out). So if `q`
+alternates at consecutive roots of `p` — the geometric content of "`q` interlaces `p`" — then so
+does `X·p − q`, which is exactly the input `realRooted_of_alternating` needs to conclude
+`X·p − q` is real-rooted (the Hermite–Biehler recurrence step, modulo the `±∞` end gaps). -/
+theorem eval_X_mul_sub_mul_at_isRoots (p q : Polynomial ℝ) {s t : ℝ}
+    (hs : p.IsRoot s) (ht : p.IsRoot t) :
+    (X * p - q).eval s * (X * p - q).eval t = q.eval s * q.eval t := by
+  rw [eval_X_mul_sub_at_isRoot p q hs, eval_X_mul_sub_at_isRoot p q ht]; ring
+
+/-! ### The ±∞ end gaps (the two outer alternation points of the recurrence step) -/
+
+/-- A concrete point strictly above every root of `f ≠ 0` (roots are finite, hence bounded). -/
+theorem exists_gt_forall_isRoot (f : Polynomial ℝ) (hf : f ≠ 0) :
+    ∃ x : ℝ, ∀ y : ℝ, f.IsRoot y → y < x := by
+  obtain ⟨b, hb⟩ := (f.roots.toFinset.finite_toSet).bddAbove
+  exact ⟨b + 1, fun y hy => lt_of_le_of_lt
+    (hb (Finset.mem_coe.mpr (Multiset.mem_toFinset.mpr (mem_roots'.mpr ⟨hf, hy⟩)))) (by linarith)⟩
+
+/-- A concrete point strictly below every root of `f ≠ 0`. -/
+theorem exists_lt_forall_isRoot (f : Polynomial ℝ) (hf : f ≠ 0) :
+    ∃ x : ℝ, ∀ y : ℝ, f.IsRoot y → x < y := by
+  obtain ⟨b, hb⟩ := (f.roots.toFinset.finite_toSet).bddBelow
+  exact ⟨b - 1, fun y hy => lt_of_lt_of_le (by linarith)
+    (hb (Finset.mem_coe.mpr (Multiset.mem_toFinset.mpr (mem_roots'.mpr ⟨hf, hy⟩))))⟩
+
+/-- **Right end gap.** Beyond all roots, `f` (positive leading coeff) is positive: a concrete
+`x` above every root with `0 < f(x)`. The right outer alternation point of `realRooted_of_root_per_gap`. -/
+theorem exists_gt_roots_eval_pos (f : Polynomial ℝ) (hf : f ≠ 0) (hlc : 0 < f.leadingCoeff) :
+    ∃ x : ℝ, (∀ y, f.IsRoot y → y < x) ∧ 0 < f.eval x := by
+  obtain ⟨x, hx⟩ := exists_gt_forall_isRoot f hf
+  exact ⟨x, hx, zero_lt_eval_of_roots_lt_of_leadingCoeff_nonneg hx hlc.le⟩
+
+/-- **Left end gap.** Below all roots, `f` (positive leading coeff) has sign `(−1)^{deg f}`: a
+concrete `x` below every root with `0 < (−1)^{deg f}·f(x)`. The left outer alternation point. -/
+theorem exists_lt_roots_negOnePow_eval_pos (f : Polynomial ℝ) (hf : f ≠ 0)
+    (hlc : 0 < f.leadingCoeff) :
+    ∃ x : ℝ, (∀ y, f.IsRoot y → x < y) ∧ 0 < Int.negOnePow f.natDegree * f.eval x := by
+  obtain ⟨x, hx⟩ := exists_lt_forall_isRoot f hf
+  exact ⟨x, hx, zero_lt_negOnePow_mul_eval_of_lt_roots_of_leadingCoeff_nonneg hx hlc.le⟩
+
+/-! ### Roots as a strictly increasing indexed family (assembly scaffold) -/
+
+/-- **The distinct roots of `p ≠ 0`, indexed in increasing order.** Packages `rootsList p` as a
+`StrictMono` family `Fin k → ℝ` hitting exactly the roots — the inner points of the `m+2`-point
+sequence in the Hermite–Biehler assembly of `hl_interlacing_recurrence`. -/
+theorem exists_strictMono_roots (p : Polynomial ℝ) (hp : p ≠ 0) :
+    ∃ (k : ℕ) (s : Fin k → ℝ), StrictMono s ∧ (∀ i, p.IsRoot (s i)) ∧
+      ∀ x, p.IsRoot x → ∃ i, s i = x := by
+  refine ⟨(rootsList p).length, (rootsList p).get, (rootsList_sortedLT p).strictMono_get,
+    fun i => ?_, fun x hx => ?_⟩
+  · exact (mem_rootsList_iff_isRoot hp).mp (List.get_mem _ _)
+  · obtain ⟨i, hi⟩ := List.mem_iff_get.mp ((mem_rootsList_iff_isRoot hp).mpr hx)
+    exact ⟨i, hi⟩
+
+/-- **Every root is a gap root.** With one root `r i` per gap and `deg f ≤ n`, the `n` gap roots
+are *all* the roots of `f`: any root `z` equals some `r i`. (The `r i` are distinct and number
+`n = #gaps`; `card roots ≤ deg ≤ n` forces equality of root sets.) Used to confine `q`'s roots to
+the interior, fixing its extreme signs in the Hermite–Biehler endpoint gaps. -/
+theorem isRoot_eq_gap_root {f : Polynomial ℝ} (hf : f ≠ 0) {n : ℕ}
+    (hdeg : f.natDegree ≤ n) {x : Fin (n + 1) → ℝ} (hmono : StrictMono x)
+    {r : Fin n → ℝ} (hr1 : ∀ i, x i.castSucc < r i) (hr2 : ∀ i, r i < x i.succ)
+    (hr3 : ∀ i, f.IsRoot (r i)) {z : ℝ} (hz : f.IsRoot z) : ∃ i, z = r i := by
+  have hsuccle : ∀ {i j : Fin n}, i < j → x i.succ ≤ x j.castSucc := fun {i j} hij =>
+    hmono.monotone (by
+      have : i.val < j.val := hij
+      rw [Fin.le_def, Fin.val_succ, Fin.coe_castSucc]; omega)
+  have hrmono : StrictMono r := fun i j hij => ((hr2 i).trans_le (hsuccle hij)).trans (hr1 j)
+  have himg : (Finset.univ.image r) ⊆ f.roots.toFinset := fun a ha => by
+    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp ha
+    exact Multiset.mem_toFinset.mpr (Polynomial.mem_roots'.mpr ⟨hf, hr3 i⟩)
+  have hcardimg : (Finset.univ.image r).card = n := by
+    rw [Finset.card_image_of_injective _ hrmono.injective, Finset.card_univ, Fintype.card_fin]
+  have hcardeq : f.roots.toFinset.card = n :=
+    le_antisymm (le_trans (le_trans (Multiset.toFinset_card_le _) (Polynomial.card_roots' f)) hdeg)
+      (hcardimg ▸ Finset.card_le_card himg)
+  have himgeq : Finset.univ.image r = f.roots.toFinset :=
+    Finset.eq_of_subset_of_card_le himg (by rw [hcardeq, hcardimg])
+  have : z ∈ Finset.univ.image r :=
+    himgeq ▸ Multiset.mem_toFinset.mpr (Polynomial.mem_roots'.mpr ⟨hf, hz⟩)
+  obtain ⟨i, _, hi⟩ := Finset.mem_image.mp this
+  exact ⟨i, hi.symm⟩
+
+/-- **Extend an increasing root family by two outer endpoints.** Given a strictly increasing
+`s : Fin m → ℝ` with every value in `(xL, xR)`, the sequence `xL, s_0, …, s_{m-1}, xR` is strictly
+increasing. The `m+2`-point sequence of the Hermite–Biehler assembly; `strictMono` reduces (via
+`strictMono_iff_lt_succ`) to the `m+1` consecutive-gap inequalities. -/
+theorem strictMono_extend {m : ℕ} (s : Fin m → ℝ) (hs : StrictMono s) (xL xR : ℝ)
+    (hL : ∀ i, xL < s i) (hR : ∀ i, s i < xR) (hLR : xL < xR) :
+    StrictMono (Fin.cons xL (Fin.snoc s xR) : Fin (m + 2) → ℝ) := by
+  rw [Fin.strictMono_iff_lt_succ]
+  intro i
+  refine Fin.cases ?_ (fun j => ?_) i
+  · -- gap 0: xL < (second point)
+    simp only [Fin.castSucc_zero, Fin.cons_zero, Fin.succ_zero_eq_one]
+    rcases Nat.eq_zero_or_pos m with rfl | hm
+    · simpa [Fin.snoc] using hLR
+    · have : ((1 : Fin (m + 2)) = (Fin.succ (0 : Fin (m + 1)))) := rfl
+      rw [this, Fin.cons_succ]
+      have h0 : (0 : Fin (m + 1)) = Fin.castSucc (⟨0, hm⟩ : Fin m) := by ext; simp
+      rw [h0, Fin.snoc_castSucc]; exact hL _
+  · -- gap j+1, j : Fin m;  goal reduces to  s j < (snoc s xR) (succ j)
+    rw [Fin.castSucc_fin_succ, Fin.cons_succ, Fin.cons_succ, Fin.snoc_castSucc]
+    by_cases hj : (Fin.succ j) = Fin.last m
+    · rw [hj, Fin.snoc_last]; exact hR j
+    · obtain ⟨k, hk⟩ := Fin.eq_castSucc_of_ne_last hj
+      rw [← hk, Fin.snoc_castSucc]
+      refine hs ?_
+      have hv : (k : ℕ) = (j : ℕ) + 1 := by
+        have := congrArg Fin.val hk; simpa using this
+      simp [Fin.lt_def, hv]
 
 /-- **The final geometric kernel (stub — now only combinatorial packaging).**
 When `g` interlaces `f`, `f` takes alternating signs at the consecutive roots
