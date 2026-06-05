@@ -121,14 +121,14 @@ Paper II figures and SageMath cross-checks:
 @misc{Marin2026HeilmannLiebLean,
   author = {Mar\'in, Carles},
   title  = {Unfolding a Graph into a Tree: A Machine-Checked Proof of the Heilmann--Lieb Theorem in Lean 4},
-  year   = {2026},
-  note   = {Zenodo (forthcoming); \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+  year   = {2026}, doi = {10.5281/zenodo.20561832},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
 
-Paper I is archived on Zenodo:
-[10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350). Paper II's DOI
-will be added on release.
+Both papers are archived on Zenodo:
+Part I [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350),
+Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832).
 
 ## Author and license
 
