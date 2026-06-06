@@ -1,0 +1,155 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\dart}{\mathrm{Dart}}
+\newcommand{\detm}{\det}
+\DeclareMathOperator{\charpoly}{charpoly}
+
+\title{The Ihara Side: A Machine-Checked Proof of\\ Bass's Determinant Formula in Lean 4}
+\author{Carles Mar\'in\thanks{Independent researcher, \texttt{karlesmarin@gmail.com}. The
+formalization was carried out with Claude (Anthropic) as an AI research instrument under a
+build-as-oracle loop: the assistant proposed definitions and proofs, the Lean kernel verified
+or rejected each, and all design decisions, mathematics and claims are the author's. The kernel
+has the last word.}}
+\date{2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give a machine-checked proof, in Lean~4 / Mathlib, of \emph{Bass's determinant formula}
+for the Ihara zeta function of a finite graph:
+\[
+  (1-u^2)^{\lvert V\rvert}\,\det\!\big(I - u\,B\big)
+   \;=\;(1-u^2)^{\lvert E\rvert}\,\det\!\big(I - u\,A + u^2(D-I)\big),
+\]
+where $B$ is Hashimoto's non-backtracking (edge-adjacency) operator on the $2\lvert E\rvert$
+oriented edges of the graph, $A$ is the adjacency matrix and $D$ the degree matrix. Equivalently
+$\det(I-uB)=(1-u^2)^{\lvert E\rvert-\lvert V\rvert}\det(I-uA+(D-I)u^2)$, the reciprocal of the
+Ihara zeta function. To our knowledge this is the first formalization of Bass's formula in any
+proof assistant. All headline theorems are \texttt{sorry}-free: \texttt{\#print axioms} reports
+only \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}. The proof is over a field,
+the standard setting for the identity. This is the \emph{Ihara / cycle} side complementing a prior
+Lean formalization of the matching polynomial (the tree / Plancherel side).
+\end{abstract}
+
+\section{Introduction}
+
+The Ihara zeta function of a finite graph $G$, introduced by Ihara in the 1960s and recast for
+graphs by Serre, Sunada, Hashimoto and Bass, is
+\[
+  \zeta_G(u)^{-1} \;=\; \det\!\big(I_{2\lvert E\rvert} - u\,B\big),
+\]
+where $B$ is the \emph{non-backtracking} (Hashimoto) operator on the directed edges: $B_{d,e}=1$
+exactly when the head of $d$ is the tail of $e$ and $e$ is not the reversal of $d$. Bass's
+theorem reduces this $2\lvert E\rvert$-dimensional determinant to an $\lvert V\rvert$-dimensional
+one built from the adjacency and degree matrices. The non-backtracking spectrum governs, among
+other things, percolation and community-detection thresholds on networks; Bass's identity is the
+bridge between the combinatorial (edge) and spectral (vertex) descriptions.
+
+We formalize the finite, division-free form of the identity. We deliberately do \emph{not}
+formalize the analytic zeta function (the Euler product over prime cycles): the determinant
+identity is the content with an elementary proof, and it is what no proof assistant had recorded.
+
+\paragraph{Honesty note.} This is a formalization of classical mathematics (Bass, 1992); it proves
+no new theorem and claims none. The ``first formalization'' claim rests on a search of the
+Lean/Mathlib, Isabelle/AFP and Coq ecosystems, not on an exhaustive byte-level audit.
+
+\section{The formalization}
+
+Let $G$ be a finite simple graph with vertex type $V$ (a \texttt{Fintype} with decidable
+adjacency). Mathlib's \texttt{SimpleGraph.Dart} is the type of oriented edges (darts); reversal
+$d\mapsto d^{\mathrm{symm}}$ is a fixed-point-free involution on the $2\lvert E\rvert$ darts. Over
+a commutative ring $R$ we define, as \texttt{Matrix} valued objects:
+\begin{itemize}[nosep]
+  \item the degree matrix $D=\texttt{degMatrix}=\operatorname{diagonal}(v\mapsto \deg v)$;
+  \item the reversal permutation matrix $J=\texttt{reversal}$, $J_{d,e}=[\,e=d^{\mathrm{symm}}\,]$;
+  \item the Hashimoto operator $B=\texttt{hashimoto}$,
+        $B_{d,e}=[\,d.\mathrm{snd}=e.\mathrm{fst}\ \wedge\ e\neq d^{\mathrm{symm}}\,]$;
+  \item incidence matrices $S=\texttt{startInc}$, $T=\texttt{termInc}$ ($\lvert V\rvert\times2\lvert E\rvert$),
+        $S_{v,d}=[\,d.\mathrm{fst}=v\,]$, $T_{v,d}=[\,d.\mathrm{snd}=v\,]$;
+\end{itemize}
+and $A=$ Mathlib's \texttt{adjMatrix}. The statement proved is
+\begin{theorem}[\texttt{bass\_determinant}]
+Over a field $R$, for $u\in R$,
+\[
+  (1-u^2)^{\lvert V\rvert}\detm(1 - u\cdot B)
+   = (1-u^2)^{\lvert E\rvert}\detm\!\big(1 - u\cdot A + u^2\cdot(D-1)\big).
+\]
+\end{theorem}
+
+\section{Outline of the proof}
+
+\paragraph{Incidence layer.} Five identities, each a finite sum over darts (all numerically
+pre-verified before formalization):
+\[
+  S\,T^{\mathsf T}=A,\quad S\,S^{\mathsf T}=D=T\,T^{\mathsf T},\quad
+  B = T^{\mathsf T}S - J,\quad S\,J = T.
+\]
+The dart-counting lemma $\#\{d : d.\mathrm{fst}=v,\ d.\mathrm{snd}=w\}=[\,v\sim w\,]$ realizes the
+adjacency matrix.
+
+\paragraph{$\det(I+uJ)=(1-u^2)^{\lvert E\rvert}$.} Fixing a linear order on $V$, a dart is
+\emph{positive} when its tail precedes its head; the reversal of a non-positive dart is positive.
+This yields an equivalence
+\[
+  \texttt{dartEquiv}:\ \dart \;\simeq\; \mathrm{Bool}\times\{\text{positive darts}\},
+\]
+under which $J$ reindexes to a block-diagonal of the $2\times2$ swap, so $I+uJ$ becomes a
+block-diagonal of $\left[\begin{smallmatrix}1&u\\u&1\end{smallmatrix}\right]$ (one block per edge,
+since $\lvert\{\text{positive darts}\}\rvert=\lvert E\rvert$ via the handshake lemma). Hence
+$\det(I+uJ)=(1-u^2)^{\lvert E\rvert}$ by \texttt{Matrix.det\_blockDiagonal}.
+
+\paragraph{Sylvester step ($1-u^2\neq0$).} Since $B=T^{\mathsf T}S-J$, we have
+$I-uB=(I+uJ)-u\,T^{\mathsf T}S$. Over a field with $1-u^2\neq0$, $I+uJ$ is invertible with
+$(I+uJ)^{-1}=(1-u^2)^{-1}(I-uJ)$ (from $(I+uJ)(I-uJ)=(1-u^2)I$). Factoring it out and applying the
+Weinstein--Aronszajn identity (\texttt{Matrix.det\_one\_sub\_mul\_comm}) to swap $S$ past
+$T^{\mathsf T}$ gives
+\[
+  \det(I-uB)=(1-u^2)^{\lvert E\rvert}\,\det\!\big(I - u\,S(I+uJ)^{-1}T^{\mathsf T}\big),
+\]
+and $S(I-uJ)T^{\mathsf T}=A-uD$ collapses the right-hand determinant to
+$(1-u^2)^{-\lvert V\rvert}\det(I-uA+u^2(D-I))$. Clearing denominators yields the theorem.
+
+\paragraph{Degenerate value $u^2=1$.} Then $1-u^2=0$; the claim reduces to the no-edge and
+empty-graph cases, where the matrices are scalar multiples of the identity or live over an empty
+index, and both sides vanish or are trivially equal.
+
+\begin{remark}
+The field hypothesis is the usual setting for Bass's formula. The inverse-free manipulations alone
+yield the identity multiplied by $(1-u^2)^{\lvert E\rvert}$; recovering the tight form requires
+cancelling that factor, which a field permits. Full commutative-ring generality follows by a
+universal-coefficient transfer (prove over $\mathbb{Z}[u]$, a domain, then base-change), not pursued
+here.
+\end{remark}
+
+\section{Relation to the matching polynomial}
+
+This development is the \emph{Ihara / $\pi_1$ side} of a graph trace formula whose \emph{tree /
+Plancherel side} is the matching polynomial, formalized in the companion papers \emph{Random Signs
+into Matchings} and \emph{Unfolding a Graph into a Tree}. With both endpoints now machine-checked,
+a future work can formalize the trace formula itself: $\operatorname{tr}(A^k)=p_k+N_k$, the
+matching (tree-like) term plus the non-backtracking (cycle) term.
+
+\section*{Availability}
+
+The Lean source is at \url{https://github.com/karlesmarin/godsil-gutman-lean}
+(\texttt{Ihara/Bass.lean}), pinned to Lean \texttt{v4.30.0-rc2} and a fixed Mathlib revision.
+Verify the axiom footprint with
+\[
+  \texttt{\#print axioms SimpleGraph.bass\_determinant}
+   \;\rightsquigarrow\;\texttt{[propext, Classical.choice, Quot.sound]}.
+\]
+
+\end{document}
