@@ -282,6 +282,16 @@ def dartEquiv : G.Dart ≃ Bool × {d : G.Dart // G.IsPos d} where
       simp [hneg, Dart.symm_symm]
     · simp [hq]
 
+/-- The positive darts are in bijection with the edges: `|PosDart| = |E|`.
+Proof: `dartEquiv` gives `|Dart| = 2·|PosDart|`, and the handshake lemma gives
+`|Dart| = 2·|E|`; cancel the `2`. -/
+lemma card_posDart : Fintype.card {d : G.Dart // G.IsPos d} = G.edgeFinset.card := by
+  have h1 : Fintype.card G.Dart = 2 * Fintype.card {d : G.Dart // G.IsPos d} := by
+    rw [Fintype.card_congr G.dartEquiv, Fintype.card_prod, Fintype.card_bool]
+  have h2 : Fintype.card G.Dart = 2 * G.edgeFinset.card := by
+    rw [dart_card_eq_sum_degrees, sum_degrees_eq_twice_card_edges]
+  omega
+
 end Orientation
 
 /-- **Bass's determinant formula** (division-free polynomial form).
