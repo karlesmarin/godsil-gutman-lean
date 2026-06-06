@@ -1,0 +1,65 @@
+% Tablas (español) para la perla de formalización Ihara--Bass.
+% Requiere \usepackage{booktabs,amsmath,amssymb} y \usepackage[table]{xcolor}
+% en el preámbulo, más los colores ggteal / ggband definidos allí.
+
+% ---------- Tabla 1: resultados formalizados ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Los resultados formalizados (Lean~4 / Mathlib). Todos los teoremas son
+  \texttt{sorry}-libres; \texttt{\#print axioms} reporta solo \texttt{propext},
+  \texttt{Classical.choice}, \texttt{Quot.sound}. El teorema principal es sobre un cuerpo
+  (Secci\'on~\ref{sec:field}).}
+  \label{tab:bass_results}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Nombre Lean}} & \textcolor{white}{\textbf{Enunciado}} & \textcolor{white}{\textbf{Estado}} \\
+    \midrule
+    \rowcolor{ggband}
+    \texttt{bass\_determinant} & $(1{-}u^2)^{|V|}\det(I{-}uB)=(1{-}u^2)^{|E|}\det(I{-}uA{+}u^2(D{-}I))$ & demostrado \\
+    \texttt{det\_one\_add\_smul\_reversal} & $\det(I+uJ)=(1-u^2)^{|E|}$ & demostrado \\
+    \rowcolor{ggband}
+    \texttt{dartEquiv} & reetiquetado por orientaci\'on $\mathrm{Dart}\simeq\mathrm{Bool}\times\{\text{dardos pos.}\}$ & definido \\
+    \texttt{hashimoto\_eq} & $B=T^{\mathsf T}S-J$ (no-retroceso $=$ contin\'ua $-$ invierte) & demostrado \\
+    \rowcolor{ggband}
+    \texttt{card\_posDart} & $|\{\text{dardos positivos}\}|=|E|$ (v\'ia apret\'on de manos) & demostrado \\
+    \texttt{startInc\_mul\_termInc\_transpose} & $S\,T^{\mathsf T}=A$ (los dardos realizan la adyacencia) & demostrado \\
+    \midrule
+    \emph{$\zeta_G$ anal\'itica} & producto de Euler sobre ciclos primos & futuro \\
+    \rowcolor{ggband}
+    \emph{generalidad sobre anillos} & transporte de coeficientes universales desde $\Z[u]$ & futuro \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+% ---------- Tabla 2: verificaciones numéricas ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Verificaciones num\'ericas de la f\'ormula de Bass (SymPy, exactas). Para cada grafo, el
+  determinante no-retroceso $\det(I-uB)$ se computa directamente sobre los $2|E|$ dardos y se contrasta
+  con $(1-u^2)^{|E|-|V|}\det(I-uA+(D-I)u^2)$. Verificado id\'enticamente (tambi\'en para $K_4$, donde
+  $|E|-|V|=2$, y el grafo de Petersen; polinomios omitidos por longitud). Los v\'ertices colgantes del
+  toro (\emph{bull}) aportan factores triviales, as\'i que su determinante solo ve el tri\'angulo.}
+  \label{tab:bass_checks}
+  \begin{tabular}{@{}lcclc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{$G$}} & \textcolor{white}{\textbf{$|V|$}} & \textcolor{white}{\textbf{$|E|$}} & \textcolor{white}{\textbf{$\det(I-uB)$}} & \textcolor{white}{\textbf{¿Bass?}} \\
+    \midrule
+    \rowcolor{ggband}
+    $K_3$  & $3$ & $3$ & $(u^{3}-1)^{2}$ & $\checkmark$ \\
+    $C_4$  & $4$ & $4$ & $(u^{4}-1)^{2}$ & $\checkmark$ \\
+    \rowcolor{ggband}
+    $C_5$  & $5$ & $5$ & $(u^{5}-1)^{2}$ & $\checkmark$ \\
+    \emph{bull} & $5$ & $5$ & $(u^{3}-1)^{2}$ & $\checkmark$ \\
+    \rowcolor{ggband}
+    $K_4$  & $4$ & $6$ & grado $12$, $|E|-|V|=2$ (ver fuente) & $\checkmark$ \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
