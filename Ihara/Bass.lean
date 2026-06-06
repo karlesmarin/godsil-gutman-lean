@@ -197,6 +197,35 @@ lemma startInc_mul_reversal :
     rw [if_neg this, mul_zero]
   · intro h; exact absurd (Finset.mem_univ _) h
 
+/-- `J` is symmetric: reversal is its own transpose (since `symm` is an involution). -/
+lemma reversal_transpose : (G.reversal R)ᵀ = G.reversal R := by
+  ext d e
+  simp only [Matrix.transpose_apply, reversal_apply]
+  by_cases h : e = d.symm
+  · rw [if_pos h, if_pos (show d = e.symm by rw [h, Dart.symm_symm])]
+  · rw [if_neg h, if_neg (show ¬ d = e.symm from fun hd => h (by rw [hd, Dart.symm_symm]))]
+
+/-- `J² = I`: reversal is an involution. -/
+lemma reversal_mul_self : G.reversal R * G.reversal R = 1 := by
+  ext d e
+  rw [Matrix.mul_apply]
+  simp only [reversal_apply]
+  rw [Finset.sum_eq_single d.symm]
+  · rw [if_pos rfl, one_mul, Dart.symm_symm, Matrix.one_apply]
+    by_cases h : d = e
+    · rw [if_pos h.symm, if_pos h]
+    · rw [if_neg fun he => h he.symm, if_neg h]
+  · intro f _ hf; rw [if_neg hf, zero_mul]
+  · intro h; exact absurd (Finset.mem_univ _) h
+
+/-- `T Tᵀ = D`: via `T = S J`, `Jᵀ = J`, `J² = I`, and `S Sᵀ = D`. -/
+lemma termInc_mul_termInc_transpose :
+    G.termInc R * (G.termInc R)ᵀ = G.degMatrix R := by
+  have hT : G.termInc R = G.startInc R * G.reversal R := (G.startInc_mul_reversal R).symm
+  rw [hT, Matrix.transpose_mul, reversal_transpose, Matrix.mul_assoc,
+    ← Matrix.mul_assoc (G.reversal R), reversal_mul_self, Matrix.one_mul,
+    startInc_mul_startInc_transpose]
+
 end Incidence
 
 /-- **Bass's determinant formula** (division-free polynomial form).
