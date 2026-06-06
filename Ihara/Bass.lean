@@ -247,6 +247,43 @@ lemma det_one_add_smul_reversal_mul (u : R) :
 
 end Incidence
 
+/-! ### Orientation reindex — toward `det(I + uJ) = (1 - u²)^m`
+
+With a linear order on the vertices, each edge has a unique "positive" dart
+(tail < head); a general dart is that positive dart together with a sign bit.
+This realises `Dart ≃ Bool × PosDart`, under which `J = reversal` becomes a
+block-diagonal of `2×2` swaps — the route to `det(I + uJ) = (1 - u²)^m`. -/
+
+section Orientation
+variable [LinearOrder V]
+
+/-- A dart is positive when its tail precedes its head. -/
+def IsPos (d : G.Dart) : Prop := d.fst < d.snd
+
+instance : DecidablePred G.IsPos := fun d => (inferInstance : Decidable (d.fst < d.snd))
+
+/-- If a dart is not positive, its reverse is. -/
+lemma isPos_symm_of_not {d : G.Dart} (h : ¬ G.IsPos d) : G.IsPos d.symm :=
+  lt_of_le_of_ne (not_lt.mp h) d.snd_ne_fst
+
+/-- Orientation reindex: a dart is a chosen positive dart plus a sign bit. -/
+def dartEquiv : G.Dart ≃ Bool × {d : G.Dart // G.IsPos d} where
+  toFun d := if h : G.IsPos d then (true, ⟨d, h⟩) else (false, ⟨d.symm, G.isPos_symm_of_not h⟩)
+  invFun p := if p.1 then p.2.1 else p.2.1.symm
+  left_inv d := by
+    by_cases h : G.IsPos d
+    · simp [h]
+    · simp [h, Dart.symm_symm]
+  right_inv := by
+    rintro ⟨b, q, hq⟩
+    cases b
+    · have hneg : ¬ G.IsPos q.symm := by
+        show ¬ (q.snd < q.fst); exact not_lt.mpr (le_of_lt hq)
+      simp [hneg, Dart.symm_symm]
+    · simp [hq]
+
+end Orientation
+
 /-- **Bass's determinant formula** (division-free polynomial form).
 
 `(1 - u²)^|V| · det(I - u·B) = (1 - u²)^|E| · det(I - u·A + u²·(D - I))`,
