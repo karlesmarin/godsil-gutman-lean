@@ -44,7 +44,7 @@
 \maketitle
 
 \begin{abstract}
-Este es un companion de \emph{De signos aleatorios a emparejamientos}~\cite{PartI} y
+Este es un trabajo complementario de \emph{De signos aleatorios a emparejamientos}~\cite{PartI} y
 \emph{Desplegar un grafo en un \'arbol}~\cite{PartII}, donde formalic\'e el polinomio de
 emparejamientos de un grafo---el lado \emph{\'arbol} de un conteo de caminos. Aqu\'i construyo el
 lado \emph{ciclo}: una demostraci\'on verificada por m\'aquina, \lean{sorry}-libre, en Lean~4 /
@@ -65,8 +65,8 @@ de que el lado ciclo de la f\'ormula de traza emparejamientos/Ihara conviva ahor
 \end{abstract}
 
 \noindent\emph{Mapa para el lector.} Si lees una sola cosa, lee el Teorema~\ref{thm:bass} y la
-Figura~\ref{fig:nb}---la identidad, y la imagen de por qu\'e un determinante de tama\~no-arista es en
-realidad de tama\~no-v\'ertice. La demostraci\'on es un solo viaje: un c\'alculo de incidencia de
+Figura~\ref{fig:nb}---la identidad, y la imagen de por qu\'e un determinante del tama\~no de las
+aristas es en realidad del tama\~no de los v\'ertices. La demostraci\'on es un solo viaje: un c\'alculo de incidencia de
 cuatro identidades (Secci\'on~\ref{sec:proof}), el determinante de la involuci\'on de inversi\'on
 $\det(I+uJ)=(1-u^2)^{|E|}$ obtenido orientando las aristas (Figura~\ref{fig:reindex}), y un paso de
 Sylvester que factoriza $I+uJ$ y desliza las matrices de incidencia una sobre otra. Las f\'ormulas
@@ -161,7 +161,7 @@ infraestructura reutilizable de operadores de aristas para la comunidad de matem
 Basta de mapa; aqu\'i est\'a el territorio. Escribamos $A$ para la matriz de adyacencia, $D$ para la
 matriz diagonal de grados, y $B$ para el operador no-retroceso de Hashimoto sobre las $2|E|$ aristas
 orientadas (\emph{dardos}). El rec\'iproco de la zeta de Ihara es
-$\zeta_G(u)^{-1}=\det(I_{2|E|}-uB)$, y el teorema de Bass lo reduce a tama\~no-v\'ertice.
+$\zeta_G(u)^{-1}=\det(I_{2|E|}-uB)$, y el teorema de Bass lo reduce al tama\~no de los v\'ertices.
 
 \begin{theorem}[F\'ormula del determinante de Bass, en Lean~4]
 \label{thm:bass}
@@ -188,7 +188,7 @@ $\pm1$ de $B$ que se ve en la Figura~\ref{fig:spectrum}. Una identidad de determ
 silencio la topolog\'ia del grafo---lo cual, al fin y al cabo, es lo justo para el rec\'iproco de una
 funci\'on que cuenta sus ciclos.
 
-\paragraph{La ruta, de un respiro.}
+\paragraph{La ruta, en una frase.}
 El operador de Hashimoto factoriza como $B=T^{\mathsf T}S-J$, con $S,T$ las matrices de incidencia de
 inicio/fin de los dardos y $J$ la involuci\'on de inversi\'on; as\'i $I-uB=(I+uJ)-u\,T^{\mathsf T}S$.
 La involuci\'on de inversi\'on tiene un determinante limpio,
@@ -196,7 +196,7 @@ La involuci\'on de inversi\'on tiene un determinante limpio,
 porque orientar cada arista ordena los $2|E|$ dardos en $|E|$ pares de inversi\'on y convierte $J$ en
 una diagonal por bloques de intercambios $2\times2$ (Figura~\ref{fig:reindex}). Sobre un cuerpo con
 $1-u^2\neq0$, $I+uJ$ es entonces invertible; factorizarlo de $I-uB$ y aplicar la identidad de
-Weinstein--Aronszajn para deslizar $S$ tras $T^{\mathsf T}$ entrega el determinante de tama\~no-$|V|$,
+Weinstein--Aronszajn para deslizar $S$ tras $T^{\mathsf T}$ entrega el determinante de tama\~no $|V|$,
 y la identidad de incidencia $S(I-uJ)T^{\mathsf T}=A-uD$ lo identifica con el lado derecho.
 
 \paragraph{Contribuciones.} Todo en Lean~4 / Mathlib, todo \lean{sorry}-libre
@@ -281,7 +281,7 @@ Teorema~\ref{thm:bass}, enunciada en Lean sobre un cuerpo. Mathlib tiene una ric
 simples, dardos y determinantes, pero ning\'un operador no-retroceso ni zeta de Ihara; construir el
 operador y su c\'alculo de incidencia fue un prerrequisito, y no pude hallar formalizaci\'on previa de
 la f\'ormula de Bass---ni del determinante del operador de Hashimoto---en ning\'un asistente.\footnote{B\'usqueda
-de mejor esfuerzo en Lean/Mathlib, el Archive of Formal Proofs (Isabelle) y el ecosistema
+razonable (no exhaustiva) en Lean/Mathlib, el Archive of Formal Proofs (Isabelle) y el ecosistema
 Coq/MathComp (junio de 2026): aparecen la adyacencia de grafos, los polinomios caracter\'isticos y el
 polinomio de emparejamientos (en mi propio trabajo anterior), pero no hall\'e formalizaci\'on de la
 zeta de Ihara, la f\'ormula de Bass o el operador no-retroceso. De ah\'i ``que yo sepa''.}
@@ -301,8 +301,8 @@ $T^{\mathsf T}S$ que \emph{factoriza por los v\'ertices}---tiene rango a lo sumo
 pasan por el espacio de v\'ertices de dimensi\'on $|V|$---m\'as la involuci\'on de inversi\'on $J$. La
 parte que factoriza por v\'ertices es exactamente lo que una identidad de Sylvester puede bajar a
 tama\~no $|V|$; la involuci\'on $J$ es exactamente lo que las potencias de $(1-u^2)$ absorben. As\'i
-que el colapso no es un milagro: es la afirmaci\'on de que el operador de aristas porta solo $|V|$
-v\'ertices de informaci\'on espectral genuina, envuelta en una involuci\'on. La f\'ormula de Bass es
+que el colapso no es un milagro: es la afirmaci\'on de que el operador de aristas porta solo tanta
+informaci\'on espectral genuina como $|V|$ v\'ertices, envuelta en una involuci\'on. La f\'ormula de Bass es
 la contabilidad precisa de esa partici\'on, y la demostraci\'on de abajo es esa contabilidad hecha
 expl\'icita. El argumento cl\'asico factoriza el determinante grande invirtiendo $I+uJ$ y deslizando
 las matrices de incidencia una sobre otra; convertirlo en una demostraci\'on verificada signific\'o
@@ -348,7 +348,7 @@ Como $B=T^{\mathsf T}S-J$, tenemos $I-uB=(I+uJ)-u\,T^{\mathsf T}S$. Sobre un cue
 el paso anterior hace $I+uJ$ \emph{invertible}, con $(I+uJ)^{-1}=(1-u^2)^{-1}(I-uJ)$ (inmediato de
 $(I+uJ)(I-uJ)=(1-u^2)I$). Factorizarlo y aplicar la identidad de Weinstein--Aronszajn
 \lean{Matrix.det\_one\_sub\_mul\_comm} para deslizar $S$ tras $T^{\mathsf T}$ da el determinante de
-tama\~no-$|V|$
+tama\~no $|V|$
 \[
   \det(I-uB)=(1-u^2)^{|E|}\det\!\bigl(I-u\,S(I+uJ)^{-1}T^{\mathsf T}\bigr),
 \]
@@ -393,9 +393,9 @@ determinante de Ihara--Bass cuenta los ciclos genuinos, organizados por el grupo
 
 He aqu\'i una pregunta que vale la pena llevarse de este art\'iculo:
 \begin{quote}\itshape
-  ¿por qu\'e habr\'ia el \emph{mismo} n\'umero, $2\sqrt{\Delta-1}$, de acotar las ra\'ices del
-  polinomio de emparejamientos (Paper~II) y de marcar la recta cr\'itica de la zeta de Ihara---dos
-  objetos construidos a partir de $G$ de formas en apariencia inconexas?
+  ¿por qu\'e el \emph{mismo} n\'umero, $2\sqrt{\Delta-1}$, acota las ra\'ices del polinomio de
+  emparejamientos (Paper~II) y marca la recta cr\'itica de la zeta de Ihara---dos objetos
+  construidos a partir de $G$ de formas en apariencia inconexas?
 \end{quote}
 Porque ambos son sombras de un mismo objeto: el \'arbol $\Delta$-regular que recubre universalmente a
 $G$. Su radio espectral es exactamente $2\sqrt{\Delta-1}$ (Kesten, 1959). El polinomio de
@@ -404,7 +404,7 @@ la zeta de Ihara lo ve como la recta cr\'itica de una hip\'otesis de Riemann par
 dos sombras, un n\'umero---y una raz\'on para sospechar que la f\'ormula de traza de arriba es
 precisamente el enunciado que hace que la coincidencia deje de serlo. Con el lado \'arbol formalizado
 en los art\'iculos anteriores y el lado ciclo aqu\'i, ambos extremos de ese puente existen ya en
-Lean, y la f\'ormula de traza misma ($p_k=\operatorname{tr}(A^k)-N_k$, exacta hasta el cuello) se
+Lean, y la f\'ormula de traza misma ($p_k=\operatorname{tr}(A^k)-N_k$, exacta hasta la cintura) se
 vuelve un objetivo bien planteado.
 
 \begin{figure}[t]
@@ -502,7 +502,7 @@ moderno de Terras~\cite{Terras2011}, y las demostraciones elementales de Kotani-
 otros~\cite{KotaniSunada2000}; el papel del espectro no-retroceso en ciencia de redes es
 reciente~\cite{KarrerNewmanZdeborova2014}. En el lado de la formalizaci\'on, Mathlib~\cite{Mathlib2020}
 aporta grafos simples, dardos y determinantes pero ni el operador no-retroceso ni la zeta de Ihara.
-Este desarrollo es el ``lado Ihara'' companion de mis formalizaciones previas en Lean del polinomio
+Este desarrollo es el ``lado Ihara'', complementario de mis formalizaciones previas en Lean del polinomio
 de emparejamientos~\cite{PartI,PartII}; no tengo noticia de ning\'un tratamiento verificado por
 m\'aquina previo de la f\'ormula de Bass, la zeta de Ihara o el operador de Hashimoto en ning\'un
 asistente de pruebas.
