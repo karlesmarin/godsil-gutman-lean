@@ -1,0 +1,65 @@
+% Tables for the Ihara–Bass formalization pearl.
+% Requires \usepackage{booktabs,amsmath,amssymb} and \usepackage[table]{xcolor}
+% in the main preamble, plus colors ggteal / ggband defined there.
+
+% ---------- Table 1: formalised results ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{The formalised results (Lean~4 / Mathlib). All theorems are
+  \texttt{sorry}-free; \texttt{\#print axioms} reports only \texttt{propext},
+  \texttt{Classical.choice}, \texttt{Quot.sound}. The headline theorem is over a field
+  (Section~\ref{sec:field}).}
+  \label{tab:bass_results}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Lean name}} & \textcolor{white}{\textbf{Statement}} & \textcolor{white}{\textbf{Status}} \\
+    \midrule
+    \rowcolor{ggband}
+    \texttt{bass\_determinant} & $(1{-}u^2)^{|V|}\det(I{-}uB)=(1{-}u^2)^{|E|}\det(I{-}uA{+}u^2(D{-}I))$ & proven \\
+    \texttt{det\_one\_add\_smul\_reversal} & $\det(I+uJ)=(1-u^2)^{|E|}$ & proven \\
+    \rowcolor{ggband}
+    \texttt{dartEquiv} & orientation reindex $\mathrm{Dart}\simeq\mathrm{Bool}\times\{\text{positive darts}\}$ & defined \\
+    \texttt{hashimoto\_eq} & $B=T^{\mathsf T}S-J$ (non-backtracking $=$ follows $-$ reverses) & proven \\
+    \rowcolor{ggband}
+    \texttt{card\_posDart} & $|\{\text{positive darts}\}|=|E|$ (via the handshake lemma) & proven \\
+    \texttt{startInc\_mul\_termInc\_transpose} & $S\,T^{\mathsf T}=A$ (darts realize the adjacency matrix) & proven \\
+    \midrule
+    \emph{analytic $\zeta_G$} & Euler product over prime cycles & future \\
+    \rowcolor{ggband}
+    \emph{$\mathrm{CommRing}$ generality} & universal-coefficient transfer from $\Z[u]$ & future \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+% ---------- Table 2: numerical cross-checks ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Numerical cross-checks of Bass's formula (SymPy, exact). For each graph the
+  non-backtracking determinant $\det(I-uB)$ is computed directly on the $2|E|$ darts and matched
+  against $(1-u^2)^{|E|-|V|}\det(I-uA+(D-I)u^2)$. Verified identically (also for $K_4$, where
+  $|E|-|V|=2$, and the Petersen graph; polynomials omitted for length). The pendant vertices of the
+  bull contribute trivial factors, so its determinant sees only the triangle.}
+  \label{tab:bass_checks}
+  \begin{tabular}{@{}lcclc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{$G$}} & \textcolor{white}{\textbf{$|V|$}} & \textcolor{white}{\textbf{$|E|$}} & \textcolor{white}{\textbf{$\det(I-uB)$}} & \textcolor{white}{\textbf{Bass?}} \\
+    \midrule
+    \rowcolor{ggband}
+    $K_3$  & $3$ & $3$ & $(u^{3}-1)^{2}$ & $\checkmark$ \\
+    $C_4$  & $4$ & $4$ & $(u^{4}-1)^{2}$ & $\checkmark$ \\
+    \rowcolor{ggband}
+    $C_5$  & $5$ & $5$ & $(u^{5}-1)^{2}$ & $\checkmark$ \\
+    bull   & $5$ & $5$ & $(u^{3}-1)^{2}$ & $\checkmark$ \\
+    \rowcolor{ggband}
+    $K_4$  & $4$ & $6$ & degree $12$, $|E|-|V|=2$ (see source) & $\checkmark$ \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
