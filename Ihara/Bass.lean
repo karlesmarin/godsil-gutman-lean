@@ -337,6 +337,28 @@ lemma det_one_add_smul_reversal (R : Type*) [CommRing R] [LinearOrder V] (u : R)
   rw [hblock, Matrix.det_blockDiagonal]
   simp only [Finset.prod_const, Finset.card_univ, card_posDart, det_signBlock]
 
+/-- `det(I − uJ) = (1 − u²)^|E|` (same blockDiagonal argument, via `u ↦ -u`). -/
+lemma det_one_sub_smul_reversal (R : Type*) [CommRing R] [LinearOrder V] (u : R) :
+    (1 - u • G.reversal R).det = (1 - u ^ 2) ^ G.edgeFinset.card := by
+  have h := G.det_one_add_smul_reversal R (-u)
+  rw [neg_smul, ← sub_eq_add_neg, neg_sq] at h
+  exact h
+
+/-- `I − uB = (I + uJ) − u·TᵀS`, from `B = TᵀS − J`. -/
+lemma one_sub_smul_hashimoto (R : Type*) [CommRing R] (u : R) :
+    1 - u • G.hashimoto R
+      = (1 + u • G.reversal R) - u • ((G.termInc R)ᵀ * G.startInc R) := by
+  rw [hashimoto_eq, smul_sub]
+  abel
+
+/-- `S(I − uJ)Tᵀ = A − uD`. -/
+lemma startInc_mul_one_sub_smul_reversal_mul_termInc (R : Type*) [CommRing R] (u : R) :
+    G.startInc R * (1 - u • G.reversal R) * (G.termInc R)ᵀ
+      = G.adjMatrix R - u • G.degMatrix R := by
+  rw [Matrix.mul_sub, Matrix.mul_one, Matrix.mul_smul, startInc_mul_reversal,
+    Matrix.sub_mul, startInc_mul_termInc_transpose, Matrix.smul_mul,
+    termInc_mul_termInc_transpose]
+
 
 /-- **Bass's determinant formula** (division-free polynomial form).
 
