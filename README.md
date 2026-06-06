@@ -164,11 +164,18 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20561832},
   note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026IharaBassLean,
+  author = {Mar\'in, Carles},
+  title  = {Folding Edges into Vertices: A Machine-Checked Proof of Bass's Determinant Formula for the Ihara Zeta Function in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20573120},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
-Both papers are archived on Zenodo:
+The papers are archived on Zenodo:
 Part I [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350),
-Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832).
+Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832),
+Ihara/Bass [10.5281/zenodo.20573120](https://doi.org/10.5281/zenodo.20573120).
 
 ## Author and license
 

@@ -43,3 +43,11 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20561832"
     notes: "Part II"
+  - type: article
+    title: "Folding Edges into Vertices: A Machine-Checked Proof of Bass's Determinant Formula for the Ihara Zeta Function in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20573120"
+    notes: "Ihara/Bass companion (the cycle side)"
