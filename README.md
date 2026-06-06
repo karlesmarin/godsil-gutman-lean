@@ -15,6 +15,19 @@ papers:
   via Godsil's path tree, the divisibility `μ_G ∣ μ_{T(G,u)}`, the forest identity,
   and a weighted Gershgorin / Collatz–Wielandt argument.
 
+A companion strand formalizes the **Ihara side** of spectral graph theory:
+
+- **Bass's determinant formula** ([`Ihara/Bass.lean`](Ihara/Bass.lean)): the
+  **Ihara–Bass identity** `(1−u²)^|V| · det(I − uB) = (1−u²)^|E| · det(I − uA + u²(D−I))`,
+  relating the non-backtracking (Hashimoto) operator `B` of a graph to its adjacency
+  and degree matrices — the reciprocal of the Ihara zeta function. To our knowledge
+  the **first machine-checked proof of Bass's formula in any proof assistant**. Proved
+  over a field (the standard setting) via the orientation reindex
+  `Dart ≃ Bool × {positive darts}`, `det(I + uJ) = (1−u²)^|E|`, and a Sylvester
+  (Weinstein–Aronszajn) step. This is the natural counterpart to the matching
+  polynomial: matching poly = the "tree/Plancherel" side, Ihara–Bass = the
+  "cycle/π₁" side of the graph trace formula.
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.
@@ -56,6 +69,30 @@ Paper I listed as "future, mapped" is done. Still future: the
 interlacing-families existence step and the signing/2-lift correspondence that
 would yield a formalized proof that Ramanujan graphs exist (Paper II, Q1).
 
+### The Ihara side — Bass's determinant formula
+
+`sorry`-free over a field (`#print axioms` = `propext`, `Classical.choice`,
+`Quot.sound`).
+
+| Lean name | Statement | File |
+|---|---|---|
+| `bass_determinant` | `(1−u²)^\|V\| · det(I − uB) = (1−u²)^\|E\| · det(I − uA + u²(D−I))` | `Ihara/Bass.lean` |
+| `det_one_add_smul_reversal` | `det(I + uJ) = (1−u²)^\|E\|` (J = dart reversal) | `Ihara/Bass.lean` |
+| `dartEquiv` | orientation reindex `Dart ≃ Bool × {positive darts}` | `Ihara/Bass.lean` |
+| `hashimoto_eq` | `B = Tᵀ S − J` (non-backtracking operator) | `Ihara/Bass.lean` |
+| `card_posDart` | `\|{positive darts}\| = \|E\|` | `Ihara/Bass.lean` |
+
+`B` is Hashimoto's non-backtracking edge operator on the `2\|E\|` darts; `A`, `D`
+the adjacency and degree matrices; `J` the reversal involution. The field
+hypothesis is the standard Bass setting (the Sylvester step inverts `I + uJ`,
+a unit exactly when `1 − u² ≠ 0`); the degenerate value `u² = 1` is handled by
+the no-edge / empty-graph cases. Full `CommRing` generality would follow by a
+universal-coefficient transfer, not pursued here.
+
+This is the **Ihara/π₁ side** complementing the matching polynomial (the
+tree/Plancherel side). With both endpoints now in Lean, a future Part II can
+formalize the **graph trace formula** that fuses them.
+
 ## Repository layout
 
 ```
@@ -73,6 +110,7 @@ MSS/ForestComponents.lean   connected divisibility + component decomposition
 MSS/ForestRealRooted.lean   forest identity, T5/T6 real-rootedness
 MSS/HeilmannLieb.lean       interlacing/geometric real-stability engine
 MSS/HeilmannLiebBound.lean  the Ramanujan bound (Collatz–Wielandt + tree facts)
+Ihara/Bass.lean             Bass's determinant formula for the Ihara zeta (Ihara side)
 
 godsil-gutman-lean{,-es}.{tex,pdf}   Paper I (EN / ES)
 heilmann-lieb-lean{,-es}.{tex,pdf}   Paper II (EN / ES)
@@ -100,6 +138,8 @@ open SimpleGraph
 #print axioms SimpleGraph.MSS.godsil_gutman          -- Paper I
 #print axioms SimpleGraph.matchingPoly_realRooted     -- Paper II
 #print axioms SimpleGraph.matchingPoly_bounded        -- Paper II
+import Ihara.Bass
+#print axioms SimpleGraph.bass_determinant            -- Ihara side
 -- each: propext, Classical.choice, Quot.sound
 ```
 
