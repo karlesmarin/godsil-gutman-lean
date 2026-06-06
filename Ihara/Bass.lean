@@ -360,17 +360,78 @@ lemma startInc_mul_one_sub_smul_reversal_mul_termInc (R : Type*) [CommRing R] (u
     termInc_mul_termInc_transpose]
 
 
-/-- **Bass's determinant formula** (division-free polynomial form).
+/-- **Bass's determinant formula** (division-free form, over a field).
 
 `(1 - u²)^|V| · det(I - u·B) = (1 - u²)^|E| · det(I - u·A + u²·(D - I))`,
 
 with `B` the Hashimoto operator on darts, `A` the adjacency matrix, `D` the
-degree matrix. Equivalent to `det(I - uB) = (1-u²)^{|E|-|V|} det(I - uA + (D-I)u²)`
-wherever the power is defined; this form is valid for every finite graph. -/
-theorem bass_determinant (R : Type*) [CommRing R] (u : R) :
+degree matrix. Equivalent to `det(I - uB) = (1-u²)^{|E|-|V|} det(I - uA + (D-I)u²)`.
+Proved over a field (the standard setting); the Sylvester step inverts `I + uJ`,
+which is a unit exactly when `1 - u² ≠ 0`. -/
+theorem bass_determinant (R : Type*) [Field R] [LinearOrder V] (u : R) :
     (1 - u ^ 2) ^ (Fintype.card V) * (1 - u • G.hashimoto R).det
       = (1 - u ^ 2) ^ G.edgeFinset.card
         * (1 - u • G.adjMatrix R + u ^ 2 • (G.degMatrix R - 1)).det := by
-  sorry
+  by_cases hc : (1 - u ^ 2 : R) = 0
+  · -- degenerate value u² = 1: only no-edge / empty graphs carry content
+    by_cases hm : G.edgeFinset.card = 0
+    · have hnoadj : ∀ v w, ¬ G.Adj v w := fun v w hvw => by
+        have h0 : 0 < G.edgeFinset.card :=
+          Finset.card_pos.mpr ⟨s(v, w), SimpleGraph.mem_edgeFinset.mpr hvw⟩
+        omega
+      have hA : G.adjMatrix R = 0 := by
+        ext v w; simp [SimpleGraph.adjMatrix_apply, hnoadj v w]
+      have hD : G.degMatrix R = 0 := by
+        ext v w
+        have hemp : G.neighborFinset v = ∅ := Finset.eq_empty_iff_forall_notMem.mpr
+          (fun x hx => hnoadj v x (by simpa using hx))
+        have hdeg : G.degree v = 0 := by
+          rw [← SimpleGraph.card_neighborFinset_eq_degree, hemp, Finset.card_empty]
+        simp [degMatrix, Matrix.diagonal_apply, hdeg]
+      have hMeq : (1 - u • G.adjMatrix R + u ^ 2 • (G.degMatrix R - 1))
+          = (1 - u ^ 2) • (1 : Matrix V V R) := by
+        rw [hA, hD]; module
+      rw [hMeq, hc, zero_smul, hm, pow_zero, one_mul]
+      rcases Nat.eq_zero_or_pos (Fintype.card V) with hn | hn
+      · haveI : IsEmpty V := Fintype.card_eq_zero_iff.mp hn
+        haveI : IsEmpty G.Dart := Function.isEmpty Dart.toProd
+        rw [hn, pow_zero, one_mul, Matrix.det_isEmpty, Matrix.det_isEmpty]
+      · rw [zero_pow hn.ne', zero_mul, Matrix.det_zero (Fintype.card_pos_iff.mp hn)]
+    · have hn : Fintype.card V ≠ 0 := fun h => hm (by
+        haveI : IsEmpty V := Fintype.card_eq_zero_iff.mp h
+        simp [Finset.card_eq_zero, Finset.eq_empty_of_isEmpty])
+      rw [hc, zero_pow hn, zero_pow hm, zero_mul, zero_mul]
+  · have hUnit : IsUnit (1 + u • G.reversal R).det := by
+      rw [G.det_one_add_smul_reversal R u]; exact isUnit_iff_ne_zero.mpr (pow_ne_zero _ hc)
+    have hinv : (1 + u • G.reversal R)⁻¹ = (1 - u ^ 2)⁻¹ • (1 - u • G.reversal R) := by
+      refine Matrix.inv_eq_right_inv ?_
+      rw [Matrix.mul_smul, G.one_add_smul_reversal_mul R u, smul_smul, inv_mul_cancel₀ hc, one_smul]
+    have hstep2 : G.startInc R * (1 + u • G.reversal R)⁻¹ * (G.termInc R)ᵀ
+        = (1 - u ^ 2)⁻¹ • (G.adjMatrix R - u • G.degMatrix R) := by
+      rw [hinv]
+      simp only [Matrix.mul_smul, Matrix.smul_mul]
+      rw [G.startInc_mul_one_sub_smul_reversal_mul_termInc R u]
+    have hfact : (1 + u • G.reversal R)
+        * (1 - (1 + u • G.reversal R)⁻¹ * (u • ((G.termInc R)ᵀ * G.startInc R)))
+        = 1 - u • G.hashimoto R := by
+      rw [Matrix.mul_sub, Matrix.mul_one, ← Matrix.mul_assoc, Matrix.mul_nonsing_inv _ hUnit,
+        Matrix.one_mul, ← one_sub_smul_hashimoto]
+    have hdetB : (1 - u • G.hashimoto R).det
+        = (1 - u ^ 2) ^ G.edgeFinset.card
+          * (1 - u • (G.startInc R * (1 + u • G.reversal R)⁻¹ * (G.termInc R)ᵀ)).det := by
+      rw [← hfact, Matrix.det_mul, G.det_one_add_smul_reversal R u]
+      congr 1
+      rw [show (1 + u • G.reversal R)⁻¹ * (u • ((G.termInc R)ᵀ * G.startInc R))
+            = ((1 + u • G.reversal R)⁻¹ * (u • (G.termInc R)ᵀ)) * G.startInc R by
+          rw [Matrix.mul_assoc, Matrix.smul_mul],
+        Matrix.det_one_sub_mul_comm]
+      congr 2
+      rw [← Matrix.mul_assoc, Matrix.mul_smul]
+    rw [hdetB, hstep2,
+      show (1 : Matrix V V R) - u • ((1 - u ^ 2)⁻¹ • (G.adjMatrix R - u • G.degMatrix R))
+          = (1 - u ^ 2)⁻¹ • (1 - u • G.adjMatrix R + u ^ 2 • (G.degMatrix R - 1)) by
+        rw [smul_smul]; match_scalars <;> field_simp <;> ring,
+      Matrix.det_smul, inv_pow]
+    field_simp
 
 end SimpleGraph
