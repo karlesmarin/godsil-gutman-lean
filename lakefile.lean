@@ -29,6 +29,12 @@ lean_lib «RamanujanBound» where
   -- The Bruhat–Tits / Ramanujan band edge 2·√(k−1) and its algebra (Paper II).
 
 @[default_target]
+lean_lib «Ihara» where
+  -- Bass's determinant formula for the Ihara zeta function (matrix-identity core).
+  -- The "Ihara side"; a future Part II bridges this to the matching polynomial (MSS).
+  globs := #[.submodules `Ihara]
+
+@[default_target]
 lean_lib «MSS» where
   -- Paper I: signed adjacency (Basic), expected characteristic polynomial
   -- (ExpectedCharpoly), the Godsil–Gutman identity (GodsilGutman), the 2-lift (TwoLift).
