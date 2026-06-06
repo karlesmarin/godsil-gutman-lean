@@ -292,7 +292,51 @@ lemma card_posDart : Fintype.card {d : G.Dart // G.IsPos d} = G.edgeFinset.card 
     rw [dart_card_eq_sum_degrees, sum_degrees_eq_twice_card_edges]
   omega
 
+/-- A dart never equals its own reverse. -/
+lemma dart_ne_symm (d : G.Dart) : d ≠ d.symm :=
+  fun h => d.fst_ne_snd (congrArg (fun e : G.Dart => e.fst) h)
+
+@[simp] lemma dartEquiv_symm_apply (b : Bool) (p : {d : G.Dart // G.IsPos d}) :
+    G.dartEquiv.symm (b, p) = if b then (p : G.Dart) else (p : G.Dart).symm := rfl
+
+/-- Reversing a dart flips the orientation bit. -/
+lemma dartEquiv_symm_symm (b : Bool) (p : {d : G.Dart // G.IsPos d}) :
+    (G.dartEquiv.symm (b, p)).symm = G.dartEquiv.symm (!b, p) := by
+  cases b <;> simp [Dart.symm_symm]
+
 end Orientation
+
+/-- The `2×2` sign block `[[1,u],[u,1]]` (indexed by `Bool`). -/
+def signBlock (R : Type*) [CommRing R] (u : R) : Matrix Bool Bool R :=
+  Matrix.of fun b1 b2 => if b1 = b2 then 1 else u
+
+@[simp] lemma signBlock_apply (R : Type*) [CommRing R] (u : R) (b1 b2 : Bool) :
+    signBlock R u b1 b2 = if b1 = b2 then 1 else u := rfl
+
+lemma det_signBlock (R : Type*) [CommRing R] (u : R) : (signBlock R u).det = 1 - u ^ 2 := by
+  rw [← Matrix.det_reindex_self finTwoEquiv.symm, Matrix.det_fin_two]
+  simp only [Matrix.reindex_apply, Matrix.submatrix_apply, Equiv.symm_symm, signBlock_apply,
+    EmbeddingLike.apply_eq_iff_eq]
+  norm_num
+  ring
+
+/-- **`det(I + uJ) = (1 - u²)^m`.** Reindex by `dartEquiv` turns `I + uJ` into a
+block-diagonal of `2×2` sign blocks (one per edge); `det_blockDiagonal` then gives
+`(det signBlock)^|E| = (1 - u²)^|E|`. -/
+lemma det_one_add_smul_reversal (R : Type*) [CommRing R] [LinearOrder V] (u : R) :
+    (1 + u • G.reversal R).det = (1 - u ^ 2) ^ G.edgeFinset.card := by
+  rw [← Matrix.det_reindex_self G.dartEquiv]
+  have hblock : Matrix.reindex G.dartEquiv G.dartEquiv (1 + u • G.reversal R)
+      = Matrix.blockDiagonal (fun _ : {d : G.Dart // G.IsPos d} => signBlock R u) := by
+    ext ⟨i1, p1⟩ ⟨i2, p2⟩
+    simp only [Matrix.reindex_apply, Matrix.submatrix_apply, Matrix.add_apply, Matrix.one_apply,
+      Matrix.smul_apply, reversal_apply, smul_eq_mul, Matrix.blockDiagonal_apply, signBlock_apply]
+    rw [dartEquiv_symm_symm]
+    simp only [EmbeddingLike.apply_eq_iff_eq, Prod.mk.injEq, eq_comm (a := p2) (b := p1)]
+    cases i1 <;> cases i2 <;> by_cases hp : p1 = p2 <;> simp_all
+  rw [hblock, Matrix.det_blockDiagonal]
+  simp only [Finset.prod_const, Finset.card_univ, card_posDart, det_signBlock]
+
 
 /-- **Bass's determinant formula** (division-free polynomial form).
 
