@@ -226,6 +226,25 @@ lemma termInc_mul_termInc_transpose :
     ← Matrix.mul_assoc (G.reversal R), reversal_mul_self, Matrix.one_mul,
     startInc_mul_startInc_transpose]
 
+/-- The algebraic heart of `det(I + uJ) = (1 - u²)^m`:
+`(I + uJ)(I − uJ) = (1 − u²) I`, since `J² = I`. -/
+lemma one_add_smul_reversal_mul (u : R) :
+    (1 + u • G.reversal R) * (1 - u • G.reversal R)
+      = (1 - u ^ 2) • (1 : Matrix G.Dart G.Dart R) := by
+  have key : (u • G.reversal R) * (u • G.reversal R)
+      = u ^ 2 • (1 : Matrix G.Dart G.Dart R) := by
+    rw [smul_mul_smul_comm, G.reversal_mul_self R, pow_two]
+  rw [mul_sub, mul_one, add_mul, one_mul, key, sub_smul, one_smul]
+  abel
+
+/-- Determinant consequence: `det(I + uJ) · det(I − uJ) = (1 − u²)^{2m}`
+(here `2m = |Dart|`). The individual factor `det(I + uJ) = (1 − u²)^m` needs the
+orientation reindex `Dart ≃ edges × Fin 2` — the next brick. -/
+lemma det_one_add_smul_reversal_mul (u : R) :
+    (1 + u • G.reversal R).det * (1 - u • G.reversal R).det
+      = (1 - u ^ 2) ^ Fintype.card G.Dart := by
+  rw [← Matrix.det_mul, one_add_smul_reversal_mul, Matrix.det_smul, Matrix.det_one, mul_one]
+
 end Incidence
 
 /-- **Bass's determinant formula** (division-free polynomial form).
