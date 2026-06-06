@@ -81,6 +81,11 @@ division-free with the `(n+2m)` block factorization `Matrix.det_fromBlocks_zero�
 open scoped Classical
 open Matrix Finset
 
+-- These lemmas share one `variable` block; some don't touch every instance, and a
+-- couple of `<;>` chains act on a single goal. Both are cosmetic in this self-contained file.
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+
 namespace SimpleGraph
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -399,7 +404,7 @@ theorem bass_determinant (R : Type*) [Field R] [LinearOrder V] (u : R) :
       · rw [zero_pow hn.ne', zero_mul, Matrix.det_zero (Fintype.card_pos_iff.mp hn)]
     · have hn : Fintype.card V ≠ 0 := fun h => hm (by
         haveI : IsEmpty V := Fintype.card_eq_zero_iff.mp h
-        simp [Finset.card_eq_zero, Finset.eq_empty_of_isEmpty])
+        simp [Finset.eq_empty_of_isEmpty])
       rw [hc, zero_pow hn, zero_pow hm, zero_mul, zero_mul]
   · have hUnit : IsUnit (1 + u • G.reversal R).det := by
       rw [G.det_one_add_smul_reversal R u]; exact isUnit_iff_ne_zero.mpr (pow_ne_zero _ hc)
