@@ -8,6 +8,7 @@ import Mathlib.Combinatorics.SimpleGraph.Walk.Counting
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.RingTheory.PowerSeries.Basic
+import Mathlib.RingTheory.PowerSeries.Derivative
 import Ihara.Bass
 
 /-!
@@ -43,10 +44,11 @@ ITP record of the bridge, joining the two existing Lean files. No new theorem is
    (Mathlib has no tree-like walks); plus the girth-threshold argument tying 1–3 together.
 
 This file currently lands: piece 1 (`trace_adjMatrix_pow`), the spectral lift of Bass
-(`bass_charpolyRev`), and — via the general-matrix interlude below — BOTH halves of the
+(`bass_charpolyRev`), and — via the general-matrix interlude below — the complete
 trace-generating-function bridge: the eigenvalue-free resolvent side (`resolventSeries` and
-friends) and **Jacobi's formula** `(det M)′ = tr(adj M · M′)` (`derivative_det`), the determinant
-side. What remains is to fuse them (the Newton-identity assembly) and apply them to Bass.
+friends), **Jacobi's formula** `(det M)′ = tr(adj M · M′)` (`derivative_det`), and their fusion,
+**Newton's identity for matrix traces** `(charpolyRev M)′ = -charpolyRev M · ∑ₖ tr(Mᵏ⁺¹) Xᵏ`
+(`charpolyRev_logDeriv`). Composing with `bass_charpolyRev` then yields the Ihara `N_k` counts.
 -/
 
 /-! ## The trace generating function (Part III, brick 2)
@@ -173,8 +175,46 @@ theorem map_derivative_one_sub_smul (M : Matrix n n R) :
     (1 - (X : R[X]) • M.map (C : R →+* R[X])).map derivative = -(M.map (C : R →+* R[X])) := by
   ext a b
   simp only [Matrix.map_apply, Matrix.sub_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul,
-    Matrix.neg_apply, derivative_sub, apply_ite derivative, derivative_one, derivative_zero,
-    ite_self, zero_sub, derivative_mul, derivative_X, one_mul, derivative_C, mul_zero, add_zero]
+    Matrix.neg_apply, Polynomial.derivative_sub, apply_ite Polynomial.derivative,
+    Polynomial.derivative_one, Polynomial.derivative_zero, ite_self, zero_sub,
+    Polynomial.derivative_mul, Polynomial.derivative_X, one_mul, Polynomial.derivative_C,
+    mul_zero, add_zero]
+
+/-- **Newton's identity for matrix traces** — the fusion of Jacobi's formula (`derivative_det`) and
+the resolvent trace generating function (`trace_resolventSeries`). The logarithmic derivative of the
+reversed characteristic polynomial, as a formal power series, collects the trace power sums:
+`(charpolyRev M)′ = -charpolyRev M · ∑ₖ tr(Mᵏ⁺¹) Xᵏ`.
+
+Equivalently `∑_{k≥1} tr(Mᵏ) Xᵏ = -X · (charpolyRev M)′ / charpolyRev M`. Over an arbitrary
+`CommRing`, eigenvalue-free. This is the matrix-trace form of Newton's identities — the bridge that
+`Mathlib`'s `MvPolynomial.NewtonIdentities` does not provide and that, at `k = 1`, specialises to
+the existing `coeff_charpolyRev_eq_neg_trace`. -/
+theorem charpolyRev_logDeriv (M : Matrix n n R) :
+    d⁄dX R (charpolyRev M : R⟦X⟧)
+      = -(charpolyRev M : R⟦X⟧) * PowerSeries.mk fun k => (M ^ (k + 1)).trace := by
+  have hcp : (charpolyRev M : R[X]) = (1 - (X : R[X]) • M.map (C : R →+* R[X])).det := rfl
+  have hMC : (M.map (C : R →+* R[X])).map Polynomial.coeToPowerSeries.ringHom
+      = M.map (PowerSeries.C : R →+* R⟦X⟧) := by
+    ext a b
+    simp only [Matrix.map_apply, Polynomial.coeToPowerSeries.ringHom_apply, Polynomial.coe_C]
+  have hFs : (1 - (X : R[X]) • M.map (C : R →+* R[X])).map Polynomial.coeToPowerSeries.ringHom
+      = 1 - (PowerSeries.X : R⟦X⟧) • M.map (PowerSeries.C : R →+* R⟦X⟧) := by
+    ext a b
+    simp only [Matrix.map_apply, Matrix.sub_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul,
+      map_sub, map_mul, map_one, map_zero, apply_ite ⇑Polynomial.coeToPowerSeries.ringHom,
+      Polynomial.coeToPowerSeries.ringHom_apply, Polynomial.coe_X, Polynomial.coe_C]
+  have hadj : (1 - (X : R[X]) • M.map (C : R →+* R[X])).adjugate.map
+        Polynomial.coeToPowerSeries.ringHom
+      = adjugate (1 - (PowerSeries.X : R⟦X⟧) • M.map (PowerSeries.C : R →+* R⟦X⟧)) := by
+    rw [← hFs]; exact RingHom.map_adjugate _ _
+  have hdet : (((1 - (X : R[X]) • M.map (C : R →+* R[X])).det : R[X]) : R⟦X⟧)
+      = (1 - (PowerSeries.X : R⟦X⟧) • M.map (PowerSeries.C : R →+* R⟦X⟧)).det := by
+    rw [← Polynomial.coeToPowerSeries.ringHom_apply, RingHom.map_det]
+    exact congrArg Matrix.det hFs
+  rw [derivative_coe, hcp, derivative_det, map_derivative_one_sub_smul, mul_neg, Matrix.trace_neg,
+    ← Polynomial.coeToPowerSeries.ringHom_apply, map_neg, AddMonoidHom.map_trace, Matrix.map_mul,
+    hMC, hadj, ← smul_resolventSeries_eq_adjugate, smul_mul_assoc, trace_smul,
+    trace_resolventSeries_mul, smul_eq_mul, hdet, neg_mul]
 
 end Jacobi
 
