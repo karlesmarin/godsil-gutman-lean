@@ -8,6 +8,7 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.LinearAlgebra.Matrix.Trace
+import Mathlib.Data.ZMod.Basic
 
 /-!
 # Walk counting for a finite digraph (the power of a `0-1` matrix)
@@ -103,6 +104,23 @@ theorem trace_pow_eq_sum_closed (M : Matrix V V R) (k : ℕ) :
   · rw [if_neg h]
     refine Finset.sum_eq_zero fun a _ => if_neg ?_
     rintro ⟨h1, h2⟩; exact h (h1.trans h2.symm)
+
+/-! ## Rotation invariance — toward closed geodesics -/
+
+/-- The **cyclic product** of edge weights along a closed walk `w : ZMod n → V`,
+`∏ₜ M (w t) (w (t+1))` with the index addition taken cyclically in `ZMod n`. -/
+def cyclicProd {n : ℕ} [NeZero n] (M : Matrix V V R) (w : ZMod n → V) : R :=
+  ∏ t : ZMod n, M (w t) (w (t + 1))
+
+/-- **Rotation invariance.** The cyclic product is unchanged when the basepoint of the closed walk
+is rotated by `c`. This is what makes the weight a class function on rotation orbits — the structure
+that groups closed non-backtracking walks into (prime) geodesics. -/
+theorem cyclicProd_comp_addRight {n : ℕ} [NeZero n] (M : Matrix V V R) (w : ZMod n → V)
+    (c : ZMod n) : cyclicProd M (w ∘ Equiv.addRight c) = cyclicProd M w := by
+  simp only [cyclicProd, Function.comp_apply]
+  rw [← Equiv.prod_comp (Equiv.addRight c) fun t => M (w t) (w (t + 1))]
+  refine Finset.prod_congr rfl fun t _ => ?_
+  simp [add_right_comm]
 
 end PowSum
 
