@@ -5,6 +5,8 @@ Authors: Carles Marín
 -/
 import Ihara.TraceFormula
 import Mathlib.Combinatorics.SimpleGraph.Girth
+import MatchingPoly
+import Mathlib.Analysis.Complex.Polynomial.Basic
 
 /-!
 # Tree-like walks and Godsil's moment theorem — Part III, brick 3 (the hard brick)
@@ -151,6 +153,18 @@ theorem treeLikeWalkCount_zero : G.treeLikeWalkCount 0 = Fintype.card V := by
     rw [hset, Finset.filter_singleton, if_pos (Walk.nil_isTreeLike v), Finset.card_singleton]
   rw [treeLikeWalkCount, Finset.sum_congr rfl (fun v _ => key v), Finset.sum_const,
     Finset.card_univ, smul_eq_mul, mul_one]
+
+/-! ## The matching-side power sums `p_k` (the other half of the bridge) -/
+
+/-- **Matching-side power sum** `p_k = Σᵢ θᵢᵏ` over the (complex) roots of the matching polynomial.
+Godsil's moment theorem is the (open) bridge `matchingPowerSum G k = treeLikeWalkCount G k`. -/
+noncomputable def matchingPowerSum (k : ℕ) : ℂ :=
+  ((G.matchingPoly.map (algebraMap ℝ ℂ)).roots.map (· ^ k)).sum
+
+/- **`k = 0` anchor (next brick):** `matchingPowerSum G 0 = n`, since `μ` is monic of degree
+`n = card V` and `ℂ` is algebraically closed, so it has exactly `n` roots, each contributing
+`θ⁰ = 1`. Together with `treeLikeWalkCount_zero` this confirms Godsil's bridge at `k = 0` on both
+sides; it reduces to `(μ.map (algebraMap ℝ ℂ)).roots.card = μ.natDegree` (splitting over `ℂ`). -/
 
 end Counting
 
