@@ -167,6 +167,15 @@ theorem derivative_det (M : Matrix n n R[X]) :
   rw [← cramer_apply, cramer_eq_adjugate_mulVec]
   rfl
 
+omit [Fintype n] in
+/-- The entrywise derivative of the polynomial matrix `1 - X•M` is `-M`. -/
+theorem map_derivative_one_sub_smul (M : Matrix n n R) :
+    (1 - (X : R[X]) • M.map (C : R →+* R[X])).map derivative = -(M.map (C : R →+* R[X])) := by
+  ext a b
+  simp only [Matrix.map_apply, Matrix.sub_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul,
+    Matrix.neg_apply, derivative_sub, apply_ite derivative, derivative_one, derivative_zero,
+    ite_self, zero_sub, derivative_mul, derivative_X, one_mul, derivative_C, mul_zero, add_zero]
+
 end Jacobi
 
 end Matrix
