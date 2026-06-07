@@ -8,7 +8,7 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.LinearAlgebra.Matrix.Trace
-import Mathlib.Data.ZMod.Basic
+import Mathlib.Logic.Equiv.Fin.Rotate
 
 /-!
 # Walk counting for a finite digraph (the power of a `0-1` matrix)
@@ -107,30 +107,56 @@ theorem trace_pow_eq_sum_closed (M : Matrix V V R) (k : ℕ) :
 
 /-! ## Rotation invariance — toward closed geodesics -/
 
-/-- The **cyclic product** of edge weights along a closed walk `w : ZMod n → V`,
-`∏ₜ M (w t) (w (t+1))` with the index addition taken cyclically in `ZMod n`. -/
-def cyclicProd {n : ℕ} [NeZero n] (M : Matrix V V R) (w : ZMod n → V) : R :=
-  ∏ t : ZMod n, M (w t) (w (t + 1))
+/-- The **cyclic product** of edge weights along a closed walk `w : Fin (n+1) → V`,
+`∏ₜ M (w t) (w (σ t))` where `σ = finRotate (n+1)` is the cyclic successor. -/
+def cyclicProd {n : ℕ} (M : Matrix V V R) (w : Fin (n + 1) → V) : R :=
+  ∏ t : Fin (n + 1), M (w t) (w (finRotate (n + 1) t))
 
-/-- **Rotation invariance.** The cyclic product is unchanged when the basepoint of the closed walk
-is rotated by `c`. This is what makes the weight a class function on rotation orbits — the structure
-that groups closed non-backtracking walks into (prime) geodesics. -/
-theorem cyclicProd_comp_addRight {n : ℕ} [NeZero n] (M : Matrix V V R) (w : ZMod n → V)
-    (c : ZMod n) : cyclicProd M (w ∘ Equiv.addRight c) = cyclicProd M w := by
+/-- **Rotation invariance.** The cyclic product is unchanged when the closed walk is rotated by the
+cyclic shift `finRotate`. This is what makes the weight a class function on rotation orbits — the
+structure that groups closed non-backtracking walks into (prime) geodesics. -/
+theorem cyclicProd_comp_finRotate {n : ℕ} (M : Matrix V V R) (w : Fin (n + 1) → V) :
+    cyclicProd M (w ∘ finRotate (n + 1)) = cyclicProd M w := by
   simp only [cyclicProd, Function.comp_apply]
-  rw [← Equiv.prod_comp (Equiv.addRight c) fun t => M (w t) (w (t + 1))]
-  refine Finset.prod_congr rfl fun t _ => ?_
-  simp [add_right_comm]
+  exact Equiv.prod_comp (finRotate (n + 1)) fun t => M (w t) (w (finRotate (n + 1) t))
 
--- TODO (the Fin ↔ ZMod connector): `tr(M^(m+1)) = ∑ w : ZMod (m+1) → V, cyclicProd M w`.
--- The statement type-checks (`ZMod (m+1) = Fin (m+1)` definitionally) and a `sum_bij'` between
--- `{p : Fin (m+2) → V // p 0 = p (last)}` and `ZMod (m+1) → V` via `Fin.snoc w (w 0)` gets the
--- skeleton + right-inverse condition through. BLOCKER (diagnosed): a ZMod↔Fin *impedance mismatch* —
--- `Fin.castSucc_zero`/`Fin.snoc_castSucc` fail to fire because indices are `(0 : ZMod (m+1))`,
--- `(t + 1 : ZMod (m+1))`, not the `Fin`-native `0`/`succ` (defeq, not syntactic). CLEAN FIX: redefine
--- `cyclicProd` over `Fin (m+1)` natively, using `finRotate (m+1) : Fin (m+1) ≃ Fin (m+1)` for the
--- rotation invariance (in place of `Equiv.addRight` over `ZMod`); then the whole connector is
--- pure-`Fin`, no impedance. A focused redesign for a dedicated session.
+/-- **The cyclic trace formula.** `tr(M^(m+1))` is the sum, over all closed cyclic walks
+`w : Fin (m+1) → V`, of the cyclic product of edge weights. Connects the closed-walk trace
+(`trace_pow_eq_sum_closed`) to the rotation-equivariant `cyclicProd`. -/
+theorem trace_pow_eq_sum_cyclicProd {m : ℕ} (M : Matrix V V R) :
+    (M ^ (m + 1)).trace = ∑ w : Fin (m + 1) → V, cyclicProd M w := by
+  rw [trace_pow_eq_sum_closed, ← Finset.sum_filter]
+  refine Finset.sum_bij'
+    (fun (p : Fin (m + 2) → V) _ => (fun t : Fin (m + 1) => p t.castSucc))
+    (fun (w : Fin (m + 1) → V) _ => Fin.snoc w (w 0))
+    (fun _ _ => Finset.mem_univ _) ?_ ?_ ?_ ?_
+  · intro w _
+    rw [Finset.mem_filter]
+    refine ⟨Finset.mem_univ _, ?_⟩
+    simp only [Fin.snoc_last, ← Fin.castSucc_zero, Fin.snoc_castSucc]
+  · intro p hp
+    rw [Finset.mem_filter] at hp
+    funext x
+    dsimp only
+    refine Fin.lastCases ?_ (fun t => ?_) x
+    · rw [Fin.snoc_last, Fin.castSucc_zero]; exact hp.2
+    · rw [Fin.snoc_castSucc]
+  · intro w _
+    funext t
+    dsimp only
+    rw [Fin.snoc_castSucc]
+  · intro p hp
+    rw [Finset.mem_filter] at hp
+    dsimp only [cyclicProd]
+    refine Finset.prod_congr rfl fun t _ => ?_
+    congr 1
+    refine Fin.lastCases ?_ (fun t' => ?_) t
+    · rw [Fin.succ_last, finRotate_last, Fin.castSucc_zero]; exact hp.2.symm
+    · rw [finRotate_succ_apply]
+      congr 1
+      apply Fin.ext
+      simp only [Fin.val_succ, Fin.coe_castSucc, Fin.val_add_one,
+        if_neg (Fin.castSucc_lt_last t').ne]
 
 end PowSum
 
