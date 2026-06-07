@@ -1,0 +1,579 @@
+% =====================================================================
+% Jacobi + Newton para trazas de matrices, con una aplicacion a Ihara.
+% Companero de las formalizaciones Godsil--Gutman (Paper I), Heilmann--Lieb
+% (Paper II) e Ihara--Bass. Mismo estilo de la casa: tecnico, inequivoco,
+% guiado por una historia (cada seccion abre con una pregunta), formulas clave
+% enmarcadas y centradas, humildad en todo. Reglas de honestidad literales:
+% "demostrado" = sin sorry; alcance exacto; nada oculto.
+% Verificado contra la fuente Lean 2026-06-07 (lake build exit 0; #print axioms
+% reporta propext, Classical.choice, Quot.sound). Toolchain v4.30.0-rc2.
+% =====================================================================
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noindentfirst]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref}
+\usepackage{xurl}
+\usepackage[table]{xcolor}
+\definecolor{ggteal}{HTML}{1B6F8C}
+\definecolor{ggband}{HTML}{DCE7EB}
+\definecolor{ggamber}{HTML}{E08A1E}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Teorema}
+\newtheorem{lemma}{Lema}
+\newtheorem{definition}{Definici\'on}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\adj}{\operatorname{adj}}
+\DeclareMathOperator{\charpolyRev}{charpolyRev}
+\hypersetup{colorlinks=true,linkcolor=ggteal,citecolor=ggteal,urlcolor=ggteal}
+\newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
+  arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
+\newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+
+\title{\bf Lo que sabe la derivada de un determinante\\[4pt]
+  \large\normalfont La f\'ormula de Jacobi y la identidad de Newton para trazas de matrices
+  en Lean~4, con una aplicaci\'on a los conteos de Ihara}
+\author{Carles Mar\'in\thanks{Formalizado con asistencia de IA (Claude, Anthropic); las matem\'aticas
+y todas las afirmaciones son responsabilidad del autor. La metodolog\'ia se discute en la
+Secci\'on~\ref{sec:implications}.}\\[3pt]
+  \normalsize Investigador independiente\\
+  \normalsize \texttt{karlesmarin@gmail.com}}
+\date{Junio de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Una regla de una sola l\'inea de un curso de \'algebra lineal---\emph{la derivada de un determinante
+es la traza de la adjugada por la derivada de la matriz}---resulta ser la semilla de la que crecen
+los coeficientes del polinomio caracter\'istico, las sumas de potencias de las trazas de una matriz
+y, en \'ultima instancia, los conteos de caminos cerrados de un grafo. Este art\'iculo formaliza esa
+semilla y sus primeros frutos en Lean~4 / Mathlib, todo sin \lean{sorry}. El resultado principal es
+la \emph{f\'ormula de Jacobi} $(\det M)'=\tr(\adj M\cdot M')$ para una matriz de polinomios, de la
+que no he hallado demostraci\'on previa en ning\'un asistente de pruebas; Mathlib s\'olo ten\'ia la
+derivada \emph{anal\'itica} de $\det$ entre espacios normados, nunca la identidad algebraica. De
+ella derivo la \emph{identidad de Newton para trazas de matrices}---la derivada logar\'itmica del
+polinomio caracter\'istico invertido re\'une las sumas de potencias de las trazas---, un enunciado a
+todos los \'ordenes que Mathlib ofrec\'ia s\'olo en el coeficiente lineal, y que no necesita
+autovalores. El motor es una \emph{serie resolvente} $(I-XM)^{-1}=\sum_k M^kX^k$ sobre series formales
+de potencias, tambi\'en nueva en la biblioteca. Como aplicaci\'on las compongo con mi formalizaci\'on
+previa de la f\'ormula del determinante de Bass para leer los conteos no-retroceso de Ihara
+$N_k=\tr(B^k)$ desde el espectro de adyacencia, y para demostrar combinatoriamente que $\tr(B^k)$
+cuenta caminos cerrados sin retroceso. Soy exacto con la frontera: nada de esto es matem\'atica
+nueva; el conteo de geod\'esicas primas que la estructura c\'iclica prepara s\'olo se construye hasta
+el peso invariante por rotaci\'on, no hasta el producto de Euler; y $\tr(B^k)$ cuenta caminos cerrados
+\emph{con punto base}, no clases geod\'esicas. La contribuci\'on es la formalizaci\'on, y una peque\~na
+pieza de infraestructura certificada sobre la que cualquier desarrollo futuro de polinomios
+caracter\'isticos, funciones zeta o espectros de expansores podr\'a apoyarse.
+\end{abstract}
+
+\noindent\emph{Mapa para el lector.} Si s\'olo lees dos cosas, lee el Teorema~\ref{thm:jacobi}
+(Jacobi) y el Teorema~\ref{thm:newton} (Newton): el primero dice que la derivada de un determinante
+es una traza; el segundo dice que, a todos los \'ordenes, ese \'unico hecho \emph{es} el puente entre
+las trazas de una matriz y su polinomio caracter\'istico. Todo lo dem\'as---el motor resolvente
+(Secci\'on~\ref{sec:resolvent}), el conteo de caminos (Secci\'on~\ref{sec:walks}), la aplicaci\'on a
+Ihara (Secci\'on~\ref{sec:ihara})---cuelga de esos dos. Las f\'ormulas que cargan el peso van
+enmarcadas; los l\'imites honestos se enuncian con la misma claridad que los resultados.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=6mm and 9mm,
+  box/.style={draw=ggteal,fill=ggband!40,rounded corners=3pt,line width=0.8pt,
+    align=center,inner sep=5pt,text width=27mm,font=\small},
+  arr/.style={-{Stealth[length=2.5mm]},ggteal,line width=0.9pt},
+  lab/.style={font=\scriptsize\itshape,ggamber,align=center}]
+\node[box] (jac) {\textbf{Jacobi}\\$(\det M)'=\tr(\adj M\,M')$};
+\node[box,right=of jac] (new) {\textbf{Newton}\\$\sum_k\tr(M^k)X^k$\\$=-X\,\tfrac{(\charpolyRev)'}{\charpolyRev}$};
+\node[box,right=of new] (bass) {\textbf{$+$ Bass}\\$\det(I-XB)$\\$\to$ datos $(A,D)$};
+\node[box,right=of bass] (nk) {\textbf{Ihara}\\$N_k=\tr(B^k)$\\$=\#$caminos};
+\draw[arr] (jac) -- node[lab,above]{derivar a\\todo orden} (new);
+\draw[arr] (new) -- node[lab,above]{componer} (bass);
+\draw[arr] (bass) -- node[lab,above]{deriv. log.} (nk);
+\end{tikzpicture}
+\caption{La columna vertebral del art\'iculo. Un hecho elemental---la derivada de un determinante es
+una traza (Jacobi)---, llevado a todos los \'ordenes, se vuelve el diccionario entre las trazas de una
+matriz y su polinomio caracter\'istico (Newton), y compuesto con la f\'ormula del determinante de
+Bass alcanza los conteos de caminos cerrados sin retroceso $N_k=\tr(B^k)$ de un grafo. Cada flecha es
+un teorema de este art\'iculo.}
+\label{fig:spine}
+\end{figure}
+
+% ---------------------------------------------------------------
+\section{Introducci\'on: una breve historia, y por qu\'e este art\'iculo}
+\label{sec:intro}
+
+\emph{?`Podr\'ia una regla para derivar un determinante---un hecho tan elemental que suele ponerse
+como ejercicio---ser el motor que, llevado a todos los \'ordenes, recupera el polinomio
+caracter\'istico desde las trazas de una matriz, y luego cuenta los caminos cerrados de un grafo?} La
+respuesta es s\'i, y seguirla exige que se encuentren tres breves historias.
+
+La primera es la \emph{f\'ormula de Jacobi}. En el siglo XIX Jacobi registr\'o c\'omo cambia el
+determinante de una matriz al variar sus entradas: $\mathrm{d}(\det M)=\tr(\adj M\cdot\mathrm{d}M)$,
+donde $\adj M$ es la adjugada (la traspuesta de la matriz de cofactores). Es el c\'alculo matricial
+tras la f\'ormula de Liouville para el wronskiano de una EDO lineal, tras el algoritmo de
+Faddeev--LeVerrier que computa un polinomio caracter\'istico desde las trazas, y tras toda
+perturbaci\'on a primer orden de un autovalor. Es tambi\'en, en su forma \emph{algebraica}---sobre un
+anillo conmutativo arbitrario, con la derivada formal de polinomios en vez de un l\'imite---, una
+ausente de la mayor biblioteca formal de matem\'aticas. Mathlib sab\'ia derivar un determinante
+\emph{anal\'iticamente}, como aplicaci\'on suave entre espacios normados; no conoc\'ia la identidad
+algebraica de una l\'inea.
+
+La segunda son las \emph{identidades de Newton}. Newton relacion\'o las sumas de potencias
+$p_k=\sum_i\lambda_i^k$ de una colecci\'on de n\'umeros con sus funciones sim\'etricas elementales
+$e_k$---equivalentemente, los coeficientes del polinomio $\prod_i(X-\lambda_i)$. Especializadas a los
+autovalores de una matriz, las sumas de potencias son exactamente las trazas $\tr(M^k)$, y las
+funciones sim\'etricas elementales son exactamente los coeficientes del polinomio caracter\'istico.
+As\'i, las identidades de Newton, en esta forma, son un puente: permiten computar el polinomio
+caracter\'istico desde las trazas de las potencias, y rec\'iprocamente. Mathlib tiene las identidades
+de Newton, pero s\'olo en abstracto---para polinomios sim\'etricos en variables libres---, nunca
+conectadas con las trazas de una matriz. El puente exist\'ia; su extremo matricial faltaba, registrado
+s\'olo en el primer coeficiente como $\tr M=-\,(\text{coeficiente siguiente del polinomio
+caracter\'istico})$.
+
+El tercer hilo enlaza esto con los grafos, y con mi trabajo anterior. La funci\'on zeta de Ihara de
+un grafo cuenta sus caminos cerrados sin retroceso; su rec\'iproco es el determinante $\det(I-XB)$
+del operador no-retroceso $B$ de Hashimoto, y formalic\'e la reducci\'on de \emph{Bass} de ese
+determinante a datos de tama\~no v\'ertice en un art\'iculo compa\~nero~\cite{IharaBass}. Los conteos
+$N_k=\tr(B^k)$ son exactamente las sumas de potencias de trazas que gobierna la identidad de Newton.
+La misma derivada que mueve a Jacobi y a Newton alcanza, por tanto, al aplicarse a la identidad de
+Bass, los conteos de ciclos de un grafo.
+
+Este art\'iculo formaliza esa cadena---Jacobi, luego Newton, luego los conteos de Ihara---en Lean~4, y
+es exacto sobre d\'onde, por ahora, termina el camino.
+
+% ---------------------------------------------------------------
+\section{La f\'ormula de Jacobi}
+\label{sec:jacobi}
+
+\emph{Si empujas una entrada de una matriz, ?`c\'omo se mueve su determinante---y por qu\'e habr\'ia
+de involucrar la respuesta la traza de algo?}
+
+Para una matriz $M$ cuyas entradas son polinomios en una variable formal, escribe $M'$ para la
+derivada entrada a entrada y $\det M$ para el determinante (un polinomio). La respuesta es una traza.
+
+\begin{theorem}[F\'ormula de Jacobi, en Lean~4]
+\label{thm:jacobi}
+Para una matriz $M$ de $n\times n$ de polinomios sobre un anillo conmutativo,
+\keyeq{(\det M)'\;=\;\tr\!\bigl(\adj M\cdot M'\bigr).}
+El enunciado es sin \lean{sorry} (\lean{Matrix.derivative\_det}); \lean{\#print axioms} reporta
+\'unicamente \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
+\end{theorem}
+
+La demostraci\'on es la propia multilinealidad del determinante, hecha columna a columna. Derivando
+$\det M=\sum_\sigma\varepsilon_\sigma\prod_i M_{\sigma(i),i}$ por la regla de Leibniz y reagrupando se
+ve que $(\det M)'$ es la suma, sobre columnas $k$, del determinante de $M$ con la columna $k$
+reemplazada por su derivada; la regla de Cramer lee cada uno de esos determinantes de una columna en
+la adjugada, y la suma se reensambla como una traza. (En Lean el reagrupado usa la forma de producto
+de la f\'ormula de Leibniz, \lean{det\_apply'}, para mantener cada coeficiente un elemento genuino del
+anillo en vez de una permutaci\'on con signo---una peque\~na elecci\'on que vuelve toda la
+demostraci\'on una cadena de reescrituras.)
+
+\paragraph{Por qu\'e es \'util, llanamente.}
+La derivada de un determinante aparece donde sea que una matriz se mueve. Tres lugares donde se gana
+el sustento: la \emph{f\'ormula de Liouville}---el wronskiano de un sistema lineal evoluciona como
+$\det(\Phi)'=\tr(A)\,\det(\Phi)$, que es la f\'ormula de Jacobi para $\Phi'=A\Phi$; la
+\emph{perturbaci\'on de autovalores}---el cambio a primer orden de un autovalor simple es una traza
+contra su proyecci\'on espectral; y el \emph{algoritmo de Faddeev--LeVerrier}, que extrae un polinomio
+caracter\'istico y una inversa de matriz s\'olo a partir de trazas de potencias, y cuya correcci\'on
+descansa exactamente en esta identidad. Cada uno es un teorema que alguien podr\'a un d\'ia querer
+certificar; cada uno tiene ya su primera piedra.
+
+% ---------------------------------------------------------------
+\section{La serie resolvente: un motor sin autovalores}
+\label{sec:resolvent}
+
+\emph{?`Se puede hablar de $(I-XM)^{-1}$ sin invertir nunca nada---y sin mencionar jam\'as un
+autovalor?}
+
+Sobre series formales de potencias, s\'i. La serie geom\'etrica $\sum_k M^kX^k$ es una matriz honesta
+de series de potencias, y es la inversa de $I-XM$.
+
+\begin{definition}[Serie resolvente]
+Para una matriz $M$ de $n\times n$ sobre un anillo conmutativo, la \emph{serie resolvente} es la
+matriz de series formales de potencias $\bigl(\,\sum_k M^k X^k\,\bigr)$, escrita
+\lean{resolventSeries M}.
+\end{definition}
+
+\begin{lemma}[La resolvente invierte $I-XM$, y su traza es la funci\'on generatriz de trazas]
+\label{lem:resolvent}
+\keyeq{(I-XM)\cdot\textstyle\sum_k M^kX^k\;=\;I,\qquad
+   \tr\!\bigl(\textstyle\sum_k M^kX^k\bigr)\;=\;\sum_k \tr(M^k)\,X^k.}
+Ambas sin \lean{sorry} (\lean{one\_sub\_smul\_mul\_resolventSeries}, \lean{trace\_resolventSeries}). La
+identidad de la inversa se demuestra a partir de la ecuaci\'on de punto fijo $R=I+XM\!\cdot\!R$ por un
+\'unico reordenamiento---sin autovalores, sin clausura algebraica, sobre cualquier anillo conmutativo.
+\end{lemma}
+
+Este es el motor de la Secci\'on~\ref{sec:newton}. Su gracia es justamente su modestia: la forma
+est\'andar de relacionar las trazas de potencias con el polinomio caracter\'istico pasa por los
+autovalores, y as\'i necesita que la matriz se descomponga---un cuerpo algebraicamente cerrado, o un
+rodeo por la matriz gen\'erica. La serie resolvente prescinde de todo ello. La traza de $(I-XM)^{-1}$
+es, por construcci\'on, la \emph{funci\'on generatriz de trazas} $\sum_k\tr(M^k)X^k$, y ese es el
+objeto del que trata la identidad de Newton.
+
+\paragraph{Por qu\'e es \'util, llanamente.}
+Una resolvente formal es el hogar natural de cualquier cantidad que uno quiera leer ``orden a orden''
+en una perturbaci\'on: los momentos $\tr(M^k)$ de una matriz, la funci\'on de Green de un operador
+discreto, la funci\'on generatriz de caminos (Secci\'on~\ref{sec:walks}). Tener $(I-XM)^{-1}$
+disponible como infraestructura certificada de series de potencias---en lugar de rederivar la serie
+geom\'etrica cada vez---es una peque\~na comodidad que se acumula.
+
+% ---------------------------------------------------------------
+\section{La identidad de Newton para trazas de matrices}
+\label{sec:newton}
+
+\emph{Las trazas $\tr(M),\tr(M^2),\dots$ y los coeficientes del polinomio caracter\'istico son dos
+descripciones de la misma matriz. ?`Cu\'al es, exactamente, el diccionario entre ellas?}
+
+Es una sola identidad de series de potencias, y es la f\'ormula de Jacobi llevada a todos los
+\'ordenes. Escribe $\charpolyRev M$ para el polinomio caracter\'istico invertido $\det(I-XM)$---un
+polinomio con t\'ermino constante $1$, y por tanto una unidad en el anillo de series.
+
+\begin{theorem}[Identidad de Newton para trazas de matrices, en Lean~4]
+\label{thm:newton}
+Para una matriz $M$ de $n\times n$ sobre un anillo conmutativo, en el anillo de series formales de
+potencias,
+\keyeq{(\charpolyRev M)'\;=\;-\,\charpolyRev M\cdot\sum_{k\ge0}\tr(M^{k+1})\,X^k.}
+Equivalentemente $\sum_{k\ge1}\tr(M^k)X^k=-X\,(\charpolyRev M)'/\charpolyRev M$, la derivada
+logar\'itmica. El enunciado es sin \lean{sorry} (\lean{Matrix.charpolyRev\_logDeriv}), sobre cualquier
+anillo conmutativo, sin autovalores. En el coeficiente lineal se especializa al lema que Mathlib ya
+ten\'ia, $\tr M=-\,[\,X^1\,]\,\charpolyRev M$.
+\end{theorem}
+
+La demostraci\'on es la cadena prometida en la introducci\'on. Deriva $\charpolyRev M=\det(I-XM)$ por
+Jacobi (Teorema~\ref{thm:jacobi}); la derivada de $I-XM$ es $-M$, as\'i que $(\charpolyRev M)'$ es
+$-\tr(\adj(I-XM)\cdot M)$. La adjugada de $I-XM$ es $\det(I-XM)$ por su inversa---que, por el
+Lema~\ref{lem:resolvent}, es $\charpolyRev M$ por la serie resolvente; la traza de la resolvente
+contra $M$ es la funci\'on generatriz desplazada $\sum_k\tr(M^{k+1})X^k$. Transportar la identidad
+polinomial de Jacobi por la coerci\'on hacia las series de potencias y sustituir cierra el lazo. Todo
+el argumento nunca nombra un autovalor.
+
+\paragraph{Por qu\'e es \'util, llanamente.}
+Este es el diccionario mismo. Le\'ido en un sentido, computa los coeficientes del polinomio
+caracter\'istico---y por tanto el determinante, la traza y (v\'ia Cayley--Hamilton) la
+inversa---desde las trazas de las potencias; le\'ido en el otro, computa esas trazas desde el
+polinomio. Es la forma matricial de las identidades de Newton, la forma que un matem\'atico encuentra
+de verdad, y la forma que la versi\'on de funciones sim\'etricas de Mathlib no alcanzaba. La forma de
+derivada logar\'itmica $\sum\tr(M^k)X^k=-X(\charpolyRev)'/\charpolyRev$ es, adem\'as, el patr\'on
+universal tras las \emph{funciones zeta}: el rec\'iproco de un determinante, derivado
+logar\'itmicamente, da un conteo---que es precisamente como la Secci\'on~\ref{sec:ihara} alcanza el
+grafo.
+
+% ---------------------------------------------------------------
+\section{Las potencias de matrices cuentan caminos}
+\label{sec:walks}
+
+\emph{Antes de contar ciclos, ?`qu\'e cuenta una sola entrada de $M^k$?}
+
+La respuesta cl\'asica---caminos---necesita un hogar formal, y para grafos \emph{dirigidos} Mathlib no
+lo ten\'ia. Registra que una potencia de la matriz de adyacencia de un grafo \emph{simple} (no
+dirigido) cuenta caminos; el an\'alogo dirigido, que el operador no-retroceso exige, faltaba.
+
+\begin{lemma}[Las potencias cuentan caminos]
+\label{lem:walks}
+Para una matriz $M$ sobre un semianillo conmutativo, la entrada $(i,j)$ de $M^k$ es la suma, sobre
+los caminos de longitud $k$ de v\'ertices de $i$ a $j$, del producto de los pesos de las aristas
+(\lean{pow\_apply\_eq\_sum}). Para la matriz de adyacencia $0$--$1$ de una relaci\'on decidible---un
+grafo dirigido finito---esto es un conteo genuino: $\bigl((\text{adyacencia})^k\bigr)_{ij}$ es el
+n\'umero de caminos dirigidos de longitud $k$ de $i$ a $j$ (\lean{relMatrix\_pow\_apply}). Ambas sin
+\lean{sorry}.
+\end{lemma}
+
+La traza cuenta entonces caminos \emph{cerrados}, y---sumando la diagonal---caminos cerrados con punto
+base en un v\'ertice. El mismo enunciado, reorganizado sobre el \'indice c\'iclico $\Z/(m{+}1)$, se
+vuelve una suma sobre caminos \emph{c\'iclicos} (\lean{trace\_pow\_eq\_sum\_cyclicProd}), y el peso de
+un camino c\'iclico es invariante bajo rotar su punto base
+(\lean{cyclicProd\_comp\_finRotate}, y bajo todo el grupo de rotaci\'on). Esa invariancia por
+rotaci\'on es la puerta a las geod\'esicas---caminos cerrados contados salvo rotaci\'on
+c\'iclica---aunque, como la Secci\'on~\ref{sec:limits} se cuida de decir, s\'olo la puerta.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=1.0,
+  v/.style={circle,draw=ggteal,fill=ggband!50,line width=0.8pt,inner sep=1.5pt,
+    minimum size=6mm,font=\small},
+  e/.style={-{Stealth[length=2.2mm]},line width=1.1pt},
+  ee/.style={-{Stealth[length=2.2mm]},ggamber,line width=1.6pt}]
+\node[v] (a) at (90:1.35) {$0$};
+\node[v] (b) at (210:1.35) {$1$};
+\node[v] (c) at (330:1.35) {$2$};
+\draw[ee] (a) to[bend left=12] (b);
+\draw[ee] (b) to[bend left=12] (c);
+\draw[ee] (c) to[bend left=12] (a);
+\draw[e,ggteal!55] (b) to[bend left=12] (a);
+\draw[e,ggteal!55] (c) to[bend left=12] (b);
+\draw[e,ggteal!55] (a) to[bend left=12] (c);
+\node[font=\small,align=center] at (0,-2.1) {un camino cerrado\\sin retroceso $w$};
+\begin{scope}[xshift=4.6cm,scale=0.62]
+  \foreach \k/\x in {0/0,1/2.4,2/4.8}{
+    \node[v] (a\k) at ($(\x,0)+(90:1.0)$) {};
+    \node[v] (b\k) at ($(\x,0)+(210:1.0)$) {};
+    \node[v] (c\k) at ($(\x,0)+(330:1.0)$) {};
+    \draw[ee] (a\k) to[bend left=12] (b\k);
+    \draw[ee] (b\k) to[bend left=12] (c\k);
+    \draw[ee] (c\k) to[bend left=12] (a\k);
+    \node[font=\scriptsize] at (\x,-1.5) {$w\!\circ\!\rho^{\k}$};
+  }
+  \draw[{Stealth[length=2mm]}-{Stealth[length=2mm]},ggamber,line width=0.8pt]
+    (0.9,1.25) to[bend left=18] (1.5,1.25);
+  \draw[{Stealth[length=2mm]}-{Stealth[length=2mm]},ggamber,line width=0.8pt]
+    (3.3,1.25) to[bend left=18] (3.9,1.25);
+  \node[font=\scriptsize\itshape,ggamber,align=center] at (2.4,2.1)
+    {una \'orbita de rotaci\'on $=$ una geod\'esica};
+\end{scope}
+\end{tikzpicture}
+\caption{Caminos cerrados sin retroceso, y la rotaci\'on que los agrupa. \emph{Izquierda:} el
+tri\'angulo $K_3$ tiene seis dardos; se muestra en \'ambar un camino cerrado sin retroceso de longitud
+$3$ (los dardos inversos, en gris, retroceder\'ian). \emph{Derecha:} rotar el punto base por el
+desplazamiento c\'iclico $\rho=\mathtt{finRotate}$ permuta los tres caminos con punto base de esta
+\'orbita dejando fijo el peso c\'iclico (\lean{cyclicProd\_comp\_finRotate})---as\'i una sola
+\emph{geod\'esica} da cuenta de una \'orbita de caminos con punto base. Aqu\'i $\tr(B^3)=6$: dos
+\'orbitas (el ciclo y su inverso), tres puntos base cada una.}
+\label{fig:cyclic}
+\end{figure}
+
+\paragraph{Por qu\'e es \'util, llanamente.}
+``Entrada de una potencia de matriz $=$ n\'umero de caminos'' es el caballo de batalla de la teor\'ia
+espectral de grafos: tiempos de mezcla, el m\'etodo de los momentos para distribuciones de
+autovalores, estimaciones de expansores y las f\'ormulas de traza que este art\'iculo compone, todo
+descansa en ello. Tenerlo para grafos \emph{dirigidos}, no s\'olo no dirigidos, es lo que permite que
+el operador no-retroceso---un objeto inherentemente dirigido sobre aristas orientadas---se cuente
+siquiera.
+
+% ---------------------------------------------------------------
+\section{Los conteos de Ihara, compuestos}
+\label{sec:ihara}
+
+\emph{Si Jacobi deriva un determinante en trazas, y Bass colapsa el determinante de Ihara a datos de
+v\'ertice, ?`qu\'e dice su composici\'on?}
+
+Dice que los conteos no-retroceso de un grafo son espectrales. Sea $B$ el operador de Hashimoto, $A$
+la adyacencia y $D$ la matriz de grados; la f\'ormula de Bass~\cite{IharaBass} reza
+$(1-X^2)^{|V|}\det(I-XB)=(1-X^2)^{|E|}\det(I-XA+X^2(D-I))$. Derivando ambos lados
+(Teorema~\ref{thm:jacobi}, en cada determinante) y sustituyendo la identidad de Newton
+(Teorema~\ref{thm:newton}) en el lado no-retroceso se a\'isla la funci\'on generatriz de conteos.
+
+\begin{theorem}[La identidad $N_k$ de Ihara, en Lean~4]
+\label{thm:ihara}
+Con $Q=\det(I-XA+X^2(D-I))$, en el anillo de series de potencias,
+\keyeq{\sum_k\tr(B^{k+1})X^k\;=\;\frac{\det(I-XB)\,\bigl((1-X^2)^{|V|}\bigr)'-(1-X^2)^{|E|}Q'-Q\,\bigl((1-X^2)^{|E|}\bigr)'}{(1-X^2)^{|V|}\det(I-XB)}.}
+Las dos potencias de $(1-X^2)$ y ambos determinantes son unidades, as\'i que la divisi\'on es el
+$\mathtt{invOfUnit}$ formal; la identidad es sin \lean{sorry} (\lean{ihara\_Nk\_explicit}). Expresa los
+conteos no-retroceso $N_k=\tr(B^k)$ puramente a trav\'es de los datos de adyacencia $(A,D)$.
+\end{theorem}
+
+Y los conteos son combinatorios. Como $B$ es la matriz de adyacencia $0$--$1$ de la relaci\'on de
+no-retroceso sobre dardos ($d\rightsquigarrow e$ cuando la cabeza de $d$ es la cola de $e$ y $e$ no es
+el inverso de $d$), el Lema~\ref{lem:walks} se especializa:
+
+\begin{theorem}[$\tr(B^k)$ cuenta caminos sin retroceso, en Lean~4]
+\label{thm:Nk}
+\keyeq{\tr(B^k)\;=\;\#\{\text{caminos cerrados sin retroceso de longitud }k,\ \text{con punto base en un dardo}\}.}
+Sin \lean{sorry} (\lean{trace\_hashimoto\_pow}).
+\end{theorem}
+
+As\'i, la misma derivada que empez\'o como un hecho de una l\'inea de \'algebra lineal termina, cuatro
+composiciones despu\'es, como el enunciado de que los caminos sin retroceso de longitud $k$ de un
+grafo suman $\tr(B^k)$, y de que este n\'umero es computable s\'olo desde el espectro de adyacencia
+del grafo.
+
+\paragraph{Por qu\'e es \'util, llanamente.}
+Los conteos y espectros no-retroceso sustentan umbrales agudos de epidemias y percolaci\'on, la
+detecci\'on espectral de comunidades y---a trav\'es del an\'alogo de Ihara de la hip\'otesis de
+Riemann---la definici\'on misma de un grafo de Ramanujan como expansor \'optimo. El
+Teorema~\ref{thm:ihara} certifica el puente entre esos conteos y los datos de adyacencia desde los que
+suelen computarse; el Teorema~\ref{thm:Nk} certifica que los conteos significan lo que se dice que
+significan.
+
+\begin{table}[h]
+\centering\small
+\caption{Cada ingrediente verificado por m\'aquina. Todos son sin \lean{sorry}; \lean{\#print axioms}
+reporta s\'olo \lean{[propext, Classical.choice, Quot.sound]}. Fuentes:
+\lean{Ihara/TraceFormula.lean} y \lean{MathlibPR/MatrixWalkCount.lean}.}
+\label{tab:results}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Nombre Lean} & \textbf{Enunciado} & \textbf{\S}\\
+\midrule
+\lean{Matrix.derivative\_det} & $(\det M)'=\tr(\adj M\cdot M')$ (Jacobi) & \ref{sec:jacobi}\\
+\lean{one\_sub\_smul\_mul\_resolventSeries} & $(I-XM)\sum_k M^kX^k=I$ & \ref{sec:resolvent}\\
+\lean{trace\_resolventSeries} & $\tr\sum_k M^kX^k=\sum_k\tr(M^k)X^k$ & \ref{sec:resolvent}\\
+\lean{Matrix.charpolyRev\_logDeriv} & $(\charpolyRev M)'=-\charpolyRev M\sum_k\tr(M^{k+1})X^k$ (Newton) & \ref{sec:newton}\\
+\lean{pow\_apply\_eq\_sum} & $(M^k)_{ij}=\sum_{\text{caminos}}\prod(\text{pesos})$ & \ref{sec:walks}\\
+\lean{relMatrix\_pow\_apply} & conteo de caminos dirigidos, caso $0$--$1$ & \ref{sec:walks}\\
+\lean{trace\_pow\_eq\_sum\_cyclicProd} & $\tr(M^{m+1})=\sum_{\text{$w$ c\'iclico}}\text{cyclicProd}$ & \ref{sec:walks}\\
+\lean{cyclicProd\_comp\_finRotate\_iterate} & invariancia por rotaci\'on (grupo completo) & \ref{sec:walks}\\
+\lean{ihara\_Nk\_explicit} & $\sum_k\tr(B^{k+1})X^k$ desde $(A,D)$ & \ref{sec:ihara}\\
+\lean{trace\_hashimoto\_pow} & $\tr(B^k)=\#$ caminos cerrados sin retroceso & \ref{sec:ihara}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Comprobaciones num\'ericas independientes (\texttt{SymPy}), igualdad simb\'olica exacta. La
+fila del grafo es el tri\'angulo $K_3$: la traza de $B^k$ coincide con una enumeraci\'on por fuerza
+bruta de caminos cerrados sin retroceso con punto base, $0,0,6,0,0,6$ para $k=1,\dots,6$ (el ciclo y
+su inverso, tres puntos base cada uno).}
+\label{tab:checks}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Identidad} & \textbf{Instancia} & \textbf{Resultado}\\
+\midrule
+Jacobi $(\det M)'=\tr(\adj M\,M')$ & matriz $3\times3$ de polinomios & exacto\\
+Newton (derivada log.) & $3\times3$ y $2\times2$, m\'od $X^8$ & exacto\\
+$\tr(B^k)=\#\{\text{caminos c.p.\ base}\}$ & $K_3$, $k=1,\dots,6$ & $0,0,6,0,0,6$ ambos\\
+Bass $(1{-}u^2)^{|V|}\det(I{-}uB)=\dots$ & $K_3$ & exacto\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------
+\section{Lo que afirmo, y lo que no}
+\label{sec:limits}
+
+La matem\'atica es cl\'asica en todo: la f\'ormula de Jacobi, las identidades de Newton, el conteo de
+caminos y el teorema de Bass son todos viejos. La contribuci\'on es la formalizaci\'on, y separo
+ambas a prop\'osito.
+
+\paragraph{Lo que afirmo como nuevo (como formalizaci\'on).}
+(N1) la primera demostraci\'on verificada por m\'aquina de la que tengo noticia, en cualquier
+asistente de pruebas, de la f\'ormula \emph{algebraica} de Jacobi $(\det M)'=\tr(\adj M\cdot M')$; (N2)
+la forma \emph{matricial-de-trazas} de las identidades de Newton,
+$(\charpolyRev M)'=-\charpolyRev M\sum_k\tr(M^{k+1})X^k$, que Mathlib ten\'ia s\'olo en el coeficiente
+lineal; (N3) la serie resolvente $(I-XM)^{-1}=\sum_k M^kX^k$ y el conteo de caminos en grafos
+\emph{dirigidos}, ninguno en la biblioteca. Todas son contribuciones de formalizaci\'on; ninguna es
+matem\'atica nueva.
+
+\paragraph{Y, llanamente, lo que esto no es.}
+$\tr(B^k)$ cuenta caminos cerrados sin retroceso \emph{con punto base}---caminos con un dardo base
+elegido---, \emph{no} geod\'esicas cerradas, que son las clases de equivalencia c\'iclica de tales
+caminos, ni las geod\'esicas primas cuyo producto de Euler es la zeta de Ihara anal\'itica. La
+estructura c\'iclica que las distingue \emph{s\'i} se prepara aqu\'i: la traza se reescribe como suma
+sobre caminos c\'iclicos, y se demuestra que el peso es invariante bajo todo el grupo de rotaci\'on,
+de modo que cada peso es funci\'on de clase sobre las \'orbitas de rotaci\'on. Pero el conteo de
+\'orbitas, la contabilidad del periodo primitivo, la inversi\'on de M\"obius y el producto de Euler
+que vuelven los conteos con punto base en conteos de geod\'esicas primas \emph{no} est\'an construidos.
+He puesto el suelo combinatorio; la superestructura num\'erico-te\'orica est\'a trazada, no levantada.
+
+% ---------------------------------------------------------------
+\section{Implicaciones}
+\label{sec:implications}
+
+Tres clases, en orden decreciente de con cu\'anta firmeza puedo afirmarlas, y un apunte
+metodol\'ogico.
+
+\paragraph{Bloques de construcci\'on reutilizables y certificados.}
+La f\'ormula algebraica de Jacobi, la serie resolvente, la identidad de Newton matricial-de-trazas y
+el conteo de caminos dirigidos est\'an ahora verificados por m\'aquina y disponibles para quien
+formalice polinomios caracter\'isticos, el algoritmo de Faddeev--LeVerrier, funciones zeta de grafos o
+espectros de expansores. Mathlib no ten\'ia ninguno de los cuatro en forma utilizable. Es la
+implicaci\'on que puedo afirmar con m\'as firmeza, y la primera a la que apuntar\'ia a un futuro
+formalizador.
+
+\paragraph{Un punto de apoyo para lo que estos desbloquean.}
+La identidad de Newton es la puerta a computar coeficientes del polinomio caracter\'istico desde
+trazas y de vuelta; Jacobi subyace a Faddeev--LeVerrier y a la f\'ormula de Liouville; la composici\'on
+de Ihara est\'a a un paso del conteo de geod\'esicas primas que prepara. Cada uno es un hito que estas
+piedras podr\'ian sostener.
+
+\paragraph{La matem\'atica, con una nota de cautela.}
+Estas identidades importan porque importan los objetos r\'io abajo---polinomios caracter\'isticos,
+espectros no-retroceso, expansores de Ramanujan. Recelo de pedir prestada esa importancia: certificar
+una identidad fundamental no env\'ia ning\'un algoritmo ni ninguna red. Su valor est\'a en los
+cimientos certificados y en el corpus creciente de matem\'atica formalizada, no en la aplicaci\'on
+inmediata; afirmo lo primero, no lo segundo.
+
+\paragraph{Un apunte metodol\'ogico.}
+Este desarrollo se llev\'o a cabo con un sistema de IA como instrumento de investigaci\'on: propon\'ia
+definiciones, lemas y t\'acticas, y un lazo de compilaci\'on-como-or\'aculo verificaba o rechazaba
+cada uno contra el n\'ucleo. La contabilidad cuidadosa de aqu\'i---cada afirmaci\'on dimensionada
+exactamente a lo demostrado, la distinci\'on punto-base-frente-a-geod\'esica trazada con la misma
+nitidez que los teoremas---es parte de lo que espero que el trabajo muestre: que la formalizaci\'on
+asistida por IA puede resistir el exceso de afirmaci\'on que el m\'etodo invita, precisamente porque
+el asistente de pruebas, no el asistente, tiene la \'ultima palabra.
+
+% ---------------------------------------------------------------
+\section{D\'onde esto deja de ser \'util}
+\label{sec:context}
+
+La honestidad corta por ambos lados, as\'i que enuncio los l\'imites con la misma claridad que los
+resultados. El Teorema~\ref{thm:ihara} es una identidad de \emph{funciones generatrices}, no la zeta
+anal\'itica; no localiza polo alguno ni nombra primo alguno. El Teorema~\ref{thm:Nk} cuenta caminos
+\emph{con punto base}, y la distancia hasta las geod\'esicas---toda una teor\'ia de conteo de collares
+e inversi\'on de M\"obius---es real, no cosm\'etica. La identidad de Newton se demuestra sobre un
+anillo conmutativo pero no dice nada sobre cu\'ando el polinomio caracter\'istico \emph{se
+descompone}; Jacobi es para matrices de polinomios, y la versi\'on suave de variedades sigue siendo un
+objeto aparte. Este art\'iculo es un pu\~nado de piedras certificadas cerca del inicio de un largo
+camino, y prefiero nombrar el camino antes que exagerar las piedras.
+
+% ---------------------------------------------------------------
+\section{Trabajo relacionado}
+\label{sec:related}
+
+La matem\'atica es cl\'asica: la f\'ormula de Jacobi y la de Liouville, las identidades de Newton y el
+algoritmo de Faddeev--LeVerrier construido sobre ellas, la lectura de las potencias de matrices como
+conteo de caminos y---para la aplicaci\'on---la funci\'on zeta de Ihara~\cite{Ihara1966}, el operador
+de aristas de Hashimoto~\cite{Hashimoto1989}, la f\'ormula del determinante de Bass~\cite{Bass1992} y
+el relato moderno de Terras~\cite{Terras2011}. Del lado de la formalizaci\'on, Mathlib~\cite{Mathlib2020}
+provee determinantes, la adjugada, la regla de Cramer, el polinomio caracter\'istico invertido (s\'olo
+en el coeficiente lineal), las identidades de Newton para polinomios sim\'etricos y conteos de caminos
+para grafos simples---pero no la f\'ormula algebraica de Jacobi, ni la identidad de Newton
+matricial-de-trazas, ni la serie resolvente, ni el conteo de caminos dirigidos. Este desarrollo es
+compa\~nero de mis formalizaciones previas en Lean del polinomio de emparejamientos~\cite{PartI,PartII}
+y de la f\'ormula de Bass~\cite{IharaBass}; no tengo noticia de una demostraci\'on previa verificada
+por m\'aquina de la f\'ormula algebraica de Jacobi ni de la identidad de Newton matricial-de-trazas en
+ning\'un asistente de pruebas.
+
+% ---------------------------------------------------------------
+\section{Conclusi\'on}
+
+Part\'i del hecho m\'as elemental que pude nombrar---c\'omo se mueve un determinante cuando se mueve su
+matriz---y lo segu\'i, en un asistente de pruebas, a trav\'es del diccionario de Newton entre trazas y
+polinomios caracter\'isticos, y hasta los conteos de caminos cerrados de un grafo. Nada de esto es
+matem\'atica nueva; la contribuci\'on es que la f\'ormula algebraica de Jacobi, la identidad de Newton
+matricial-de-trazas, la serie resolvente y el conteo de caminos dirigidos est\'an ahora verificados por
+m\'aquina donde no hall\'e formalizaci\'on previa, y que se componen, hasta los mismos conteos de
+Ihara. El conteo de geod\'esicas primas que preparan, y la generalidad espectral plena, quedan por
+delante---trazados, pero no levantados. Lo ofrezco como una perla y una invitaci\'on.
+
+\paragraph{Artefactos.} Todas las fuentes Lean (sin \lean{sorry}, dependientes s\'olo de los tres
+axiomas est\'andar) est\'an disponibles en
+\begin{center}
+\url{https://github.com/karlesmarin/godsil-gutman-lean}
+\end{center}
+en \lean{Ihara/TraceFormula.lean} (Jacobi, Newton, la composici\'on de Ihara) y
+\lean{MathlibPR/MatrixWalkCount.lean} (la serie resolvente, el conteo de caminos, la estructura
+c\'iclica). Verifica la huella de axiomas con, p.\,ej., \lean{\#print axioms Matrix.charpolyRev\_logDeriv}
+$\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.
+
+\begin{thebibliography}{99}
+\bibitem{Bass1992} H.~Bass, \emph{The Ihara--Selberg zeta function of a tree lattice}, Internat. J.
+  Math. \textbf{3} (1992), 717--797.
+\bibitem{Hashimoto1989} K.~Hashimoto, \emph{Zeta functions of finite graphs and representations of
+  $p$-adic groups}, en \emph{Automorphic forms and geometry of arithmetic varieties}, Adv. Stud. Pure
+  Math. \textbf{15} (1989), 211--280.
+\bibitem{Ihara1966} Y.~Ihara, \emph{On discrete subgroups of the two by two projective linear group
+  over $\mathfrak{p}$-adic fields}, J. Math. Soc. Japan \textbf{18} (1966), 219--235.
+\bibitem{Mathlib2020} The mathlib Community, \emph{The Lean mathematical library}, en \emph{Proc. 9th
+  ACM SIGPLAN Int. Conf. on Certified Programs and Proofs (CPP 2020)}, 367--381.
+\bibitem{PartI} C.~Mar\'in, \emph{Random Signs into Matchings: a machine-checked Godsil--Gutman
+  identity in Lean~4} (2026).
+\bibitem{PartII} C.~Mar\'in, \emph{Unfolding a Graph into a Tree: Heilmann--Lieb real-rootedness in
+  Lean~4} (2026).
+\bibitem{IharaBass} C.~Mar\'in, \emph{Folding Edges into Vertices: a machine-checked proof of Bass's
+  determinant formula for the Ihara zeta in Lean~4} (2026), Zenodo DOI
+  \texttt{10.5281/zenodo.20573120}.
+\bibitem{Terras2011} A.~Terras, \emph{Zeta Functions of Graphs: A Stroll through the Garden},
+  Cambridge Studies in Advanced Mathematics \textbf{128}, Cambridge Univ. Press, 2011.
+\end{thebibliography}
+
+\end{document}
