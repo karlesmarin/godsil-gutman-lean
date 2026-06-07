@@ -194,6 +194,19 @@ theorem treeLikeGap_eq_zero_of_lt_egirth (k : ℕ) (h : (k : ℕ∞) < G.egirth)
     G.treeLikeGap k = 0 := by
   rw [treeLikeGap, treeLikeWalkCount_eq_trace_of_lt_egirth k h, sub_self]
 
+/-- **The gap counts the non-tree-like closed walks** (bijection, piece 1): `treeLikeGap G k =
+Σ_v #{closed length-k walks at v that are not tree-like}`. Immediate from `tr(Aᵏ) = Σ_v #(all)`
+and `treeLikeWalkCount = Σ_v #(tree-like)`, since all = tree-like ⊔ not-tree-like. -/
+theorem treeLikeGap_eq_card_not_treeLike (k : ℕ) :
+    G.treeLikeGap k
+      = ∑ v : V, (#((G.finsetWalkLength k v v).filter fun w => ¬ w.IsTreeLike) : ℤ) := by
+  rw [treeLikeGap, trace_adjMatrix_pow, treeLikeWalkCount, Nat.cast_sum, Nat.cast_sum,
+    ← Finset.sum_sub_distrib]
+  refine Finset.sum_congr rfl fun v _ => ?_
+  have hc := Finset.filter_card_add_filter_neg_card_eq_card
+    (s := G.finsetWalkLength k v v) (p := fun w => w.IsTreeLike)
+  rw [← hc]; push_cast; ring
+
 end Counting
 
 end SimpleGraph
