@@ -120,6 +120,15 @@ theorem cyclicProd_comp_finRotate {n : ℕ} (M : Matrix V V R) (w : Fin (n + 1) 
   simp only [cyclicProd, Function.comp_apply]
   exact Equiv.prod_comp (finRotate (n + 1)) fun t => M (w t) (w (finRotate (n + 1) t))
 
+/-- **Invariance under the whole rotation group.** The cyclic product is unchanged by any iterate of
+`finRotate` — i.e. it is a class function on the `ℤ/(n+1)` rotation orbits. -/
+theorem cyclicProd_comp_finRotate_iterate {n : ℕ} (M : Matrix V V R) (w : Fin (n + 1) → V) (j : ℕ) :
+    cyclicProd M (w ∘ (⇑(finRotate (n + 1)))^[j]) = cyclicProd M w := by
+  induction j with
+  | zero => simp
+  | succ j ih =>
+    rw [Function.iterate_succ, ← Function.comp_assoc, cyclicProd_comp_finRotate, ih]
+
 /-- **The cyclic trace formula.** `tr(M^(m+1))` is the sum, over all closed cyclic walks
 `w : Fin (m+1) → V`, of the cyclic product of edge weights. Connects the closed-walk trace
 (`trace_pow_eq_sum_closed`) to the rotation-equivariant `cyclicProd`. -/
