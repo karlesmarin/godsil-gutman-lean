@@ -124,16 +124,16 @@ respuesta es s\'i, y seguirla exige que se encuentren tres breves historias.
 
 La primera es la \emph{f\'ormula de Jacobi}. En el siglo XIX Jacobi registr\'o c\'omo cambia el
 determinante de una matriz al variar sus entradas: $\mathrm{d}(\det M)=\tr(\adj M\cdot\mathrm{d}M)$,
-donde $\adj M$ es la adjugada (la traspuesta de la matriz de cofactores). Es el c\'alculo matricial
-tras la f\'ormula de Liouville para el wronskiano de una EDO lineal, tras el algoritmo de
-Faddeev--LeVerrier que computa un polinomio caracter\'istico desde las trazas, y tras toda
-perturbaci\'on a primer orden de un autovalor. Es tambi\'en, en su forma \emph{algebraica}---sobre un
+donde $\adj M$ es la adjugada (la traspuesta de la matriz de cofactores)~\cite{HornJohnson}. Es el
+c\'alculo matricial~\cite{MagnusNeudecker} tras la f\'ormula de Liouville para el wronskiano de una EDO
+lineal, tras el algoritmo de Faddeev--LeVerrier que computa un polinomio caracter\'istico desde las
+trazas~\cite{Hou1998}, y tras toda perturbaci\'on a primer orden de un autovalor. Es tambi\'en, en su forma \emph{algebraica}---sobre un
 anillo conmutativo arbitrario, con la derivada formal de polinomios en vez de un l\'imite---, una
 ausente de la mayor biblioteca formal de matem\'aticas. Mathlib sab\'ia derivar un determinante
 \emph{anal\'iticamente}, como aplicaci\'on suave entre espacios normados; no conoc\'ia la identidad
 algebraica de una l\'inea.
 
-La segunda son las \emph{identidades de Newton}. Newton relacion\'o las sumas de potencias
+La segunda son las \emph{identidades de Newton}~\cite{Macdonald}. Newton relacion\'o las sumas de potencias
 $p_k=\sum_i\lambda_i^k$ de una colecci\'on de n\'umeros con sus funciones sim\'etricas elementales
 $e_k$---equivalentemente, los coeficientes del polinomio $\prod_i(X-\lambda_i)$. Especializadas a los
 autovalores de una matriz, las sumas de potencias son exactamente las trazas $\tr(M^k)$, y las
@@ -153,7 +153,7 @@ $N_k=\tr(B^k)$ son exactamente las sumas de potencias de trazas que gobierna la 
 La misma derivada que mueve a Jacobi y a Newton alcanza, por tanto, al aplicarse a la identidad de
 Bass, los conteos de ciclos de un grafo.
 
-Este art\'iculo formaliza esa cadena---Jacobi, luego Newton, luego los conteos de Ihara---en Lean~4, y
+Este art\'iculo formaliza esa cadena---Jacobi, luego Newton, luego los conteos de Ihara---en Lean~4~\cite{LeanFour}, y
 es exacto sobre d\'onde, por ahora, termina el camino.
 
 % ---------------------------------------------------------------
@@ -348,7 +348,7 @@ desplazamiento c\'iclico $\rho=\mathtt{finRotate}$ permuta los tres caminos con 
 
 \paragraph{Por qu\'e es \'util, llanamente.}
 ``Entrada de una potencia de matriz $=$ n\'umero de caminos'' es el caballo de batalla de la teor\'ia
-espectral de grafos: tiempos de mezcla, el m\'etodo de los momentos para distribuciones de
+espectral de grafos~\cite{BrouwerHaemers}: tiempos de mezcla, el m\'etodo de los momentos para distribuciones de
 autovalores, estimaciones de expansores y las f\'ormulas de traza que este art\'iculo compone, todo
 descansa en ello. Tenerlo para grafos \emph{dirigidos}, no s\'olo no dirigidos, es lo que permite que
 el operador no-retroceso---un objeto inherentemente dirigido sobre aristas orientadas---se cuente
@@ -392,9 +392,10 @@ grafo suman $\tr(B^k)$, y de que este n\'umero es computable s\'olo desde el esp
 del grafo.
 
 \paragraph{Por qu\'e es \'util, llanamente.}
-Los conteos y espectros no-retroceso sustentan umbrales agudos de epidemias y percolaci\'on, la
-detecci\'on espectral de comunidades y---a trav\'es del an\'alogo de Ihara de la hip\'otesis de
-Riemann---la definici\'on misma de un grafo de Ramanujan como expansor \'optimo. El
+Los conteos y espectros no-retroceso sustentan umbrales agudos de epidemias y
+percolaci\'on~\cite{KarrerNewmanZdeborova2014}, la detecci\'on espectral de
+comunidades~\cite{Krzakala2013} y---a trav\'es del an\'alogo de Ihara de la hip\'otesis de
+Riemann---la definici\'on misma de un grafo de Ramanujan como expansor \'optimo~\cite{LPS1988,HLW2006}. El
 Teorema~\ref{thm:ihara} certifica el puente entre esos conteos y los datos de adyacencia desde los que
 suelen computarse; el Teorema~\ref{thm:Nk} certifica que los conteos significan lo que se dice que
 significan.
@@ -535,9 +536,11 @@ camino, y prefiero nombrar el camino antes que exagerar las piedras.
 \section{Trabajo relacionado}
 \label{sec:related}
 
-La matem\'atica es cl\'asica: la f\'ormula de Jacobi y la de Liouville, las identidades de Newton y el
-algoritmo de Faddeev--LeVerrier construido sobre ellas, la lectura de las potencias de matrices como
-conteo de caminos y---para la aplicaci\'on---la funci\'on zeta de Ihara~\cite{Ihara1966}, el operador
+La matem\'atica es cl\'asica: la f\'ormula de Jacobi y la de Liouville~\cite{HornJohnson,MagnusNeudecker},
+las identidades de Newton~\cite{Macdonald} y el algoritmo de Faddeev--LeVerrier construido sobre
+ellas~\cite{Hou1998}, la lectura de las potencias de matrices como conteo de
+caminos~\cite{BrouwerHaemers} y---para la aplicaci\'on---la funci\'on zeta de Ihara~\cite{Ihara1966},
+el operador
 de aristas de Hashimoto~\cite{Hashimoto1989}, la f\'ormula del determinante de Bass~\cite{Bass1992} y
 el relato moderno de Terras~\cite{Terras2011}. Del lado de la formalizaci\'on, Mathlib~\cite{Mathlib2020}
 provee determinantes, la adjugada, la regla de Cramer, el polinomio caracter\'istico invertido (s\'olo
@@ -576,11 +579,32 @@ $\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.
 \begin{thebibliography}{99}
 \bibitem{Bass1992} H.~Bass, \emph{The Ihara--Selberg zeta function of a tree lattice}, Internat. J.
   Math. \textbf{3} (1992), 717--797.
+\bibitem{BrouwerHaemers} A.~E.~Brouwer y W.~H.~Haemers, \emph{Spectra of Graphs}, Universitext,
+  Springer, 2012.
+\bibitem{HLW2006} S.~Hoory, N.~Linial y A.~Wigderson, \emph{Expander graphs and their applications},
+  Bull. Amer. Math. Soc. \textbf{43} (2006), 439--561.
+\bibitem{HornJohnson} R.~A.~Horn y C.~R.~Johnson, \emph{Matrix Analysis}, 2.\textsuperscript{a} ed.,
+  Cambridge University Press, 2013.
+\bibitem{Hou1998} S.-H.~Hou, \emph{Classroom note: a simple proof of the Leverrier--Faddeev
+  characteristic polynomial algorithm}, SIAM Rev. \textbf{40} (1998), 706--709.
 \bibitem{Hashimoto1989} K.~Hashimoto, \emph{Zeta functions of finite graphs and representations of
   $p$-adic groups}, en \emph{Automorphic forms and geometry of arithmetic varieties}, Adv. Stud. Pure
   Math. \textbf{15} (1989), 211--280.
 \bibitem{Ihara1966} Y.~Ihara, \emph{On discrete subgroups of the two by two projective linear group
   over $\mathfrak{p}$-adic fields}, J. Math. Soc. Japan \textbf{18} (1966), 219--235.
+\bibitem{KarrerNewmanZdeborova2014} B.~Karrer, M.~E.~J.~Newman y L.~Zdeborov\'a, \emph{Percolation on
+  sparse networks}, Phys. Rev. Lett. \textbf{113} (2014), 208702.
+\bibitem{Krzakala2013} F.~Krzakala, C.~Moore, E.~Mossel, J.~Neeman, A.~Sly, L.~Zdeborov\'a y P.~Zhang,
+  \emph{Spectral redemption in clustering sparse networks}, Proc. Natl. Acad. Sci. USA \textbf{110}
+  (2013), 20935--20940.
+\bibitem{LeanFour} L.~de~Moura y S.~Ullrich, \emph{The Lean~4 theorem prover and programming
+  language}, en \emph{Automated Deduction---CADE 28}, LNCS \textbf{12699}, Springer, 2021, 625--635.
+\bibitem{LPS1988} A.~Lubotzky, R.~Phillips y P.~Sarnak, \emph{Ramanujan graphs}, Combinatorica
+  \textbf{8} (1988), 261--277.
+\bibitem{Macdonald} I.~G.~Macdonald, \emph{Symmetric Functions and Hall Polynomials},
+  2.\textsuperscript{a} ed., Oxford University Press, 1995.
+\bibitem{MagnusNeudecker} J.~R.~Magnus y H.~Neudecker, \emph{Matrix Differential Calculus with
+  Applications in Statistics and Econometrics}, 3.\textsuperscript{a} ed., Wiley, 2019.
 \bibitem{Mathlib2020} The mathlib Community, \emph{The Lean mathematical library}, en \emph{Proc. 9th
   ACM SIGPLAN Int. Conf. on Certified Programs and Proofs (CPP 2020)}, 367--381.
 \bibitem{PartI} C.~Mar\'in, \emph{Random Signs into Matchings: a machine-checked Godsil--Gutman

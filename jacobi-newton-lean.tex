@@ -121,16 +121,17 @@ requires three short histories to meet.
 
 The first is \emph{Jacobi's formula}. In the nineteenth century Jacobi recorded how the determinant
 of a matrix changes as its entries vary: $\mathrm{d}(\det M)=\tr(\adj M\cdot\mathrm{d}M)$, where
-$\adj M$ is the adjugate (the transpose of the cofactor matrix). It is the matrix calculus behind
-Liouville's formula for the Wronskian of a linear ODE, behind the Faddeev--LeVerrier algorithm that
-computes a characteristic polynomial from traces, and behind every first-order perturbation of an
-eigenvalue. It is also, in its \emph{algebraic} form---over an arbitrary commutative ring, with the
+$\adj M$ is the adjugate (the transpose of the cofactor matrix)~\cite{HornJohnson}. It is the matrix
+calculus~\cite{MagnusNeudecker} behind Liouville's formula for the Wronskian of a linear ODE, behind
+the Faddeev--LeVerrier algorithm that computes a characteristic polynomial from traces~\cite{Hou1998},
+and behind every first-order perturbation of an eigenvalue. It is also, in its \emph{algebraic} form---over an arbitrary commutative ring, with the
 formal derivative of polynomials rather than a limit---absent from the largest formal library of
 mathematics. Mathlib knew how to differentiate a determinant \emph{analytically}, as a smooth map
 between normed spaces; it did not know the one-line algebraic identity.
 
-The second is \emph{Newton's identities}. Newton related the power sums $p_k=\sum_i\lambda_i^k$ of a
-collection of numbers to their elementary symmetric functions $e_k$---equivalently, the coefficients
+The second is \emph{Newton's identities}~\cite{Macdonald}. Newton related the power sums
+$p_k=\sum_i\lambda_i^k$ of a collection of numbers to their elementary symmetric functions
+$e_k$---equivalently, the coefficients
 of the polynomial $\prod_i(X-\lambda_i)$. Specialized to the eigenvalues of a matrix, the power sums
 are exactly the traces $\tr(M^k)$, and the elementary symmetric functions are exactly the
 coefficients of the characteristic polynomial. So Newton's identities, in this guise, are a bridge:
@@ -147,7 +148,7 @@ exactly the trace power sums that Newton's identity governs. The same derivative
 and Newton therefore reaches, when applied to Bass's identity, all the way to the cycle counts of a
 graph.
 
-This paper formalizes that chain---Jacobi, then Newton, then the Ihara counts---in Lean~4, and is
+This paper formalizes that chain---Jacobi, then Newton, then the Ihara counts---in Lean~4~\cite{LeanFour}, and is
 exact about where the road, for now, ends.
 
 % ---------------------------------------------------------------
@@ -335,7 +336,7 @@ of rooted walks. Here $\tr(B^3)=6$: two orbits (the cycle and its reverse), thre
 \end{figure}
 
 \paragraph{Why this is useful, plainly.}
-``Entry of a matrix power = number of walks'' is the workhorse of spectral graph theory: mixing
+``Entry of a matrix power = number of walks'' is the workhorse of spectral graph theory~\cite{BrouwerHaemers}: mixing
 times, the method of moments for eigenvalue distributions, expander estimates, and the trace formulas
 this paper composes all rest on it. Having it for \emph{directed} graphs, not only undirected ones,
 is what lets the non-backtracking operator---an inherently directed object on oriented edges---be
@@ -378,9 +379,10 @@ the statement that a graph's non-backtracking walks of length $k$ number $\tr(B^
 number is computable from the graph's adjacency spectrum alone.
 
 \paragraph{Why this is useful, plainly.}
-Non-backtracking counts and spectra underpin sharp epidemic and percolation thresholds, spectral
-community detection, and---through the Ihara analogue of the Riemann hypothesis---the very definition
-of a Ramanujan graph as an optimal expander. Theorem~\ref{thm:ihara} certifies the bridge between
+Non-backtracking counts and spectra underpin sharp epidemic and percolation
+thresholds~\cite{KarrerNewmanZdeborova2014}, spectral community detection~\cite{Krzakala2013},
+and---through the Ihara analogue of the Riemann hypothesis---the very definition of a Ramanujan graph
+as an optimal expander~\cite{LPS1988,HLW2006}. Theorem~\ref{thm:ihara} certifies the bridge between
 those counts and the adjacency data they are usually computed from; Theorem~\ref{thm:Nk} certifies
 that the counts mean what they are said to mean.
 
@@ -511,8 +513,9 @@ the road than overstate the stones.
 \section{Related work}
 \label{sec:related}
 
-The mathematics is classical: Jacobi's formula and Liouville's, Newton's identities and the
-Faddeev--LeVerrier algorithm built on them, the walk-counting reading of matrix powers, and---for the
+The mathematics is classical: Jacobi's formula and Liouville's~\cite{HornJohnson,MagnusNeudecker},
+Newton's identities~\cite{Macdonald} and the Faddeev--LeVerrier algorithm built on them~\cite{Hou1998},
+the walk-counting reading of matrix powers~\cite{BrouwerHaemers}, and---for the
 application---Ihara's zeta function~\cite{Ihara1966}, Hashimoto's edge operator~\cite{Hashimoto1989},
 Bass's determinant formula~\cite{Bass1992}, and Terras's modern account~\cite{Terras2011}. On the
 formalization side, Mathlib~\cite{Mathlib2020} provides determinants, the adjugate, Cramer's rule,
@@ -550,11 +553,32 @@ $\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.
 \begin{thebibliography}{99}
 \bibitem{Bass1992} H.~Bass, \emph{The Ihara--Selberg zeta function of a tree lattice}, Internat. J.
   Math. \textbf{3} (1992), 717--797.
+\bibitem{BrouwerHaemers} A.~E.~Brouwer and W.~H.~Haemers, \emph{Spectra of Graphs}, Universitext,
+  Springer, 2012.
+\bibitem{HLW2006} S.~Hoory, N.~Linial, and A.~Wigderson, \emph{Expander graphs and their
+  applications}, Bull. Amer. Math. Soc. \textbf{43} (2006), 439--561.
+\bibitem{HornJohnson} R.~A.~Horn and C.~R.~Johnson, \emph{Matrix Analysis}, 2nd ed., Cambridge
+  University Press, 2013.
+\bibitem{Hou1998} S.-H.~Hou, \emph{Classroom note: a simple proof of the Leverrier--Faddeev
+  characteristic polynomial algorithm}, SIAM Rev. \textbf{40} (1998), 706--709.
 \bibitem{Hashimoto1989} K.~Hashimoto, \emph{Zeta functions of finite graphs and representations of
   $p$-adic groups}, in \emph{Automorphic forms and geometry of arithmetic varieties}, Adv. Stud. Pure
   Math. \textbf{15} (1989), 211--280.
 \bibitem{Ihara1966} Y.~Ihara, \emph{On discrete subgroups of the two by two projective linear group
   over $\mathfrak{p}$-adic fields}, J. Math. Soc. Japan \textbf{18} (1966), 219--235.
+\bibitem{KarrerNewmanZdeborova2014} B.~Karrer, M.~E.~J.~Newman, and L.~Zdeborov\'a, \emph{Percolation
+  on sparse networks}, Phys. Rev. Lett. \textbf{113} (2014), 208702.
+\bibitem{Krzakala2013} F.~Krzakala, C.~Moore, E.~Mossel, J.~Neeman, A.~Sly, L.~Zdeborov\'a, and
+  P.~Zhang, \emph{Spectral redemption in clustering sparse networks}, Proc. Natl. Acad. Sci. USA
+  \textbf{110} (2013), 20935--20940.
+\bibitem{LeanFour} L.~de~Moura and S.~Ullrich, \emph{The Lean~4 theorem prover and programming
+  language}, in \emph{Automated Deduction---CADE 28}, LNCS \textbf{12699}, Springer, 2021, 625--635.
+\bibitem{LPS1988} A.~Lubotzky, R.~Phillips, and P.~Sarnak, \emph{Ramanujan graphs}, Combinatorica
+  \textbf{8} (1988), 261--277.
+\bibitem{Macdonald} I.~G.~Macdonald, \emph{Symmetric Functions and Hall Polynomials}, 2nd ed., Oxford
+  University Press, 1995.
+\bibitem{MagnusNeudecker} J.~R.~Magnus and H.~Neudecker, \emph{Matrix Differential Calculus with
+  Applications in Statistics and Econometrics}, 3rd ed., Wiley, 2019.
 \bibitem{Mathlib2020} The mathlib Community, \emph{The Lean mathematical library}, in \emph{Proc. 9th
   ACM SIGPLAN Int. Conf. on Certified Programs and Proofs (CPP 2020)}, 367--381.
 \bibitem{PartI} C.~Mar\'in, \emph{Random Signs into Matchings: a machine-checked Godsil--Gutman
