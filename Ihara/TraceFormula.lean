@@ -103,6 +103,28 @@ theorem one_sub_smul_mul_resolventSeries (M : Matrix n n R) :
   nth_rewrite 1 [resolventSeries_fixedPoint M]
   abel
 
+/-- The adjugate of `1 - X•M` over `R⟦X⟧` is `det(1 - X•M)` times the resolvent series — the matrix
+form of `adj F = det F · F⁻¹`, valid because the resolvent inverts `1 - X•M`
+(`one_sub_smul_mul_resolventSeries`). -/
+theorem smul_resolventSeries_eq_adjugate (M : Matrix n n R) :
+    (1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)).det • resolventSeries M
+      = adjugate (1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)) :=
+  calc (1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)).det • resolventSeries M
+      = ((1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)).det • (1 : Matrix n n R⟦X⟧))
+          * resolventSeries M := by rw [smul_mul_assoc, one_mul]
+    _ = adjugate (1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧))
+          * ((1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)) * resolventSeries M) := by
+        rw [← adjugate_mul, mul_assoc]
+    _ = adjugate (1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)) := by
+        rw [one_sub_smul_mul_resolventSeries, mul_one]
+
+/-- The shifted trace generating function: `tr(resolvent · M) = ∑ₖ tr(Mᵏ⁺¹) Xᵏ`. -/
+theorem trace_resolventSeries_mul (M : Matrix n n R) :
+    (resolventSeries M * M.map (C : R →+* R⟦X⟧)).trace = mk fun k => (M ^ (k + 1)).trace := by
+  ext k
+  simp only [Matrix.trace, Matrix.diag_apply, map_sum, Matrix.mul_apply, Matrix.map_apply,
+    coeff_mul_C, coeff_resolventSeries, coeff_mk, pow_succ]
+
 /-! ### Jacobi's formula (Part III, brick 1)
 
 The determinant half of the trace-generating-function bridge: the derivative of `det` of a matrix of
