@@ -19,7 +19,7 @@ proved here: summing "`k`-matchings avoiding `v`" over `v` counts each `k`-match
 uncovered vertex, and a `k`-matching covers exactly `2k` vertices.
 -/
 
-open Finset
+open Finset Polynomial
 
 namespace SimpleGraph
 
@@ -70,5 +70,30 @@ theorem sum_matchingNumber_deleteIncidenceSet (k : ℕ) :
     _ = ∑ _s ∈ G.matchingsOfCard k, (Fintype.card V - 2 * k) := Finset.sum_congr rfl key
     _ = (Fintype.card V - 2 * k) * G.matchingNumber k := by
         rw [Finset.sum_const, matchingNumber, smul_eq_mul, Nat.mul_comm]
+
+/-- `X · d/dX (Xᵐ) = C(m) · Xᵐ` — handles the `m = 0` boundary cleanly (both sides `0`). -/
+theorem X_mul_derivative_X_pow (m : ℕ) :
+    (X : ℝ[X]) * derivative (X ^ m) = C (m : ℝ) * X ^ m := by
+  rcases m with _ | m
+  · simp
+  · rw [derivative_X_pow, Nat.add_sub_cancel]; ring
+
+/-- **The vertex-deletion derivative law** `Σ_v μ(G−v) = X·μ'(G)` (fixed-`n` incidence-deletion form:
+`G.deleteIncidenceSet v` isolates `v`, so `μ(G.deleteIncidenceSet v)` plays the role of `X·μ(G−v)`).
+The matching-polynomial mirror of `char'(A) = Σ_v char(A_v̂)`, and the log-derivative
+`μ'/μ = Σ_v μ(G−v)/μ(G)` opening Godsil's tree-like-walk generating function. Termwise from the
+double-count `sum_matchingNumber_deleteIncidenceSet`. -/
+theorem sum_matchingPoly_deleteIncidenceSet :
+    ∑ v : V, (G.deleteIncidenceSet v).matchingPoly = X * derivative G.matchingPoly := by
+  simp only [matchingPoly]
+  rw [Finset.sum_comm, derivative_sum, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  have hAB : (∑ v : V, (-1 : ℝ) ^ k * ((G.deleteIncidenceSet v).matchingNumber k : ℝ))
+      = (-1 : ℝ) ^ k * (G.matchingNumber k : ℝ) * ((Fintype.card V - 2 * k : ℕ) : ℝ) := by
+    rw [← Finset.mul_sum, ← Nat.cast_sum, sum_matchingNumber_deleteIncidenceSet]
+    push_cast; ring
+  rw [← Finset.sum_mul, derivative_C_mul, mul_left_comm, X_mul_derivative_X_pow, ← map_sum, hAB,
+    map_mul]
+  ring
 
 end SimpleGraph
