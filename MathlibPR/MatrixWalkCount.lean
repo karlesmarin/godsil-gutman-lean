@@ -7,6 +7,7 @@ import Mathlib.Data.Matrix.Mul
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.LinearAlgebra.Matrix.Trace
 
 /-!
 # Walk counting for a finite digraph (the power of a `0-1` matrix)
@@ -84,6 +85,24 @@ theorem pow_apply_eq_sum (M : Matrix V V R) (k : ℕ) (i j : V) :
       rw [Finset.sum_ite_eq']
       simp
     · simp [hQ]
+
+/-- **The trace of `Mᵏ` counts closed walks.** It is the sum, over closed length-`k` walks (tuples
+`p : Fin (k+1) → V` with `p 0 = p (last)`), of the product of the edge weights. -/
+theorem trace_pow_eq_sum_closed (M : Matrix V V R) (k : ℕ) :
+    (M ^ k).trace = ∑ p : Fin (k + 1) → V,
+      if p 0 = p (Fin.last k) then ∏ t : Fin k, M (p t.castSucc) (p t.succ) else 0 := by
+  rw [Matrix.trace]
+  simp only [Matrix.diag_apply, pow_apply_eq_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun p _ => ?_
+  by_cases h : p 0 = p (Fin.last k)
+  · rw [if_pos h, Finset.sum_eq_single (p 0)]
+    · simp [h.symm]
+    · intro a _ ha; rw [if_neg]; rintro ⟨h1, -⟩; exact ha h1.symm
+    · intro h'; exact absurd (Finset.mem_univ _) h'
+  · rw [if_neg h]
+    refine Finset.sum_eq_zero fun a _ => if_neg ?_
+    rintro ⟨h1, h2⟩; exact h (h1.trans h2.symm)
 
 end PowSum
 
