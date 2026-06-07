@@ -308,6 +308,38 @@ theorem derivative_bass :
   have h := congrArg derivative (G.bass_charpolyRev R)
   rwa [derivative_mul, derivative_mul, Matrix.derivative_det, Matrix.derivative_det] at h
 
+open scoped PowerSeries in
+/-- **The isolated Ihara `N_k` identity** (cleared form). Differentiating Bass's identity in `R⟦X⟧`
+and substituting Newton's identity for matrix traces (`Matrix.charpolyRev_logDeriv`) on the
+non-backtracking side isolates the `N_k = tr(Bᵏ)` generating function, expressed through the
+adjacency data `Q = det(1 - X·A + X²(D-1))`:
+`(1-X²)^|V| · det(1-X·B) · ∑ₖ tr(Bᵏ⁺¹)Xᵏ = det(1-X·B)·((1-X²)^|V|)′ - (1-X²)^|E|·Q′ - Q·((1-X²)^|E|)′`.
+The two `(1-X²)`-powers and the determinants are units in `R⟦X⟧`, so dividing through gives the
+generating function `∑ₖ N_{k+1} Xᵏ` purely in terms of the adjacency spectrum. -/
+theorem ihara_Nk_isolated :
+    (((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+        * ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)
+        * PowerSeries.mk (fun k => ((G.hashimoto R) ^ (k + 1)).trace)
+      = ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)
+          * d⁄dX R (((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+        - (((1 - (X : R[X]) ^ 2) ^ G.edgeFinset.card : R[X]) : R⟦X⟧)
+          * d⁄dX R ((1 - (X : R[X]) • (G.adjMatrix R).map C
+              + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).det : R⟦X⟧)
+        - ((1 - (X : R[X]) • (G.adjMatrix R).map C
+              + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).det : R⟦X⟧)
+          * d⁄dX R (((1 - (X : R[X]) ^ 2) ^ G.edgeFinset.card : R[X]) : R⟦X⟧) := by
+  have hbass := congrArg Polynomial.coeToPowerSeries.ringHom (G.bass_charpolyRev R)
+  rw [map_mul, map_mul] at hbass
+  simp only [Polynomial.coeToPowerSeries.ringHom_apply] at hbass
+  have hN : d⁄dX R ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)
+      = -((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)
+        * PowerSeries.mk (fun k => ((G.hashimoto R) ^ (k + 1)).trace) :=
+    Matrix.charpolyRev_logDeriv (G.hashimoto R)
+  have hd := congrArg (⇑(d⁄dX R)) hbass
+  rw [Derivation.leibniz, Derivation.leibniz, hN] at hd
+  simp only [smul_eq_mul] at hd
+  linear_combination -hd
+
 end SpectralField
 
 section Ihara
