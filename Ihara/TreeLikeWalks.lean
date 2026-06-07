@@ -107,6 +107,32 @@ theorem trace_adjMatrix_pow_eq_treeLike_of_lt_egirth (k : ℕ) (h : (k : ℕ∞)
   rw [trace_adjMatrix_pow]
   exact Finset.sum_congr rfl fun v _ => (card_filter_isTreeLike_of_lt_egirth h).symm
 
+/-! ## The matching side: Godsil's tree-like walk count (Part III, brick 3 — scaffold)
+
+The trace side above is settled. Godsil's **moment theorem** is the remaining (open) brick:
+
+  `p_k = Σᵢ θᵢᵏ  =  treeLikeWalkCount G k`,
+
+where `θᵢ` are the roots of `matchingPoly G` and `treeLikeWalkCount` is defined below. Proving the
+equality with `p_k` needs (i) Newton's identities for the roots of `matchingPoly` (bridging
+Mathlib's `MvPolynomial.NewtonIdentities` to a univariate polynomial's power sums) and (ii) Godsil's
+path-tree involution exhibiting `μ(G−v)/μ(G)` as the tree-like walk generating function — neither
+yet in Mathlib. What this scaffold pins down, sorry-free: the count itself, its `k = 0` value
+(`p_0 = n`), and its identification with `tr(Aᵏ)` below the girth (so the open step `p_k = tr(Aᵏ)`
+below girth reduces exactly to Newton + Sachs/Godsil). -/
+
+/-- **Godsil's tree-like walk count** `Σ_v #{closed tree-like walks of length k at v}` — the
+matching side of the trace-formula bridge. -/
+noncomputable def treeLikeWalkCount (k : ℕ) : ℕ :=
+  ∑ v : V, #((G.finsetWalkLength k v v).filter fun w => w.IsTreeLike)
+
+/-- **Trace link (below girth).** For `k < girth`, `treeLikeWalkCount G k = tr(Aᵏ)`, since below
+the girth every closed walk is tree-like. The proved half of the bridge: combined with Godsil's
+(open) `p_k = treeLikeWalkCount`, it yields `p_k = tr(Aᵏ)` below the girth. -/
+theorem treeLikeWalkCount_eq_trace_of_lt_egirth (k : ℕ) (h : (k : ℕ∞) < G.egirth) :
+    G.treeLikeWalkCount k = (G.adjMatrix ℕ ^ k).trace := by
+  rw [treeLikeWalkCount, trace_adjMatrix_pow_eq_treeLike_of_lt_egirth k h]
+
 end Counting
 
 end SimpleGraph
