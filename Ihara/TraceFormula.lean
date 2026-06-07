@@ -285,6 +285,29 @@ theorem bass_charpolyRev :
     map_eval_hashimoto, map_eval_adj]
   exact G.bass_determinant R u
 
+/-- **The differentiated Bass identity** — composing Bass with Jacobi (brick 1). Applying `d/dX` to
+Bass's determinant formula and expanding both determinant derivatives by Jacobi's formula
+(`Matrix.derivative_det`): the non-backtracking side `(1-X²)^|V|·det(1-X·B)` and the adjacency side
+`(1-X²)^|E|·det(1-X·A+X²(D-1))` have equal derivatives, term by term. This is the polynomial heart of
+the Ihara `N_k` spectral formula — the trace generating functions arise on dividing through by the
+two determinants (both units in `R⟦X⟧`). -/
+theorem derivative_bass :
+    derivative ((1 - (X : R[X]) ^ 2) ^ Fintype.card V)
+        * (1 - (X : R[X]) • (G.hashimoto R).map C).det
+      + (1 - (X : R[X]) ^ 2) ^ Fintype.card V
+        * ((1 - (X : R[X]) • (G.hashimoto R).map C).adjugate
+          * (1 - (X : R[X]) • (G.hashimoto R).map C).map derivative).trace
+    = derivative ((1 - (X : R[X]) ^ 2) ^ G.edgeFinset.card)
+        * (1 - (X : R[X]) • (G.adjMatrix R).map C
+            + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).det
+      + (1 - (X : R[X]) ^ 2) ^ G.edgeFinset.card
+        * ((1 - (X : R[X]) • (G.adjMatrix R).map C
+            + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).adjugate
+          * (1 - (X : R[X]) • (G.adjMatrix R).map C
+            + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).map derivative).trace := by
+  have h := congrArg derivative (G.bass_charpolyRev R)
+  rwa [derivative_mul, derivative_mul, Matrix.derivative_det, Matrix.derivative_det] at h
+
 end SpectralField
 
 section Ihara
