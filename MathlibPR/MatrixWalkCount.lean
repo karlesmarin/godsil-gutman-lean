@@ -123,10 +123,14 @@ theorem cyclicProd_comp_addRight {n : ℕ} [NeZero n] (M : Matrix V V R) (w : ZM
   simp [add_right_comm]
 
 -- TODO (the Fin ↔ ZMod connector): `tr(M^(m+1)) = ∑ w : ZMod (m+1) → V, cyclicProd M w`.
--- Statement type-checks (`ZMod (m+1) = Fin (m+1)` definitionally). Proof = `sum_bij'` between
--- `{p : Fin (m+2) → V // p 0 = p (last)}` and `ZMod (m+1) → V` via `Fin.snoc w (w 0)`; the crux is
--- the wrap product equality `p t.succ = p ((t+1 : ZMod (m+1)).castSucc)`, which at the last index
--- uses the closure condition `p 0 = p (last)`. A focused grind for a dedicated session.
+-- The statement type-checks (`ZMod (m+1) = Fin (m+1)` definitionally) and a `sum_bij'` between
+-- `{p : Fin (m+2) → V // p 0 = p (last)}` and `ZMod (m+1) → V` via `Fin.snoc w (w 0)` gets the
+-- skeleton + right-inverse condition through. BLOCKER (diagnosed): a ZMod↔Fin *impedance mismatch* —
+-- `Fin.castSucc_zero`/`Fin.snoc_castSucc` fail to fire because indices are `(0 : ZMod (m+1))`,
+-- `(t + 1 : ZMod (m+1))`, not the `Fin`-native `0`/`succ` (defeq, not syntactic). CLEAN FIX: redefine
+-- `cyclicProd` over `Fin (m+1)` natively, using `finRotate (m+1) : Fin (m+1) ≃ Fin (m+1)` for the
+-- rotation invariance (in place of `Equiv.addRight` over `ZMod`); then the whole connector is
+-- pure-`Fin`, no impedance. A focused redesign for a dedicated session.
 
 end PowSum
 
