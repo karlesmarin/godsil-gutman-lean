@@ -166,6 +166,34 @@ noncomputable def matchingPowerSum (k : ℕ) : ℂ :=
 `θ⁰ = 1`. Together with `treeLikeWalkCount_zero` this confirms Godsil's bridge at `k = 0` on both
 sides; it reduces to `(μ.map (algebraMap ℝ ℂ)).roots.card = μ.natDegree` (splitting over `ℂ`). -/
 
+/-! ## The trace-formula gap (first Sachs term)
+
+`treeLikeGap G k := tr(Aᵏ) − treeLikeWalkCount G k` counts the closed walks of length `k` that are
+**not** tree-like — those whose edge-support encloses a cycle. It vanishes below the girth
+(`treeLikeGap_eq_zero_of_lt_egirth`, proved here). At `k = girth` it takes the value
+
+  `treeLikeGap G g = 2·g·c_g`,   `c_g` = number of cycles of length `g = girth`,
+
+since the only closed walks of length `g` enclosing a cycle are the single traversals of a
+shortest cycle (`2g` per cycle: `g` starting points × `2` orientations). This is a classical
+result of spectral cycle-counting / Godsil's tree-like-walk interpretation (C. Godsil,
+*Counting Matchings and Tree-Like Walks in Regular Graphs*); the value formula is **not yet
+formalized** here — it needs the walk↔shortest-cycle bijection — but the gap framework and the
+below-girth vanishing are pinned down sorry-free, and `treeLikeGap G g = 2·g·c_g` is the first
+Sachs term, the entry point to the matching↔charpoly comparison below girth. -/
+
+/-- **Trace-formula gap** `tr(Aᵏ) − treeLikeWalkCount G k`: the count of closed length-`k` walks
+that are not tree-like (they enclose a cycle). -/
+noncomputable def treeLikeGap (k : ℕ) : ℤ :=
+  ((G.adjMatrix ℕ ^ k).trace : ℤ) - (G.treeLikeWalkCount k : ℤ)
+
+/-- **The gap vanishes below the girth.** Every closed walk shorter than the girth is tree-like,
+so `tr(Aᵏ) = treeLikeWalkCount G k` there. The first nonzero gap appears exactly at `k = girth`
+(value `2·girth·c_g`, classical, not yet formalized). -/
+theorem treeLikeGap_eq_zero_of_lt_egirth (k : ℕ) (h : (k : ℕ∞) < G.egirth) :
+    G.treeLikeGap k = 0 := by
+  rw [treeLikeGap, treeLikeWalkCount_eq_trace_of_lt_egirth k h, sub_self]
+
 end Counting
 
 end SimpleGraph
