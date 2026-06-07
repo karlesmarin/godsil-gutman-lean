@@ -35,6 +35,12 @@ lean_lib «Ihara» where
   globs := #[.submodules `Ihara]
 
 @[default_target]
+lean_lib «MathlibPR» where
+  -- Mathlib-PR staging: graph-free general results (Jacobi's formula, Newton's identity for
+  -- matrix traces, directed-graph walk counting) extracted for upstreaming.
+  globs := #[.submodules `MathlibPR]
+
+@[default_target]
 lean_lib «MSS» where
   -- Paper I: signed adjacency (Basic), expected characteristic polynomial
   -- (ExpectedCharpoly), the Godsil–Gutman identity (GodsilGutman), the 2-lift (TwoLift).
