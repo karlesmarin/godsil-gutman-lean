@@ -7,6 +7,7 @@ import Mathlib.Combinatorics.SimpleGraph.AdjMatrix
 import Mathlib.Combinatorics.SimpleGraph.Walk.Counting
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.Algebra.Polynomial.Roots
+import Mathlib.RingTheory.PowerSeries.Basic
 import Ihara.Bass
 
 /-!
@@ -41,8 +42,65 @@ ITP record of the bridge, joining the two existing Lean files. No new theorem is
 3. **`p_k = Σ θᵢᵏ = #closed tree-like walks` — Godsil's moment theorem. THE HARD BRICK**
    (Mathlib has no tree-like walks); plus the girth-threshold argument tying 1–3 together.
 
-This file lands piece 1.
+This file currently lands: piece 1 (`trace_adjMatrix_pow`), the spectral lift of Bass
+(`bass_charpolyRev`), and — via the general-matrix interlude below — the eigenvalue-free half of
+the trace-generating-function bridge (`resolventSeries` and friends).
 -/
+
+/-! ## The trace generating function (Part III, brick 2)
+
+A general-matrix interlude, independent of graphs. The **resolvent series** `∑ₖ Mᵏ Xᵏ`, viewed as a
+matrix of formal power series, is the formal inverse of `1 - X•M`, and its trace is the trace
+generating function `∑ₖ tr(Mᵏ) Xᵏ`. Everything here is eigenvalue-free and over an arbitrary
+`CommRing` — the half of the Newton/trace-generating-function bridge that needs no determinant.
+The determinant half (Jacobi's formula `(det F)′ = tr(adj F · F′)`, still absent from Mathlib) is
+what will tie this to `charpolyRev` and so to Bass's identity (`bass_charpolyRev`). -/
+namespace Matrix
+
+open PowerSeries
+
+variable {n : Type*} [Fintype n] [DecidableEq n] {R : Type*} [CommRing R]
+
+/-- The matrix **resolvent series** `∑ₖ Mᵏ Xᵏ`, an `n × n` matrix of formal power series whose
+`(i,j)` entry has `k`-th coefficient `(Mᵏ) i j`. -/
+noncomputable def resolventSeries (M : Matrix n n R) : Matrix n n R⟦X⟧ :=
+  fun i j => mk fun k => (M ^ k) i j
+
+@[simp] theorem coeff_resolventSeries (M : Matrix n n R) (i j : n) (k : ℕ) :
+    coeff k (resolventSeries M i j) = (M ^ k) i j :=
+  coeff_mk k _
+
+/-- **The trace generating function.** The trace of the resolvent collects the trace power sums:
+`tr(resolventSeries M) = ∑ₖ tr(Mᵏ) Xᵏ`. -/
+theorem trace_resolventSeries (M : Matrix n n R) :
+    (resolventSeries M).trace = mk fun k => (M ^ k).trace := by
+  ext k
+  simp only [Matrix.trace, Matrix.diag_apply, map_sum, coeff_resolventSeries, coeff_mk]
+
+/-- The resolvent series satisfies the geometric fixed-point equation
+`resolventSeries M = 1 + X • (M · resolventSeries M)`, the formal-power-series shadow of
+`(1 - X M)⁻¹ = 1 + X M (1 - X M)⁻¹`. -/
+theorem resolventSeries_fixedPoint (M : Matrix n n R) :
+    resolventSeries M = 1 + (X : R⟦X⟧) • (M.map (C : R →+* R⟦X⟧) * resolventSeries M) := by
+  ext i j t
+  simp only [coeff_resolventSeries, Matrix.add_apply, Matrix.smul_apply, smul_eq_mul,
+    Matrix.one_apply, map_add]
+  rcases t with _ | s
+  · simp only [pow_zero, Matrix.one_apply, coeff_zero_eq_constantCoeff, map_mul,
+      constantCoeff_X, zero_mul, add_zero, apply_ite (constantCoeff (R := R)), map_one, map_zero]
+  · simp only [pow_succ', Matrix.mul_apply, Matrix.map_apply, coeff_succ_X_mul, map_sum,
+      coeff_C_mul, coeff_resolventSeries, apply_ite (coeff (R := R) (s + 1)), coeff_one,
+      Nat.succ_ne_zero, if_false, map_zero, ite_self, zero_add]
+
+/-- **The resolvent inverts `1 - X•M`.** Hence `resolventSeries M = (1 - X•M)⁻¹` in
+`Matrix n n R⟦X⟧`, and the trace generating function `trace_resolventSeries` is `tr((1 - X M)⁻¹)`. -/
+theorem one_sub_smul_mul_resolventSeries (M : Matrix n n R) :
+    (1 - (X : R⟦X⟧) • M.map (C : R →+* R⟦X⟧)) * resolventSeries M = 1 := by
+  rw [sub_mul, one_mul, smul_mul_assoc]
+  nth_rewrite 1 [resolventSeries_fixedPoint M]
+  abel
+
+end Matrix
 
 open Finset
 
@@ -70,6 +128,7 @@ private theorem eval_det_eq (u : R) (P : Matrix V V R[X]) :
     (P.det).eval u = (P.map (Polynomial.evalRingHom u)).det :=
   (Polynomial.evalRingHom u).map_det P
 
+omit [Fintype V] [DecidableRel G.Adj] in
 /-- The Hashimoto polynomial-matrix `1 - X•B`, evaluated at `u`, is `1 - u•B`. -/
 private theorem map_eval_hashimoto (u : R) :
     (1 - (X : R[X]) • (G.hashimoto R).map C).map (Polynomial.evalRingHom u)
