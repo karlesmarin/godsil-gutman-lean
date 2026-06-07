@@ -287,4 +287,21 @@ theorem bass_charpolyRev :
 
 end SpectralField
 
+section Ihara
+open scoped PowerSeries
+variable (R : Type*) [CommRing R]
+
+/-- **The Ihara `N_k` generating function.** Specialising Newton's identity for matrix traces
+(`Matrix.charpolyRev_logDeriv`) to the Hashimoto non-backtracking operator `B = G.hashimoto R`: the
+logarithmic derivative of the reciprocal Ihara zeta `det(1 - X·B) = charpolyRev B` generates the
+non-backtracking closed-walk counts `N_{k+1} = tr(B^{k+1})`,
+`(det(1 - X·B))′ = -det(1 - X·B) · ∑ₖ N_{k+1} Xᵏ`. -/
+theorem ihara_Nk_genfn :
+    d⁄dX R (charpolyRev (G.hashimoto R) : R⟦X⟧)
+      = -(charpolyRev (G.hashimoto R) : R⟦X⟧)
+        * PowerSeries.mk fun k => ((G.hashimoto R) ^ (k + 1)).trace :=
+  Matrix.charpolyRev_logDeriv (G.hashimoto R)
+
+end Ihara
+
 end SimpleGraph
