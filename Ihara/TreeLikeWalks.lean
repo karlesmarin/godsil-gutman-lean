@@ -81,4 +81,32 @@ theorem Walk.isTreeLike_of_length_lt_egirth {v : V} (w : G.Walk v v)
   have hcontra : G.egirth ≤ (w.length : ℕ∞) := hg.trans (by exact_mod_cast hlen)
   exact absurd (lt_of_lt_of_le h hcontra) (lt_irrefl _)
 
+/-! ## Below the girth: tree-like walks are all closed walks (`tr(Aᵏ)` counts them) -/
+
+section Counting
+variable [Fintype V] [DecidableRel G.Adj]
+open Classical
+
+/-- Below the (extended) girth, **every** closed walk of length `k` is tree-like, so filtering the
+closed walks of length `k` by `IsTreeLike` keeps all of them. -/
+theorem card_filter_isTreeLike_of_lt_egirth {k : ℕ} {v : V} (h : (k : ℕ∞) < G.egirth) :
+    #((G.finsetWalkLength k v v).filter fun w => w.IsTreeLike)
+      = #(G.finsetWalkLength k v v) := by
+  congr 1
+  refine Finset.filter_true_of_mem fun w hw => ?_
+  exact w.isTreeLike_of_length_lt_egirth (by rw [mem_finsetWalkLength_iff.mp hw]; exact h)
+
+/-- **Below the girth, `tr(Aᵏ)` counts closed tree-like walks.** Combining piece 1 of the trace
+formula (`trace_adjMatrix_pow`, `tr(Aᵏ) = #closed walks`) with the girth threshold: for `k <
+girth`, *every* closed walk is tree-like, so `tr(Aᵏ) = Σ_v #{closed tree-like walks of length k at
+v}`. This is the `gap_k = 0` half of the matching↔Ihara headline (`tr(Aᵏ) = p_k` below girth, once
+Godsil's `p_k = #tree-like walks` lands). -/
+theorem trace_adjMatrix_pow_eq_treeLike_of_lt_egirth (k : ℕ) (h : (k : ℕ∞) < G.egirth) :
+    (G.adjMatrix ℕ ^ k).trace
+      = ∑ v : V, #((G.finsetWalkLength k v v).filter fun w => w.IsTreeLike) := by
+  rw [trace_adjMatrix_pow]
+  exact Finset.sum_congr rfl fun v _ => (card_filter_isTreeLike_of_lt_egirth h).symm
+
+end Counting
+
 end SimpleGraph
