@@ -122,6 +122,12 @@ theorem cyclicProd_comp_addRight {n : ℕ} [NeZero n] (M : Matrix V V R) (w : ZM
   refine Finset.prod_congr rfl fun t _ => ?_
   simp [add_right_comm]
 
+-- TODO (the Fin ↔ ZMod connector): `tr(M^(m+1)) = ∑ w : ZMod (m+1) → V, cyclicProd M w`.
+-- Statement type-checks (`ZMod (m+1) = Fin (m+1)` definitionally). Proof = `sum_bij'` between
+-- `{p : Fin (m+2) → V // p 0 = p (last)}` and `ZMod (m+1) → V` via `Fin.snoc w (w 0)`; the crux is
+-- the wrap product equality `p t.succ = p ((t+1 : ZMod (m+1)).castSucc)`, which at the last index
+-- uses the closure condition `p 0 = p (last)`. A focused grind for a dedicated session.
+
 end PowSum
 
 variable {r}
