@@ -69,8 +69,9 @@ prove combinatorially that $\tr(B^k)$ counts closed non-backtracking walks. I am
 boundary: none of this is new mathematics; the prime-geodesic counting that the cyclic structure sets
 up is built only as far as the rotation-invariant weight, not the Euler product; and $\tr(B^k)$
 counts \emph{rooted} closed walks, not geodesic classes. The contribution is the formalization, and a
-small piece of certified infrastructure that any future development of characteristic polynomials,
-zeta functions, or expander spectra can stand on.
+handful of certified lemmas that fill missing pieces of Mathlib's linear-algebra ecosystem---Jacobi's
+algebraic formula, the matrix-trace Newton identity, the resolvent series, and the directed walk
+count.
 \end{abstract}
 
 \noindent\emph{Reader's map.} If you read only two things, read Theorem~\ref{thm:jacobi} (Jacobi)
@@ -79,7 +80,12 @@ second says, taken to all orders, that single fact \emph{is} the bridge between 
 its characteristic polynomial. Everything else---the resolvent engine
 (Section~\ref{sec:resolvent}), the walk count (Section~\ref{sec:walks}), the Ihara application
 (Section~\ref{sec:ihara})---hangs from those two. The load-bearing formulas are framed; the honest
-limits are stated as plainly as the results.
+limits are stated as plainly as the results.\footnote{\emph{Reproducibility.} All Lean sources are
+public at \url{https://github.com/karlesmarin/godsil-gutman-lean} (commit \texttt{67d7d0a}), built
+against Lean \texttt{v4.30.0-rc2} and the pinned Mathlib commit \texttt{701fb6e9c3}. Reproduce with
+\texttt{lake exe cache get \&\& lake build}; check the axiom footprint of any result with
+\lean{\#print axioms}. The numerical cross-checks of Table~\ref{tab:checks} are in
+\texttt{verify\_jacobi\_newton.py}.}
 
 \begin{figure}[h]
 \centering
@@ -384,9 +390,11 @@ that the counts mean what they are said to mean.
 only \lean{[propext, Classical.choice, Quot.sound]}. Sources: \lean{Ihara/TraceFormula.lean} and
 \lean{MathlibPR/MatrixWalkCount.lean}.}
 \label{tab:results}
+\rowcolors{2}{ggband!30}{white}
 \begin{tabular}{@{}llc@{}}
 \toprule
-\textbf{Lean name} & \textbf{Statement} & \textbf{\S}\\
+\rowcolor{ggteal}
+{\color{white}\textbf{Lean name}} & {\color{white}\textbf{Statement}} & {\color{white}\textbf{\S}}\\
 \midrule
 \lean{Matrix.derivative\_det} & $(\det M)'=\tr(\adj M\cdot M')$ (Jacobi) & \ref{sec:jacobi}\\
 \lean{one\_sub\_smul\_mul\_resolventSeries} & $(I-XM)\sum_k M^kX^k=I$ & \ref{sec:resolvent}\\
@@ -409,9 +417,11 @@ is the triangle $K_3$: the trace of $B^k$ matches a brute-force enumeration of r
 non-backtracking walks, $0,0,6,0,0,6$ for $k=1,\dots,6$ (the cycle and its reverse, three basepoints
 each).}
 \label{tab:checks}
+\rowcolors{2}{ggband!30}{white}
 \begin{tabular}{@{}lll@{}}
 \toprule
-\textbf{Identity} & \textbf{Instance} & \textbf{Result}\\
+\rowcolor{ggteal}
+{\color{white}\textbf{Identity}} & {\color{white}\textbf{Instance}} & {\color{white}\textbf{Result}}\\
 \midrule
 Jacobi $(\det M)'=\tr(\adj M\,M')$ & $3\times3$ matrix of polynomials & exact\\
 Newton (log-derivative) & $3\times3$ and $2\times2$, mod $X^8$ & exact\\
@@ -429,8 +439,9 @@ The mathematics is classical throughout: Jacobi's formula, Newton's identities, 
 Bass's theorem are all old. The contribution is the formalization, and I separate the two on purpose.
 
 \paragraph{What I claim as new (as formalization).}
-(N1) the first machine-checked proof I am aware of, in any proof assistant, of Jacobi's
-\emph{algebraic} formula $(\det M)'=\tr(\adj M\cdot M')$; (N2) the \emph{matrix-trace} form of
+(N1) the first machine-checked proof I am aware of, in any proof assistant---I searched Mathlib,
+the Isabelle/HOL \emph{Archive of Formal Proofs}, Coq/Rocq's opam and \emph{coqdoc} indices,
+HOL~Light, and Mizar's MML---of Jacobi's \emph{algebraic} formula $(\det M)'=\tr(\adj M\cdot M')$; (N2) the \emph{matrix-trace} form of
 Newton's identities, $(\charpolyRev M)'=-\charpolyRev M\sum_k\tr(M^{k+1})X^k$, which Mathlib had only
 at the linear coefficient; (N3) the resolvent series $(I-XM)^{-1}=\sum_k M^kX^k$ and the
 \emph{directed}-graph walk count, neither in the library. All are formalization contributions; none
@@ -472,12 +483,16 @@ foundations and in the growing corpus of formalized mathematics, not in immediat
 claim the former, not the latter.
 
 \paragraph{A methodological aside.}
-This development was carried out with an AI system as a research instrument: it proposed definitions,
-lemmas and tactics, and a build-as-oracle loop verified or rejected each against the kernel. The
-careful accounting here---every claim sized to exactly what was proved, the rooted-versus-geodesic
-distinction drawn as sharply as the theorems---is part of what I hope the work shows: that
-AI-assisted formalization can resist the over-claiming the method invites, precisely because the
-proof assistant, not the assistant, has the last word.
+I carried out this development using an AI system as a research instrument. I set the
+targets---which identities to formalize, the proof strategy for each, the boundary to claim and the
+boundary to refuse---and the assistant proposed candidate definitions, lemmas and tactics, which a
+build-as-oracle loop then accepted or rejected against the kernel. The mathematical decisions, the
+scope, and every claim in this paper are mine and are my responsibility; the careful accounting that
+results---each statement sized to exactly what was proved, the rooted-versus-geodesic distinction
+drawn as sharply as the theorems---is part of what I hope the work shows: that AI-assisted
+formalization, directed and audited by a human, can be held to a \emph{higher} standard of honesty
+than informal mathematics, precisely because the proof assistant, not the assistant, has the last
+word.
 
 % ---------------------------------------------------------------
 \section{Where this stops being useful}
@@ -505,8 +520,10 @@ the reversed characteristic polynomial (at the linear coefficient only), Newton'
 symmetric polynomials, and walk counts for simple graphs---but not Jacobi's algebraic formula, the
 matrix-trace Newton identity, the resolvent series, or the directed walk count. This development is a
 companion to my earlier Lean formalizations of the matching polynomial~\cite{PartI,PartII} and of
-Bass's formula~\cite{IharaBass}; I am not aware of a prior machine-checked proof of Jacobi's
-algebraic formula or of the matrix-trace Newton identity in any proof assistant.
+Bass's formula~\cite{IharaBass}. After searching Mathlib, the Isabelle/HOL \emph{Archive of Formal
+Proofs}, Coq/Rocq, HOL~Light, and Mizar, I am not aware of a prior machine-checked proof of
+Jacobi's algebraic formula or of the matrix-trace Newton identity in any of them; I state this as a
+search result, not a theorem, and would welcome a pointer to anything I missed.
 
 % ---------------------------------------------------------------
 \section{Conclusion}

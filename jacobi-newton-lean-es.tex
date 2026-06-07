@@ -70,9 +70,10 @@ $N_k=\tr(B^k)$ desde el espectro de adyacencia, y para demostrar combinatoriamen
 cuenta caminos cerrados sin retroceso. Soy exacto con la frontera: nada de esto es matem\'atica
 nueva; el conteo de geod\'esicas primas que la estructura c\'iclica prepara s\'olo se construye hasta
 el peso invariante por rotaci\'on, no hasta el producto de Euler; y $\tr(B^k)$ cuenta caminos cerrados
-\emph{con punto base}, no clases geod\'esicas. La contribuci\'on es la formalizaci\'on, y una peque\~na
-pieza de infraestructura certificada sobre la que cualquier desarrollo futuro de polinomios
-caracter\'isticos, funciones zeta o espectros de expansores podr\'a apoyarse.
+\emph{con punto base}, no clases geod\'esicas. La contribuci\'on es la formalizaci\'on, y un pu\~nado
+de lemas certificados que rellenan piezas que faltaban en el ecosistema de \'algebra lineal de
+Mathlib---la f\'ormula algebraica de Jacobi, la identidad de Newton matricial-de-trazas, la serie
+resolvente y el conteo de caminos dirigidos.
 \end{abstract}
 
 \noindent\emph{Mapa para el lector.} Si s\'olo lees dos cosas, lee el Teorema~\ref{thm:jacobi}
@@ -81,7 +82,12 @@ es una traza; el segundo dice que, a todos los \'ordenes, ese \'unico hecho \emp
 las trazas de una matriz y su polinomio caracter\'istico. Todo lo dem\'as---el motor resolvente
 (Secci\'on~\ref{sec:resolvent}), el conteo de caminos (Secci\'on~\ref{sec:walks}), la aplicaci\'on a
 Ihara (Secci\'on~\ref{sec:ihara})---cuelga de esos dos. Las f\'ormulas que cargan el peso van
-enmarcadas; los l\'imites honestos se enuncian con la misma claridad que los resultados.
+enmarcadas; los l\'imites honestos se enuncian con la misma claridad que los resultados.\footnote{\emph{Reproducibilidad.}
+Todas las fuentes Lean son p\'ublicas en \url{https://github.com/karlesmarin/godsil-gutman-lean}
+(commit \texttt{67d7d0a}), construidas contra Lean \texttt{v4.30.0-rc2} y el commit fijado de Mathlib
+\texttt{701fb6e9c3}. Reprod\'uzcase con \texttt{lake exe cache get \&\& lake build}; comprueba la
+huella de axiomas de cualquier resultado con \lean{\#print axioms}. Las comprobaciones num\'ericas de
+la Tabla~\ref{tab:checks} est\'an en \texttt{verify\_jacobi\_newton.py}.}
 
 \begin{figure}[h]
 \centering
@@ -399,9 +405,11 @@ significan.
 reporta s\'olo \lean{[propext, Classical.choice, Quot.sound]}. Fuentes:
 \lean{Ihara/TraceFormula.lean} y \lean{MathlibPR/MatrixWalkCount.lean}.}
 \label{tab:results}
+\rowcolors{2}{ggband!30}{white}
 \begin{tabular}{@{}llc@{}}
 \toprule
-\textbf{Nombre Lean} & \textbf{Enunciado} & \textbf{\S}\\
+\rowcolor{ggteal}
+{\color{white}\textbf{Nombre Lean}} & {\color{white}\textbf{Enunciado}} & {\color{white}\textbf{\S}}\\
 \midrule
 \lean{Matrix.derivative\_det} & $(\det M)'=\tr(\adj M\cdot M')$ (Jacobi) & \ref{sec:jacobi}\\
 \lean{one\_sub\_smul\_mul\_resolventSeries} & $(I-XM)\sum_k M^kX^k=I$ & \ref{sec:resolvent}\\
@@ -424,9 +432,11 @@ fila del grafo es el tri\'angulo $K_3$: la traza de $B^k$ coincide con una enume
 bruta de caminos cerrados sin retroceso con punto base, $0,0,6,0,0,6$ para $k=1,\dots,6$ (el ciclo y
 su inverso, tres puntos base cada uno).}
 \label{tab:checks}
+\rowcolors{2}{ggband!30}{white}
 \begin{tabular}{@{}lll@{}}
 \toprule
-\textbf{Identidad} & \textbf{Instancia} & \textbf{Resultado}\\
+\rowcolor{ggteal}
+{\color{white}\textbf{Identidad}} & {\color{white}\textbf{Instancia}} & {\color{white}\textbf{Resultado}}\\
 \midrule
 Jacobi $(\det M)'=\tr(\adj M\,M')$ & matriz $3\times3$ de polinomios & exacto\\
 Newton (derivada log.) & $3\times3$ y $2\times2$, m\'od $X^8$ & exacto\\
@@ -446,7 +456,9 @@ ambas a prop\'osito.
 
 \paragraph{Lo que afirmo como nuevo (como formalizaci\'on).}
 (N1) la primera demostraci\'on verificada por m\'aquina de la que tengo noticia, en cualquier
-asistente de pruebas, de la f\'ormula \emph{algebraica} de Jacobi $(\det M)'=\tr(\adj M\cdot M')$; (N2)
+asistente de pruebas---busqu\'e en Mathlib, el \emph{Archive of Formal Proofs} de Isabelle/HOL, los
+\'indices de Coq/Rocq, HOL~Light y la MML de Mizar---, de la f\'ormula \emph{algebraica} de Jacobi
+$(\det M)'=\tr(\adj M\cdot M')$; (N2)
 la forma \emph{matricial-de-trazas} de las identidades de Newton,
 $(\charpolyRev M)'=-\charpolyRev M\sum_k\tr(M^{k+1})X^k$, que Mathlib ten\'ia s\'olo en el coeficiente
 lineal; (N3) la serie resolvente $(I-XM)^{-1}=\sum_k M^kX^k$ y el conteo de caminos en grafos
@@ -493,13 +505,17 @@ cimientos certificados y en el corpus creciente de matem\'atica formalizada, no 
 inmediata; afirmo lo primero, no lo segundo.
 
 \paragraph{Un apunte metodol\'ogico.}
-Este desarrollo se llev\'o a cabo con un sistema de IA como instrumento de investigaci\'on: propon\'ia
-definiciones, lemas y t\'acticas, y un lazo de compilaci\'on-como-or\'aculo verificaba o rechazaba
-cada uno contra el n\'ucleo. La contabilidad cuidadosa de aqu\'i---cada afirmaci\'on dimensionada
-exactamente a lo demostrado, la distinci\'on punto-base-frente-a-geod\'esica trazada con la misma
-nitidez que los teoremas---es parte de lo que espero que el trabajo muestre: que la formalizaci\'on
-asistida por IA puede resistir el exceso de afirmaci\'on que el m\'etodo invita, precisamente porque
-el asistente de pruebas, no el asistente, tiene la \'ultima palabra.
+Llev\'e a cabo este desarrollo usando un sistema de IA como instrumento de investigaci\'on. Yo fij\'e
+los objetivos---qu\'e identidades formalizar, la estrategia de prueba de cada una, la frontera que
+afirmar y la frontera que rechazar---y el asistente propuso definiciones, lemas y t\'acticas
+candidatas, que un lazo de compilaci\'on-como-or\'aculo aceptaba o rechazaba contra el n\'ucleo. Las
+decisiones matem\'aticas, el alcance y cada afirmaci\'on de este art\'iculo son m\'ias y de mi
+responsabilidad; la contabilidad cuidadosa que resulta---cada afirmaci\'on dimensionada exactamente a
+lo demostrado, la distinci\'on punto-base-frente-a-geod\'esica trazada con la misma nitidez que los
+teoremas---es parte de lo que espero que el trabajo muestre: que la formalizaci\'on asistida por IA,
+dirigida y auditada por una persona, puede sostenerse en un est\'andar de honestidad \emph{m\'as alto}
+que la matem\'atica informal, precisamente porque el asistente de pruebas, no el asistente, tiene la
+\'ultima palabra.
 
 % ---------------------------------------------------------------
 \section{D\'onde esto deja de ser \'util}
@@ -529,9 +545,11 @@ en el coeficiente lineal), las identidades de Newton para polinomios sim\'etrico
 para grafos simples---pero no la f\'ormula algebraica de Jacobi, ni la identidad de Newton
 matricial-de-trazas, ni la serie resolvente, ni el conteo de caminos dirigidos. Este desarrollo es
 compa\~nero de mis formalizaciones previas en Lean del polinomio de emparejamientos~\cite{PartI,PartII}
-y de la f\'ormula de Bass~\cite{IharaBass}; no tengo noticia de una demostraci\'on previa verificada
-por m\'aquina de la f\'ormula algebraica de Jacobi ni de la identidad de Newton matricial-de-trazas en
-ning\'un asistente de pruebas.
+y de la f\'ormula de Bass~\cite{IharaBass}. Tras buscar en Mathlib, el \emph{Archive of Formal Proofs}
+de Isabelle/HOL, Coq/Rocq, HOL~Light y Mizar, no tengo noticia de una demostraci\'on previa
+verificada por m\'aquina de la f\'ormula algebraica de Jacobi ni de la identidad de Newton
+matricial-de-trazas en ninguno de ellos; lo enuncio como resultado de b\'usqueda, no como teorema, y
+agradecer\'ia que se me se\~nale algo que haya pasado por alto.
 
 % ---------------------------------------------------------------
 \section{Conclusi\'on}
