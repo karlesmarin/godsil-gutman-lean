@@ -340,6 +340,39 @@ theorem ihara_Nk_isolated :
   simp only [smul_eq_mul] at hd
   linear_combination -hd
 
+open scoped PowerSeries in
+/-- **The explicit Ihara `N_k` generating function.** Dividing `ihara_Nk_isolated` through by the
+unit `(1-X²)^|V|·det(1-X·B)` (constant term `1`, inverted by `PowerSeries.invOfUnit`) yields the
+non-backtracking trace power sums `∑ₖ tr(Bᵏ⁺¹) Xᵏ` explicitly in terms of the adjacency spectrum. -/
+theorem ihara_Nk_explicit :
+    PowerSeries.mk (fun k => ((G.hashimoto R) ^ (k + 1)).trace)
+      = PowerSeries.invOfUnit
+          ((((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+            * ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)) 1
+        * (((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)
+            * d⁄dX R (((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+          - (((1 - (X : R[X]) ^ 2) ^ G.edgeFinset.card : R[X]) : R⟦X⟧)
+            * d⁄dX R ((1 - (X : R[X]) • (G.adjMatrix R).map C
+                + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).det : R⟦X⟧)
+          - ((1 - (X : R[X]) • (G.adjMatrix R).map C
+                + (X : R[X]) ^ 2 • ((G.degMatrix R - 1).map C)).det : R⟦X⟧)
+            * d⁄dX R (((1 - (X : R[X]) ^ 2) ^ G.edgeFinset.card : R[X]) : R⟦X⟧)) := by
+  have hcc : PowerSeries.constantCoeff
+      ((((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+        * ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)) = ((1 : Rˣ) : R) := by
+    rw [map_mul, ← PowerSeries.coeff_zero_eq_constantCoeff_apply,
+      ← PowerSeries.coeff_zero_eq_constantCoeff_apply, Polynomial.coeff_coe, Polynomial.coeff_coe,
+      Polynomial.coeff_zero_eq_eval_zero, Polynomial.coeff_zero_eq_eval_zero, eval_det_eq,
+      map_eval_hashimoto, Units.val_one]
+    simp
+  have key : PowerSeries.invOfUnit
+      ((((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+        * ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)) 1
+      * ((((1 - (X : R[X]) ^ 2) ^ Fintype.card V : R[X]) : R⟦X⟧)
+        * ((1 - (X : R[X]) • (G.hashimoto R).map C).det : R⟦X⟧)) = 1 := by
+    rw [mul_comm]; exact PowerSeries.mul_invOfUnit _ 1 hcc
+  rw [← G.ihara_Nk_isolated R, ← mul_assoc, key, one_mul]
+
 end SpectralField
 
 section Ihara
