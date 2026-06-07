@@ -133,6 +133,25 @@ theorem treeLikeWalkCount_eq_trace_of_lt_egirth (k : ℕ) (h : (k : ℕ∞) < G.
     G.treeLikeWalkCount k = (G.adjMatrix ℕ ^ k).trace := by
   rw [treeLikeWalkCount, trace_adjMatrix_pow_eq_treeLike_of_lt_egirth k h]
 
+/-- The empty walk `nil` is tree-like: its edge-support is the single-vertex subgraph
+`G.singletonSubgraph v`, whose coercion is a tree, hence acyclic. -/
+theorem Walk.nil_isTreeLike (v : V) : (Walk.nil : G.Walk v v).IsTreeLike :=
+  (IsTree.coe_singletonSubgraph G v).isAcyclic
+
+/-- **`k = 0` moment anchor:** `treeLikeWalkCount G 0 = n`. The only closed walk of length `0` at
+each vertex is `nil` (tree-like), so the count is `1` per vertex. This is the matching-side mirror
+of the trivial power sum `p_0 = Σᵢ θᵢ⁰ = n` (`μ` has `n` roots). -/
+theorem treeLikeWalkCount_zero : G.treeLikeWalkCount 0 = Fintype.card V := by
+  have key : ∀ v : V, #((G.finsetWalkLength 0 v v).filter fun w => w.IsTreeLike) = 1 := by
+    intro v
+    have hset : G.finsetWalkLength 0 v v = {Walk.nil} := by
+      refine Finset.eq_singleton_iff_unique_mem.mpr ⟨?_, fun w hw => ?_⟩
+      · simp [mem_finsetWalkLength_iff]
+      · rw [mem_finsetWalkLength_iff, Walk.length_eq_zero_iff] at hw; exact hw
+    rw [hset, Finset.filter_singleton, if_pos (Walk.nil_isTreeLike v), Finset.card_singleton]
+  rw [treeLikeWalkCount, Finset.sum_congr rfl (fun v _ => key v), Finset.sum_const,
+    Finset.card_univ, smul_eq_mul, mul_one]
+
 end Counting
 
 end SimpleGraph
