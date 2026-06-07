@@ -43,8 +43,10 @@ ITP record of the bridge, joining the two existing Lean files. No new theorem is
    (Mathlib has no tree-like walks); plus the girth-threshold argument tying 1–3 together.
 
 This file currently lands: piece 1 (`trace_adjMatrix_pow`), the spectral lift of Bass
-(`bass_charpolyRev`), and — via the general-matrix interlude below — the eigenvalue-free half of
-the trace-generating-function bridge (`resolventSeries` and friends).
+(`bass_charpolyRev`), and — via the general-matrix interlude below — BOTH halves of the
+trace-generating-function bridge: the eigenvalue-free resolvent side (`resolventSeries` and
+friends) and **Jacobi's formula** `(det M)′ = tr(adj M · M′)` (`derivative_det`), the determinant
+side. What remains is to fuse them (the Newton-identity assembly) and apply them to Bass.
 -/
 
 /-! ## The trace generating function (Part III, brick 2)
@@ -53,8 +55,9 @@ A general-matrix interlude, independent of graphs. The **resolvent series** `∑
 matrix of formal power series, is the formal inverse of `1 - X•M`, and its trace is the trace
 generating function `∑ₖ tr(Mᵏ) Xᵏ`. Everything here is eigenvalue-free and over an arbitrary
 `CommRing` — the half of the Newton/trace-generating-function bridge that needs no determinant.
-The determinant half (Jacobi's formula `(det F)′ = tr(adj F · F′)`, still absent from Mathlib) is
-what will tie this to `charpolyRev` and so to Bass's identity (`bass_charpolyRev`). -/
+The determinant half is Jacobi's formula `(det F)′ = tr(adj F · F′)`, proved below in `derivative_det`;
+together they will tie the trace power sums to `charpolyRev` and so to Bass's identity
+(`bass_charpolyRev`). -/
 namespace Matrix
 
 open PowerSeries
@@ -99,6 +102,50 @@ theorem one_sub_smul_mul_resolventSeries (M : Matrix n n R) :
   rw [sub_mul, one_mul, smul_mul_assoc]
   nth_rewrite 1 [resolventSeries_fixedPoint M]
   abel
+
+/-! ### Jacobi's formula (Part III, brick 1)
+
+The determinant half of the trace-generating-function bridge: the derivative of `det` of a matrix of
+polynomials is the trace of the adjugate times the entrywise derivative,
+`(det M)′ = tr(adj M · M′)`. This is the crux brick — it is what links `det`/`charpolyRev` to traces,
+and (wheel-checked 2026-06-07) it has not previously been recorded in any proof assistant. The proof
+is the Leibniz rule for `det`: differentiate one column at a time, then read each single-column
+derivative off Cramer's rule / the adjugate. -/
+section Jacobi
+
+open Polynomial
+
+variable {R : Type*} [CommRing R]
+
+/-- **Column-wise Leibniz rule for the determinant.** Differentiating `det M` is the sum, over the
+columns `k`, of the determinant of `M` with column `k` replaced by its entrywise derivative. -/
+private theorem derivative_det_eq_sum_updateCol (M : Matrix n n R[X]) :
+    derivative M.det = ∑ k, (M.updateCol k fun a => derivative (M a k)).det := by
+  rw [det_apply', map_sum]
+  simp only [derivative_intCast_mul, derivative_prod_finset, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [det_apply']
+  refine Finset.sum_congr rfl fun σ _ => ?_
+  congr 1
+  rw [← Finset.prod_erase_mul Finset.univ
+    (fun i => (M.updateCol k fun a => derivative (M a k)) (σ i) i) (Finset.mem_univ k)]
+  congr 1
+  · refine Finset.prod_congr rfl fun i hi => ?_
+    rw [updateCol_apply, if_neg (Finset.ne_of_mem_erase hi)]
+  · rw [updateCol_apply, if_pos rfl]
+
+/-- **Jacobi's formula.** For a square matrix of polynomials, the derivative of the determinant is
+the trace of the adjugate times the entrywise-differentiated matrix: `(det M)′ = tr(adj M · M′)`. -/
+theorem derivative_det (M : Matrix n n R[X]) :
+    derivative M.det = (M.adjugate * M.map derivative).trace := by
+  rw [derivative_det_eq_sum_updateCol]
+  simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply, Matrix.map_apply]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [← cramer_apply, cramer_eq_adjugate_mulVec]
+  rfl
+
+end Jacobi
 
 end Matrix
 
