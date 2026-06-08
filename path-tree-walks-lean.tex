@@ -16,6 +16,8 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
 \usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 \setlength{\emergencystretch}{2em}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
@@ -77,6 +79,34 @@ that sentence: a local-injectivity lemma (Section~\ref{sec:inj}), a \lean{liftSe
 invariant that makes ``tree-like'' computable and matches it to the lift (Section~\ref{sec:inv}), and
 the lift itself (Section~\ref{sec:surj}). The honest limit---the spectral half is mapped, not
 built---is stated as plainly as the result.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=5mm and 9mm,
+  box/.style={draw=ggteal,fill=ggband!40,rounded corners=3pt,line width=0.8pt,
+    align=center,inner sep=5pt,text width=25mm,font=\small},
+  mbox/.style={draw=ggamber,fill=white,rounded corners=3pt,line width=0.8pt,dashed,
+    align=center,inner sep=5pt,text width=25mm,font=\small},
+  arr/.style={-{Stealth[length=2.4mm]},ggteal,line width=0.9pt},
+  marr/.style={-{Stealth[length=2.4mm]},ggamber,line width=0.9pt,dashed},
+  lab/.style={font=\scriptsize\itshape,align=center}]
+\node[box] (tl) {\textbf{tree-like walks}\\of $G$ at $v$};
+\node[box,right=of tl] (pt) {\textbf{walks at the root}\\of $T(G,v)$};
+\node[box,right=of pt] (am) {$\bigl[A(T(G,v))^k\bigr]_{\mathrm{root}}$\\{\scriptsize forest: $\mu(T)=$\,charpoly}};
+\node[mbox,right=of am] (pk) {$p_k=\sum_i\theta_i^{\,k}$\\{\scriptsize moments of $\mu(G)$}};
+\draw[arr] (tl) -- node[lab,above,text=ggteal]{bijection\\(proved)} (pt);
+\draw[arr] (pt) -- node[lab,above,text=ggteal]{matrix\\power} (am);
+\draw[marr] (am) -- node[lab,above,text=ggamber]{resolvent\,$+$\\Newton (mapped)} (pk);
+\end{tikzpicture}
+\caption{The route of the paper, and where it stops. The tree-like walk count of $G$ equals the walk
+count at the root of Godsil's path tree (the bijection, Theorem~\ref{thm:bij}), which is a power of the
+tree's adjacency matrix (Theorem~\ref{thm:spectral}); and each path tree is a forest, so that matrix's
+characteristic polynomial is the matching polynomial (Theorem~\ref{thm:forest}). The solid arrows are
+machine-checked here; the dashed arrow to the moments $p_k$---the single-entry resolvent, Godsil's
+ratio identity, and the univariate Newton step---is mapped in Section~\ref{sec:boundary}, not built.}
+\label{fig:spine}
+\end{figure}
 
 % ---------------------------------------------------------------
 \section{Introduction: one tree, two harvests}
@@ -280,10 +310,25 @@ its dual \lean{Grows.child\_unique} (a one-edge extension is determined by its e
 
 This local injectivity is exactly the immersion property: $\pi$ is locally injective but not locally
 surjective---a $G$-neighbour of $p$'s endpoint that already lies on $p$ has \emph{no} preimage above
-$p$. That asymmetry is the whole story. A walk in $T(G,v)$ is determined, step by step, by its
+$p$. That asymmetry is the whole story. It is also an old one in a different dress: a covering map, in
+the sense of Poincar\'e's topology, lifts \emph{every} path uniquely; an immersion lifts only the
+paths that never double back into themselves---and ``never doubles back into a non-parent vertex'' is
+precisely what tree-like means. A walk in $T(G,v)$ is determined, step by step, by its
 $\pi$-image together with its start, because at each vertex the next path-tree vertex is forced by the
 local injection; an induction mirroring Mathlib's \lean{Walk.map\_injective\_of\_injective}, with the
 global hypothesis replaced by the local one, gives Lemma~\ref{lem:inj}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.62\textwidth]{figures/pt_fig4_immersion.pdf}
+  \caption{The immersion, at the path-tree vertex $p=\langle uab\rangle$ (the path $u\,a\,b$, teal).
+  The next step looks at the neighbours of the endpoint $b$, which in $G$ are $a$, $c$, $u$. Each falls
+  into exactly one case: $a$ is the penultimate of $p$ (the \emph{parent}, a retreat), $c$ is fresh (a
+  \emph{child}, an extend), and $u$ lies on $p$ but is not its parent---\emph{blocked}, with no lift
+  above $p$. So $\pi$ is injective on the neighbours of $p$ but not surjective; the blocked direction
+  is why the path tree is an immersion, and why a projected walk can only be tree-like.}
+  \label{fig:immersion}
+\end{figure}
 
 % ---------------------------------------------------------------
 \section{The \texttt{liftSeq}$\leftrightarrow$path invariant}
@@ -291,8 +336,10 @@ global hypothesis replaced by the local one, gives Lemma~\ref{lem:inj}.
 
 \emph{\lean{IsTreeLike} is a stack discipline on $G$ alone---the path tree appears nowhere in it---so
 why should it detect exactly the walks that come from the tree?} Because the stack \emph{is} the tree
-vertex in disguise. The bridge is a single invariant: as one walks $T(G,v)$, running \lean{liftSeq} on
-the projected walk tracks the current path-tree vertex.
+vertex in disguise. Reading a walk as a sequence of pushes and pops is the oldest move in enumerative
+combinatorics---the ballot problem, von Dyck's balanced words, the Catalan numbers all live on the
+same stack---and here it is the bridge, in the form of a single invariant: as one walks $T(G,v)$,
+running \lean{liftSeq} on the projected walk tracks the current path-tree vertex.
 
 \begin{lemma}[One step, \lean{liftSeq\_step}]
 For a path-tree edge $s\sim y$ and any tail $M$,
@@ -309,6 +356,19 @@ $\lean{liftSeq}\,(W.\mathrm{map}\,\pi).\mathrm{support}.\mathrm{tail}\,\;s.\math
 Lemma~\ref{lem:img} is the case $s=x=\mathrm{root}$, whose path-support is $[v]$. The same invariant
 drives the lift: it is the bookkeeping that, run in reverse, reconstructs the path-tree walk from a
 tree-like walk.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.97\textwidth]{figures/pt_fig3_stack.pdf}
+  \caption{\lean{IsTreeLike} as a stack discipline---the \lean{liftSeq} predicate run on the walk
+  $u\,a\,b\,a\,u$. The stack is the current simple path from $u$; each next vertex is read and either
+  \textsc{pushed} (extend, teal: a fresh vertex) or \textsc{popped} (retreat, amber: it is the
+  penultimate). The walk is tree-like iff the stack ends back at $[u]$. The stack at step $i$ is
+  exactly the path-tree vertex the lift sits on---$\langle u\rangle,\langle ua\rangle,\langle uab
+  \rangle,\langle ua\rangle,\langle u\rangle$---which is the content of the invariant,
+  Lemma~\ref{lem:inv}.}
+  \label{fig:stack}
+\end{figure}
 
 % ---------------------------------------------------------------
 \section{The lift: climbing back into the tree}
@@ -362,30 +422,43 @@ the forest bridge turns each $\mathrm{charpolyRev}$ into a reversed matching pol
 $\mu(G-v)/\mu(G)$; the vertex-deletion derivative law $\sum_v\mu(G-v)=X\,\mu'(G)$ (already proved,
 \lean{sum\_matchingPoly\_deleteIncidenceSet}) sums it to $\mu'(G)/\mu(G)$; and the univariate Newton
 identity equates that logarithmic derivative with $\sum_k p_k X^{k}$. Matching coefficients of $X^k$
-closes the theorem. Two of these---the principal-minor lemma and the univariate-root Newton
-bridge---are general results absent from Mathlib, and both are kept in the repository's
-\texttt{MathlibPR} staging in canonical, graph-free form.
+closes the theorem. The last step is itself venerable: Newton's identities, relating a polynomial's
+power sums to its coefficients, were written down by Girard in 1629 and by Newton a generation later,
+and Sachs' 1964 coefficient theorem reads those coefficients off the graph's own subgraphs. Two of the
+links---the principal-minor lemma and the univariate-root Newton bridge---are general results absent
+from Mathlib, and both are kept in the repository's \texttt{MathlibPR} staging in canonical, graph-free
+form.
 
 % ---------------------------------------------------------------
 \section{Implications and methodology}
 \label{sec:implications}
 
-The proof was developed with AI assistance (Claude, Anthropic): the author set the targets,
-adjudicated the mathematics, and checked every claim against the Lean kernel; the assistant produced
-candidate proofs and the prose drafts. Every theorem cited here compiles \lean{sorry}-free against
-the pinned Mathlib revision~\cite{Mathlib} and depends only on the three standard axioms, a fact the
-reader can re-verify with \lean{\#print axioms}. The corrected ``tree-like'' definition is itself a small
+The author set the targets and adjudicated the mathematics; the assistant (Claude, Anthropic) drafted
+the proofs and this prose. Every theorem cited here compiles \lean{sorry}-free against the pinned
+Mathlib revision~\cite{Mathlib} and depends only on the three standard axioms, which the reader can
+re-verify with \lean{\#print axioms}. The corrected ``tree-like'' definition is itself a small
 methodological datapoint: the natural acyclic-support reading is plausible, compiles, and is
 \emph{false} for the theorem it is meant to serve; a cheap numerical check against the matching power
 sums caught it before any formal effort was spent, and the same check certifies the
 \lean{liftSeq} definition that replaced it.
 
-The mathematics is Godsil's, four decades old. The contribution is that the path tree now does both
-of its jobs inside one formal library: in Part~II it carries a real spectrum, and here it counts the
-walks a graph mistakes for a tree. The cycle side of the matching/Ihara trace
-formula---$\tr(A^k)$---stands in the same library (the \emph{Bass} companion~\cite{Bass}); with the
-spectral half of Section~\ref{sec:boundary} the tree side $p_k$ would meet it, and the trace formula
-would be one machine-checked statement.
+\paragraph{What it is good for---and what it is not.} The objects here are not exotic. The matching
+polynomial is the monomer--dimer partition function of statistical mechanics~\cite{HeilmannLieb}; the
+moments of its roots are the raw material of the method of moments for eigenvalue bounds; the bound
+those moments obey, $2\sqrt{\Delta-1}$, is the threshold a graph must clear to be an expander; and the
+spectral object next door, the non-backtracking operator, sets a network's percolation
+threshold~\cite{Hashimoto,Bass}. This paper adds nothing to any of that. It only places one half of
+the bridge those methods cross---the tree side of the trace formula---on certified ground, in the same
+library as the cycle side, and leaves behind a small reusable object, the path tree, that already did
+one job (a real spectrum, Part~II) and now does a second. No algorithm and no network: a foundation,
+and a modest one.
+
+The mathematics is Godsil's, four decades old. I have only carried it, carefully, into a form a
+machine will check: in Part~II the path tree carries a real spectrum, and here it counts the walks a
+graph mistakes for a tree. The cycle side of the matching/Ihara trace formula---$\tr(A^k)$---stands in
+the same library (the \emph{Bass} companion~\cite{Bass}); should the spectral half of
+Section~\ref{sec:boundary} one day be built, the tree side $p_k$ would meet it, and the trace formula
+would be a single machine-checked line. That is left, without apology, for another day.
 
 % ---------------------------------------------------------------
 \section{Questions left open}
