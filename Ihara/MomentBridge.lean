@@ -180,4 +180,73 @@ theorem pathTreeProj_map_isTreeLike [DecidableEq V] {v : V}
   have h := liftSeq_map_invariant W
   rwa [show (pathTreeRoot G v).2.1.support = [v] from rfl] at h
 
+/-! ## Surjectivity of the lift (the last half of the stone-1 bijection)
+
+Conversely, a `G`-walk that `liftSeq` accepts from a current tree-vertex `⟨a, pp⟩` lifts to a path-tree
+walk projecting back to it. The hypothesis `liftSeq w.support.tail pp.support = some t` supplies, at
+each step, exactly the EXTEND (fresh vertex → child) or RETREAT (penultimate → parent) decision, so
+the lift is built by recursion with no failure branch. -/
+
+/-- **Existence of the lift.** If `liftSeq` accepts the `G`-walk `w : a ⟶ b` started from the path
+`pp : v ⟶ a` (current tree-vertex `⟨a, pp⟩`), returning final stack `t`, then `w` lifts to a path-tree
+walk `W` from `⟨a, pp⟩` to a vertex `q` with `q`'s path-support `= t` whose projection has the same
+support as `w`. (Support equality dodges the dependent endpoint; `support_injective` upgrades it to
+walk equality once the endpoints are pinned, in the closed-walk corollary.) -/
+theorem exists_lift [DecidableEq V] {v : V} {a b : V} (w : G.Walk a b) :
+    ∀ (pp : G.Walk v a) (hpp : pp.IsPath) {t : List V},
+      liftSeq w.support.tail pp.support = some t →
+      ∃ (q : G.PathFrom v) (W : (G.pathTree v).Walk ⟨a, pp, hpp⟩ q),
+        (W.map (G.pathTreeProj v)).support = w.support ∧ q.2.1.support = t := by
+  induction w with
+  | nil =>
+    intro pp hpp t h
+    simp only [Walk.support_nil, List.tail_nil, liftSeq] at h
+    exact ⟨⟨_, pp, hpp⟩, Walk.nil, by simp, Option.some.inj h⟩
+  | @cons a c b e w' ih =>
+    intro pp hpp t h
+    rw [Walk.support_cons, List.tail_cons,
+      show w'.support = c :: w'.support.tail from (Walk.cons_tail_support _).symm,
+      liftSeq_cons] at h
+    by_cases hc : c ∈ pp.support
+    · -- RETREAT: c is on pp; the lift retreats to the parent (dropLast)
+      rw [if_pos hc] at h
+      by_cases hpen : pp.support.dropLast.getLast? = some c
+      · rw [if_pos hpen] at h
+        have hnnil : ¬ pp.Nil := by
+          rintro hn
+          rw [Walk.nil_iff_support_eq.mp hn] at hpen; simp at hpen
+        have hpenu : pp.penultimate = c :=
+          Option.some.inj ((pp.support_dropLast_getLast?_eq_penultimate hnnil).symm.trans hpen)
+        subst hpenu
+        obtain ⟨q, W', hmap, hsupp⟩ := ih pp.dropLast (hpp.take (pp.length - 1))
+          (by rwa [Walk.support_dropLast hnnil])
+        exact ⟨q,
+          Walk.cons (Or.inr ⟨pp.adj_penultimate hnnil, (Walk.concat_dropLast _).symm⟩) W',
+          by rw [Walk.map_cons, Walk.support_cons, hmap, Walk.support_cons, pathTreeProj_apply], hsupp⟩
+      · rw [if_neg hpen] at h; simp at h
+    · -- EXTEND: c is fresh; the lift extends pp by the edge to c
+      rw [if_neg hc] at h
+      obtain ⟨q, W', hmap, hsupp⟩ := ih (pp.concat e) ((Walk.concat_isPath_iff e).mpr ⟨hpp, hc⟩)
+        (by simpa [Walk.support_concat] using h)
+      exact ⟨q, Walk.cons (Or.inl ⟨e, rfl⟩) W',
+        by rw [Walk.map_cons, Walk.support_cons, hmap, Walk.support_cons, pathTreeProj_apply], hsupp⟩
+
+/-- **Surjectivity of the projection onto tree-like walks.** Every closed tree-like walk of `G` at
+`v` is the `π`-projection of a closed walk at the root of `T(G,v)`: lift it from the root path
+(`exists_lift`), note the lift returns to the root (its final path-support is `[v]`), and upgrade the
+support equality to walk equality via `support_injective`. -/
+theorem exists_root_lift [DecidableEq V] {v : V} (w : G.Walk v v) (hw : w.IsTreeLike) :
+    ∃ W : (G.pathTree v).Walk (pathTreeRoot G v) (pathTreeRoot G v),
+      W.map (G.pathTreeProj v) = w := by
+  obtain ⟨q, W, hsupp, hqsupp⟩ :=
+    exists_lift w Walk.nil Walk.IsPath.nil (by simpa [Walk.IsTreeLike] using hw)
+  have hq : q = pathTreeRoot G v := by
+    obtain ⟨qv, qw, qhp⟩ := q
+    have hnil : qw.Nil := Walk.nil_iff_support_eq.mpr hqsupp
+    obtain rfl := hnil.eq
+    obtain rfl := hnil.eq_nil
+    rfl
+  subst hq
+  exact ⟨W, Walk.support_injective hsupp⟩
+
 end SimpleGraph
