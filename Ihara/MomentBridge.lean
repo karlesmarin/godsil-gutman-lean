@@ -6,6 +6,7 @@ Authors: Carles Marín
 import Ihara.TreeLikeWalks
 import MSS.PathTree
 import MSS.Divisibility
+import MSS.ForestRealRooted
 
 /-!
 # Welding Godsil's path tree to tree-like walk counts — moment theorem, stone 1
@@ -297,5 +298,15 @@ theorem treeLikeWalkCount_eq_sum_pathTree_adjMatrix_pow
   refine Finset.sum_congr rfl fun v _ => ?_
   rw [card_treeLike_eq_pathTreeWalks, adjMatrix_pow_apply_eq_card_walk, Nat.cast_id,
     card_set_walk_length_eq]
+
+/-- **The path tree is a forest, so its matching polynomial is the characteristic polynomial** of its
+adjacency matrix (`matchingPoly_forest_eq_charpoly` at `pathTree_isAcyclic`). This identifies the
+spectral object `charpoly(A(T(G,v)))` — whose `(root,root)` resolvent generates `[A(T)ᵏ]_root` — with
+the matching polynomial `μ(T(G,v))` that enters Godsil's ratio identity `μ(T−root)/μ(T) =
+μ(G−v)/μ(G)`. The hinge between the linear-algebra side (stone 3) and the matching-polynomial side
+(stone 2 = `godsil_identity`). -/
+theorem matchingPoly_pathTree_eq_charpoly [Fintype V] [DecidableEq V] [DecidableRel G.Adj] (v : V) :
+    (G.pathTree v).matchingPoly = ((G.pathTree v).adjMatrix ℝ).charpoly :=
+  matchingPoly_forest_eq_charpoly (G.pathTree v) (pathTree_isAcyclic G v)
 
 end SimpleGraph
