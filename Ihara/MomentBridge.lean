@@ -99,4 +99,28 @@ theorem pathTreeProj_injOn_neighborSet (G : SimpleGraph V) (u : V) (p : G.PathFr
   · exact absurd (parent_on hap) (hva.symm ▸ child_new hpa')
   · exact Grows.parent_unique hap hap'
 
+/-- **`Walk.map π` is injective on walks of the path tree** (with fixed endpoints): a walk of the
+forest `T(G,v)` is recovered from its `G`-projection. By induction, each step's next vertex is a
+neighbour of the current one, and `π` separates neighbours (`pathTreeProj_injOn_neighborSet`), so the
+lift is forced — the injective half of the stone-1 bijection. -/
+theorem pathTreeProj_walk_injective {v : V} : ∀ {x y : G.PathFrom v}
+    (p p' : (G.pathTree v).Walk x y),
+    p.map (G.pathTreeProj v) = p'.map (G.pathTreeProj v) → p = p' := by
+  intro x y p
+  induction p with
+  | nil => intro p' h; cases p' <;> simp_all
+  | @cons x w y hxw p ih =>
+    intro p' h
+    cases p' with
+    | nil => simp at h
+    | @cons _ w' _ hxw' p' =>
+      simp only [Walk.map_cons, Walk.cons.injEq] at h
+      obtain ⟨hsnd, htail⟩ := h
+      have hww : w = w' :=
+        pathTreeProj_injOn_neighborSet G v x
+          (((G.pathTree v).mem_neighborSet x w).mpr hxw)
+          (((G.pathTree v).mem_neighborSet x w').mpr hxw') hsnd
+      subst hww
+      rw [ih p' (eq_of_heq htail)]
+
 end SimpleGraph
