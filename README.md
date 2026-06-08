@@ -76,6 +76,23 @@ Paper I listed as "future, mapped" is done. Still future: the
 interlacing-families existence step and the signing/2-lift correspondence that
 would yield a formalized proof that Ramanujan graphs exist (Paper II, Q1).
 
+### Paper III — the path tree counts walks
+
+The combinatorial half of Godsil's **moment theorem** `p_k = Σ_i θ_i^k = treeLikeWalkCount`.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `card_treeLike_eq_pathTreeWalks` | `#{tree-like walks of G at v} = #{walks at root of T(G,v)}` (the bijection) | `Ihara/MomentBridge.lean` |
+| `treeLikeWalkCount_eq_sum_pathTree_adjMatrix_pow` | `treeLikeWalkCount G k = ∑_v [A(T(G,v))^k]_root` | `Ihara/MomentBridge.lean` |
+| `matchingPoly_pathTree_eq_charpoly` | `μ(T(G,v)) = charpoly(A(T(G,v)))` (forest) | `Ihara/MomentBridge.lean` |
+| `pathTreeProj_walk_injective`, `exists_root_lift` | the bijection's injective + surjective halves | `Ihara/MomentBridge.lean` |
+| `liftSeq_map_invariant` | the `liftSeq`↔path-tree-vertex invariant | `Ihara/MomentBridge.lean` |
+| `Walk.isTreeLike_of_acyclic` | acyclic edge-support ⇒ tree-like (path-tree definition) | `Ihara/PathTree.lean` |
+
+The **spectral half** (single-entry resolvent `[A(T)^k]_root = ` coeff of `μ(T−root)/μ(T)`,
+plus the univariate Newton step to `p_k`) is **mapped, not built**; the matrix-resolvent
+infrastructure (`resolventSeries`, `coeff_resolventSeries`) is already in `Ihara/TraceFormula.lean`.
+
 ### The Ihara side — Bass's determinant formula
 
 `sorry`-free over a field (`#print axioms` = `propext`, `Classical.choice`,
@@ -118,9 +135,13 @@ MSS/ForestRealRooted.lean   forest identity, T5/T6 real-rootedness
 MSS/HeilmannLieb.lean       interlacing/geometric real-stability engine
 MSS/HeilmannLiebBound.lean  the Ramanujan bound (Collatz–Wielandt + tree facts)
 Ihara/Bass.lean             Bass's determinant formula for the Ihara zeta (Ihara side)
+Ihara/PathTree.lean         path-tree-faithful tree-like predicate (liftSeq) + acyclic ⇒ tree-like
+Ihara/TreeLikeWalks.lean    treeLikeWalkCount, the trace-formula gap, matchingPowerSum
+Ihara/MomentBridge.lean     Paper III: the bijection tree-like walks ↔ path-tree walks
 
 godsil-gutman-lean{,-es}.{tex,pdf}   Paper I (EN / ES)
 heilmann-lieb-lean{,-es}.{tex,pdf}   Paper II (EN / ES)
+path-tree-walks-lean{,-es}.{tex,pdf} Paper III (EN / ES)
 references.bib                        bibliography
 figures/                              figure scripts + PDFs + tables.tex (per paper)
 ```
@@ -180,7 +201,7 @@ Paper II figures and SageMath cross-checks:
 @misc{Marin2026PathTreeWalksLean,
   author = {Mar\'in, Carles},
   title  = {Walks that Forget the Cycles: A Machine-Checked Bijection between Tree-Like Walks and Godsil's Path Tree in Lean 4},
-  year   = {2026}, doi = {10.5281/zenodo.TBD},
+  year   = {2026}, doi = {10.5281/zenodo.20600326},
   note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
@@ -189,7 +210,7 @@ The papers are archived on Zenodo:
 Part I [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350),
 Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832),
 Ihara/Bass [10.5281/zenodo.20573120](https://doi.org/10.5281/zenodo.20573120),
-Part III [10.5281/zenodo.TBD](https://doi.org/10.5281/zenodo.TBD) — *reserve the DOI on Zenodo and fill it in here and in `CITATION.cff`*.
+Part III [10.5281/zenodo.20600326](https://doi.org/10.5281/zenodo.20600326).
 
 ## Author and license
 
