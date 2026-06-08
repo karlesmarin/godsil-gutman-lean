@@ -5,6 +5,7 @@ Authors: Carles Marín
 -/
 import Ihara.TreeLikeWalks
 import MSS.PathTree
+import MSS.Divisibility
 
 /-!
 # Welding Godsil's path tree to tree-like walk counts — moment theorem, stone 1
@@ -248,5 +249,35 @@ theorem exists_root_lift [DecidableEq V] {v : V} (w : G.Walk v v) (hw : w.IsTree
     rfl
   subst hq
   exact ⟨W, Walk.support_injective hsupp⟩
+
+/-! ## The stone-1 count equality
+
+Assembling the bijection: the number of closed tree-like walks of `G` at `v` of length `k` equals the
+number of closed walks of length `k` at the root of the path tree `T(G,v)`. This is the matching-side
+input `treeLikeWalkCount`-summand `= [A(T(G,v))ᵏ]_{root}` of Godsil's moment theorem. -/
+
+/-- **Stone 1 (count form).** `#{closed tree-like walks of `G` at `v`, length `k`}` =
+`#{closed walks at the root of `T(G,v)`, length `k`}`, via the bijection `W ↦ W.map π`
+(injective `pathTreeProj_walk_injective`, image-is-tree-like `pathTreeProj_map_isTreeLike`,
+surjective `exists_root_lift`). -/
+theorem card_treeLike_eq_pathTreeWalks [Fintype V] [DecidableEq V] [DecidableRel G.Adj]
+    (k : ℕ) (v : V) :
+    #((G.finsetWalkLength k v v).filter fun w => w.IsTreeLike)
+      = #((G.pathTree v).finsetWalkLength k (pathTreeRoot G v) (pathTreeRoot G v)) := by
+  refine (Finset.card_bij (fun W _ => W.map (G.pathTreeProj v)) ?_ ?_ ?_).symm
+  · intro W hW
+    rw [mem_finsetWalkLength_iff] at hW
+    rw [Finset.mem_filter, mem_finsetWalkLength_iff]
+    refine ⟨?_, pathTreeProj_map_isTreeLike W⟩
+    show (W.map (G.pathTreeProj v)).length = k
+    rw [Walk.length_map]; exact hW
+  · intro W₁ _ W₂ _ heq
+    exact pathTreeProj_walk_injective W₁ W₂ heq
+  · intro w hw
+    rw [Finset.mem_filter, mem_finsetWalkLength_iff] at hw
+    obtain ⟨W, hWeq⟩ := exists_root_lift w hw.2
+    refine ⟨W, ?_, hWeq⟩
+    rw [mem_finsetWalkLength_iff, ← Walk.length_map (G.pathTreeProj v) W, hWeq]
+    exact hw.1
 
 end SimpleGraph
