@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this formalization, please cite the relevant paper (Part I and/or Part II)."
+message: "If you use this formalization, please cite the relevant paper (Parts I–III and/or the Ihara/Bass companion)."
 title: "The Path-Tree Program: Godsil–Gutman and Heilmann–Lieb in Lean 4"
 abstract: >-
   A machine-checked formalization in Lean 4 / Mathlib of the Godsil–Gutman identity
@@ -51,3 +51,11 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20573120"
     notes: "Ihara/Bass companion (the cycle side)"
+  - type: article
+    title: "Walks that Forget the Cycles: A Machine-Checked Bijection between Tree-Like Walks and Godsil's Path Tree in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.TBD"
+    notes: "Part III — reserve the Zenodo DOI and replace TBD"

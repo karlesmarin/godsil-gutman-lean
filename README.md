@@ -1,7 +1,7 @@
 # The Path-Tree Program — Godsil–Gutman & Heilmann–Lieb in Lean 4
 
-A machine-checked formalization, in **Lean 4 / Mathlib**, of two classical results
-about the **matching polynomial** of a graph and the road between them, in two
+A machine-checked formalization, in **Lean 4 / Mathlib**, of classical results
+about the **matching polynomial** of a graph and the road between them, in a series of
 papers:
 
 - **Paper I — *Random Signs into Matchings*** ([`godsil-gutman-lean.pdf`](godsil-gutman-lean.pdf)):
@@ -14,6 +14,13 @@ papers:
   `Δ ≥ 2` all its roots lie in the Ramanujan band `[−2√(Δ−1), 2√(Δ−1)]` — proved
   via Godsil's path tree, the divisibility `μ_G ∣ μ_{T(G,u)}`, the forest identity,
   and a weighted Gershgorin / Collatz–Wielandt argument.
+- **Paper III — *Walks that Forget the Cycles*** ([`path-tree-walks-lean.pdf`](path-tree-walks-lean.pdf)):
+  the **bijection** between the **tree-like walks** of a graph and the walks on Godsil's
+  path tree (`card_treeLike_eq_pathTreeWalks`) — the *combinatorial half* of Godsil's
+  **moment theorem** `p_k = Σ_i θ_i^k = treeLikeWalkCount` — together with the spectral
+  form `treeLikeWalkCount = Σ_v [A(T(G,v))^k]_root` and the forest bridge `μ(T)=charpoly`.
+  The same path tree of Paper II, taught to count walks. The spectral half (single-entry
+  resolvent + univariate Newton) is **mapped, not built**; `sorry`-free, three standard axioms.
 
 A companion strand formalizes the **Ihara side** of spectral graph theory:
 
@@ -170,12 +177,19 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20573120},
   note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026PathTreeWalksLean,
+  author = {Mar\'in, Carles},
+  title  = {Walks that Forget the Cycles: A Machine-Checked Bijection between Tree-Like Walks and Godsil's Path Tree in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.TBD},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
 Part I [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350),
 Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832),
-Ihara/Bass [10.5281/zenodo.20573120](https://doi.org/10.5281/zenodo.20573120).
+Ihara/Bass [10.5281/zenodo.20573120](https://doi.org/10.5281/zenodo.20573120),
+Part III [10.5281/zenodo.TBD](https://doi.org/10.5281/zenodo.TBD) — *reserve the DOI on Zenodo and fill it in here and in `CITATION.cff`*.
 
 ## Author and license
 
