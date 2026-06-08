@@ -280,4 +280,22 @@ theorem card_treeLike_eq_pathTreeWalks [Fintype V] [DecidableEq V] [DecidableRel
     rw [mem_finsetWalkLength_iff, ← Walk.length_map (G.pathTreeProj v) W, hWeq]
     exact hw.1
 
+/-- **Stone 1 → linear algebra.** Godsil's tree-like walk count is the sum, over base vertices `v`,
+of the root–root entry of the `k`-th power of the path tree's adjacency matrix:
+
+  `treeLikeWalkCount G k = ∑_v [A(T(G,v))ᵏ]_{root,root}`.
+
+Combines `card_treeLike_eq_pathTreeWalks` (the stone-1 bijection) with
+`adjMatrix_pow_apply_eq_card_walk` (matrix powers count walks). This is the matching side of the
+trace-formula bridge expressed spectrally on each path tree — the entry point to the resolvent /
+Newton stones (`[A(T)ᵏ]_root` = the `k`-th moment coefficient of `μ(T−root)/μ(T)`). -/
+theorem treeLikeWalkCount_eq_sum_pathTree_adjMatrix_pow
+    [Fintype V] [DecidableEq V] [DecidableRel G.Adj] (k : ℕ) :
+    G.treeLikeWalkCount k
+      = ∑ v : V, ((G.pathTree v).adjMatrix ℕ ^ k) (pathTreeRoot G v) (pathTreeRoot G v) := by
+  rw [treeLikeWalkCount]
+  refine Finset.sum_congr rfl fun v _ => ?_
+  rw [card_treeLike_eq_pathTreeWalks, adjMatrix_pow_apply_eq_card_walk, Nat.cast_id,
+    card_set_walk_length_eq]
+
 end SimpleGraph
