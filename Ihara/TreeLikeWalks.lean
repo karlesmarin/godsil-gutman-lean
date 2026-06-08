@@ -161,10 +161,17 @@ Godsil's moment theorem is the (open) bridge `matchingPowerSum G k = treeLikeWal
 noncomputable def matchingPowerSum (k : ℕ) : ℂ :=
   ((G.matchingPoly.map (algebraMap ℝ ℂ)).roots.map (· ^ k)).sum
 
-/- **`k = 0` anchor (next brick):** `matchingPowerSum G 0 = n`, since `μ` is monic of degree
-`n = card V` and `ℂ` is algebraically closed, so it has exactly `n` roots, each contributing
-`θ⁰ = 1`. Together with `treeLikeWalkCount_zero` this confirms Godsil's bridge at `k = 0` on both
-sides; it reduces to `(μ.map (algebraMap ℝ ℂ)).roots.card = μ.natDegree` (splitting over `ℂ`). -/
+/-- **`k = 0` anchor:** `matchingPowerSum G 0 = n`. The matching polynomial is monic of degree
+`n = card V`, so over the algebraically closed `ℂ` it splits into exactly `n` linear factors, i.e.
+its multiset of roots has cardinality `n`; each root contributes `θ⁰ = 1` to the power sum. Together
+with `treeLikeWalkCount_zero` this confirms Godsil's bridge `matchingPowerSum = treeLikeWalkCount` at
+`k = 0` on both sides. -/
+theorem matchingPowerSum_zero : G.matchingPowerSum 0 = (Fintype.card V : ℂ) := by
+  have hcard : (G.matchingPoly.map (algebraMap ℝ ℂ)).roots.card = Fintype.card V := by
+    rw [Polynomial.splits_iff_card_roots.mp (IsAlgClosed.splits _),
+      Polynomial.natDegree_map_eq_of_injective (algebraMap ℝ ℂ).injective, matchingPoly_natDegree]
+  unfold matchingPowerSum
+  simp only [pow_zero, Multiset.map_const', Multiset.sum_replicate, hcard, nsmul_eq_mul, mul_one]
 
 /-! ## The trace-formula gap (first Sachs term)
 
