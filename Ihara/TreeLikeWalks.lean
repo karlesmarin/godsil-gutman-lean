@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Carles Marín
 -/
 import Ihara.TraceFormula
+import Ihara.PathTree
 import Mathlib.Combinatorics.SimpleGraph.Girth
 import MatchingPoly
 import Mathlib.Analysis.Complex.Polynomial.Basic
@@ -16,9 +17,12 @@ relating the power sums `p_k = Σ θᵢᵏ` of the matching-polynomial roots to 
 
 ## Tree-like walks (Godsil 1981, *Matchings and walks in graphs*)
 
-A closed walk is **tree-like** when the subgraph of edges it traverses is acyclic (a forest):
-in a forest, every closed walk merely retraces edges and never encloses a cycle. Godsil's moment
-theorem states that the `k`-th moment of the matching polynomial counts closed tree-like walks:
+A closed walk is **tree-like** when it lifts to a closed walk at the root of Godsil's path tree
+`T(G,v)` (each step extends the current simple path or backtracks to its parent); see
+`Ihara/PathTree.lean`. Below the girth this coincides with "edge-support is a forest", but in general
+it is strictly weaker — a tree-like walk may traverse edges that in aggregate enclose a cycle.
+Godsil's moment theorem states that the `k`-th moment of the matching polynomial counts closed
+tree-like walks:
 
   `p_k = Σᵢ θᵢᵏ = Σ_v #{ closed tree-like walks of length k at v }`,
 
@@ -40,11 +44,12 @@ namespace SimpleGraph
 
 variable {V : Type*} [DecidableEq V] {G : SimpleGraph V}
 
-/-- A closed walk is **tree-like** when the subgraph of edges it traverses is acyclic (a forest).
-This is Godsil's combinatorial class: in a forest every closed walk merely retraces, never
-enclosing a cycle. -/
-def Walk.IsTreeLike {v : V} (w : G.Walk v v) : Prop :=
-  w.toSubgraph.coe.IsAcyclic
+/-! The **tree-like** predicate `Walk.IsTreeLike` (path-tree-faithful: a closed walk lifts to a
+closed walk at the root of Godsil's path tree `T(G,v)`) is defined in `Ihara/PathTree.lean`, with
+its `Decidable` instance, `nil_isTreeLike`, and `isTreeLike_of_acyclic` (acyclic edge-support ⇒
+tree-like). Below the girth that hypothesis always holds (`acyclic_of_length_lt_egirth`, below), so
+the two notions coincide there; the path-tree definition is the one matching the matching power sums
+`p_k` for all `k` (e.g. `K4`, `k = 6 → 324`, where the bare acyclic-support count gives 276). -/
 
 /-- The edges of a walk in the coerced support `w.toSubgraph.coe`, pushed into `G`, all lie among
 the edges of `w` itself: the mapped walk's support is contained in `w.toSubgraph`. -/
@@ -61,11 +66,12 @@ theorem Walk.edges_map_hom_subset_edges {v : V} (w : G.Walk v v) {u : w.toSubgra
   rw [← Walk.mem_edges_toSubgraph] at he ⊢
   exact Subgraph.edgeSet_mono hle he
 
-/-- **Girth threshold.** A closed walk strictly shorter than the (extended) girth is tree-like: any
-cycle in its edge-support lifts to a cycle of `G` no longer than the walk, contradicting the girth
-bound. (For an acyclic `G`, `egirth = ⊤`, so this holds for every closed walk.) -/
-theorem Walk.isTreeLike_of_length_lt_egirth {v : V} (w : G.Walk v v)
-    (h : (w.length : ℕ∞) < G.egirth) : w.IsTreeLike := by
+/-- **Girth threshold (acyclic form).** A closed walk strictly shorter than the (extended) girth has
+acyclic edge-support: any cycle in its support lifts to a cycle of `G` no longer than the walk,
+contradicting the girth bound. (For an acyclic `G`, `egirth = ⊤`, so this holds for every closed
+walk.) -/
+theorem Walk.acyclic_of_length_lt_egirth {v : V} (w : G.Walk v v)
+    (h : (w.length : ℕ∞) < G.egirth) : w.toSubgraph.coe.IsAcyclic := by
   intro u c hc
   -- map the support-cycle `c` into `G`; injective `hom` keeps it a cycle
   have hcyc : (c.map w.toSubgraph.hom).IsCycle :=
@@ -82,6 +88,13 @@ theorem Walk.isTreeLike_of_length_lt_egirth {v : V} (w : G.Walk v v)
   -- chain: w.length < egirth ≤ c.length ≤ w.length, contradiction
   have hcontra : G.egirth ≤ (w.length : ℕ∞) := hg.trans (by exact_mod_cast hlen)
   exact absurd (lt_of_lt_of_le h hcontra) (lt_irrefl _)
+
+/-- **Girth threshold.** A closed walk strictly shorter than the (extended) girth is tree-like:
+below the girth the edge-support is acyclic (`acyclic_of_length_lt_egirth`), and an acyclic support
+lifts to the path tree (`isTreeLike_of_acyclic`, `Ihara/PathTree.lean`). -/
+theorem Walk.isTreeLike_of_length_lt_egirth {v : V} (w : G.Walk v v)
+    (h : (w.length : ℕ∞) < G.egirth) : w.IsTreeLike :=
+  w.isTreeLike_of_acyclic (w.acyclic_of_length_lt_egirth h)
 
 /-! ## Below the girth: tree-like walks are all closed walks (`tr(Aᵏ)` counts them) -/
 
@@ -135,10 +148,7 @@ theorem treeLikeWalkCount_eq_trace_of_lt_egirth (k : ℕ) (h : (k : ℕ∞) < G.
     G.treeLikeWalkCount k = (G.adjMatrix ℕ ^ k).trace := by
   rw [treeLikeWalkCount, trace_adjMatrix_pow_eq_treeLike_of_lt_egirth k h]
 
-/-- The empty walk `nil` is tree-like: its edge-support is the single-vertex subgraph
-`G.singletonSubgraph v`, whose coercion is a tree, hence acyclic. -/
-theorem Walk.nil_isTreeLike (v : V) : (Walk.nil : G.Walk v v).IsTreeLike :=
-  (IsTree.coe_singletonSubgraph G v).isAcyclic
+-- `Walk.nil_isTreeLike` (the empty walk is tree-like) is provided by `Ihara/PathTree.lean`.
 
 /-- **`k = 0` moment anchor:** `treeLikeWalkCount G 0 = n`. The only closed walk of length `0` at
 each vertex is `nil` (tree-like), so the count is `1` per vertex. This is the matching-side mirror
