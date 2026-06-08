@@ -87,31 +87,51 @@ those forgetful walks recover the moments of a polynomial that is the characteri
 matrix at all?} The two halves of that question turn out to have a single answer, a tree; this paper
 machine-checks the combinatorial half of it.
 
-A finite graph $G$ has a matching polynomial $\mu(G,x)=\sum_{k}(-1)^k m_k(G)\,x^{n-2k}$, where
-$m_k(G)$ counts the $k$-edge matchings. It is not, in general, the characteristic polynomial of any
-fixed matrix; yet its roots $\theta_1,\dots,\theta_n$ are always real, and their power sums
-$p_k=\sum_i\theta_i^{k}$ carry combinatorial meaning. Both facts were explained by Godsil in 1981
-through a single device. Given a vertex $v$, the \emph{path tree} $T(G,v)$ has as vertices the simple
-paths of $G$ that start at $v$, with one path joined to another when the second extends the first by a
-single edge~\cite{Godsil1981a,Godsil1981b}. It is a tree (a forest), and it is the finite truncation
-of the universal cover of $G$ unrolled from $v$.
+Answering it---and explaining why a single combinatorial device settles two facts about a graph that
+look unrelated---asks three threads of history to meet.
 
-Godsil drew two conclusions from the one tree. First, $\mu(G)\mid\mu(T(G,v))$, and a forest's
-matching polynomial \emph{is} the characteristic polynomial of its adjacency matrix, hence
-real-rooted; this gives the Heilmann--Lieb theorem, and is what Part~II~\cite{PartII} formalized.
-Second---the subject of this paper---the path tree \emph{counts walks}. Call a closed walk of $G$
-\emph{tree-like} when, viewed step by step, it only ever extends to a new vertex or retreats to the
-vertex it came from: it never traverses an edge back to an earlier, non-parent vertex, so it never
-knowingly encloses a cycle. (It may still, in aggregate, traverse the three edges of a triangle---as
-long as each intermediate \emph{path} stays simple.) Godsil's observation is that these are exactly
-the walks $G$ inherits from $T(G,v)$: a closed walk at the root of the path tree, pushed down to $G$
-by recording only the current endpoint, is a tree-like closed walk at $v$, and every tree-like walk
-arises this way, uniquely. Summing the resulting count over $v$ and over the length-$k$ walks gives
-$\mathrm{treeLikeWalkCount}(G,k)$, and the moment theorem identifies it with $p_k(G)$.
+\paragraph{A polynomial with real roots and no matrix (1972).} A finite graph $G$ has a matching
+polynomial $\mu(G,x)=\sum_{k}(-1)^k m_k(G)\,x^{n-2k}$, where $m_k(G)$ counts its $k$-edge
+matchings~\cite{Farrell1979,LovaszPlummer}. In 1972 Heilmann and Lieb, studying monomer--dimer
+systems in statistical mechanics, proved that its roots are always real~\cite{HeilmannLieb}---a
+phase-transition statement in physics, a spectral one in combinatorics. But real roots are the
+signature of a \emph{symmetric matrix}, and $\mu(G)$ is the characteristic polynomial of no fixed
+matrix unless $G$ is a forest. So the question sharpens: if there is no matrix, where do the real
+roots, and the combinatorial content of their power sums $p_k=\sum_i\theta_i^{k}$, come from?
+
+\paragraph{One tree, two theorems (1981).} Godsil's answer was a single device~\cite{Godsil1981a,
+Godsil1981b,GodsilBook}. Given a vertex $v$, the \emph{path tree} $T(G,v)$ has as vertices the simple
+paths of $G$ that start at $v$, with one path joined to another when the second extends the first by a
+single edge. It is a forest---the finite truncation of the \emph{universal cover} of $G$ unrolled from
+$v$---and from it Godsil drew two conclusions. First, $\mu(G)\mid\mu(T(G,v))$, and a forest's matching
+polynomial \emph{is} the characteristic polynomial of its adjacency matrix, hence real-rooted; this
+recovers Heilmann--Lieb, and is what Part~II of this series~\cite{PartII} formalized. Second---the
+subject of this paper---the path tree \emph{counts walks}.
+
+\paragraph{Walks, covers, and a trace formula.} The universal cover is the deeper object behind the
+finite tree: the spectral radius of the infinite $(\Delta-1)$-regular tree is $2\sqrt{\Delta-1}$, the
+\emph{Ramanujan} edge, which is also Godsil's bound on the matching roots, and the cover's spectrum is
+governed by the matching polynomial~\cite{AngelFriedmanHoory,Spier2025}. On the finite side this is a
+\emph{trace formula}: $\tr(A^k)$ counts \emph{all} closed walks of $G$, while $p_k$ counts only the
+\emph{tree-like} ones; below the girth every walk is tree-like, so the two agree, and the first gap
+counts shortest cycles. The cycle side, $\tr(A^k)$ and its non-backtracking refinement, is the
+\emph{Bass} companion of this series~\cite{Bass,Hashimoto,IharaBass}; this paper builds the
+combinatorial half of the tree side.
+
+A closed walk of $G$ is \emph{tree-like} when, viewed step by step, it only ever extends to a new
+vertex or retreats to the vertex it came from: it never traverses an edge back to an earlier,
+non-parent vertex, so it never knowingly encloses a cycle. (It may still, in aggregate, traverse the
+three edges of a triangle---as long as each intermediate \emph{path} stays simple; this is exactly
+where the naive definition fails, Figure~\ref{fig:moments}.) Godsil's observation is that these are
+precisely the walks $G$ inherits from $T(G,v)$: a closed walk at the root of the path tree, pushed
+down to $G$ by recording only the current endpoint, is a tree-like closed walk at $v$, and every
+tree-like walk arises this way, uniquely (Figure~\ref{fig:bij}). Summing over $v$ and over the
+length-$k$ walks gives $\mathrm{treeLikeWalkCount}(G,k)$, and the moment theorem identifies it with
+$p_k(G)$.
 
 \paragraph{Why formalize it.} The matching polynomial sits at the intersection of three of this
-series' threads---real-rootedness (Part~II), the matching/Ihara trace formula (the
-\emph{Bass} companion~\cite{Bass}), and, through the band edge $2\sqrt{k-1}$, Ramanujan
+series' threads---real-rootedness (Parts~I--II~\cite{PartI,PartII}), the matching/Ihara trace formula
+(the \emph{Bass} companion~\cite{Bass}), and, through the band edge $2\sqrt{\Delta-1}$, Ramanujan
 graphs~\cite{MSS}. The trace formula has a \emph{cycle} side, $\tr(A^k)$ counting all closed walks,
 and a \emph{tree} side, $p_k$ counting tree-like ones; below the girth they coincide, and the first
 gap is a count of shortest cycles. To state that bridge inside a proof assistant one needs the
@@ -127,13 +147,13 @@ find a prior formalization in any proof assistant. The headline depends only on 
 axioms (\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}); there is no \lean{sorry}.
 
 % ---------------------------------------------------------------
-\section{What, exactly, are we matching?}
+\section{The two sides, kept apart}
 \label{sec:objects}
 
-Before a bijection can be checked, both of its sides must be honest objects, and---this is the point
-of the section---\emph{different} objects, defined without reference to each other, so that their
-agreement says something. What are they? Throughout, $G$ is a \lean{SimpleGraph} on a vertex type
-$V$, and $v\in V$ is a base point. I reuse the path tree of Part~II verbatim.
+\emph{What, exactly, are we matching---and how do we keep the two sides from being the same object
+wearing two hats?} A bijection only says something when its ends are defined without reference to each
+other; so I fix both, and only later let them meet. Throughout, $G$ is a \lean{SimpleGraph} on a
+vertex type $V$, and $v\in V$ is a base point. I reuse the path tree of Part~II verbatim.
 
 \begin{definition}[Path tree, \lean{pathTree}]
 The vertices of $T(G,v)=\lean{pathTree}\,G\,v$ are the simple paths of $G$ starting at $v$
@@ -165,7 +185,19 @@ This definition is the corrected one. The naive choice---``the edge-support of $
 \emph{wrong} for the moment theorem: on $K_4$ with $k=6$ it undercounts ($276$ against $p_6=324$),
 because a tree-like walk may traverse a cycle's edges in aggregate. The \lean{liftSeq} predicate was
 validated numerically against the matching power sums on $P_4,C_4,C_5,K_4$ and the Petersen and
-$K_{3,3}$ graphs for $k\le8$ before it was formalized.
+$K_{3,3}$ graphs for $k\le8$ before it was formalized (Figure~\ref{fig:moments}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.82\textwidth]{figures/pt_fig2_moments.pdf}
+  \caption{Why the definition matters, on $K_4$. The matching power sums $p_k$ (teal) coincide with
+  the tree-like / path-tree count for every $k$---this paper's bijection makes the second equality
+  exact. The plausible ``acyclic edge-support'' count (red) agrees through $k=5$ but then undercounts,
+  $276$ against $324$ at $k=6$, because a tree-like walk may traverse all three edges of a triangle
+  while every intermediate path stays simple. A cheap numerical check caught the wrong definition
+  before any formal effort was spent on it.}
+  \label{fig:moments}
+\end{figure}
 
 % ---------------------------------------------------------------
 \section{The result}
@@ -179,7 +211,27 @@ walks of length $k$ of $G$ at $v$. In particular their cardinalities agree:
    \;=\;\#\{\,\text{walks at the root of }T(G,v),\ \text{length }k\,\}.}
 \end{theorem}
 
-Three facts assemble the bijection, one per direction plus injectivity.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.96\textwidth]{figures/pt_fig1_bijection.pdf}
+  \caption{The bijection on the diamond $G=K_4-e$, root $u$. A closed walk at the root of the path
+  tree $T(G,u)$ (right), $u\to ua\to uab\to ua\to u$, projects under $\pi$ (a path $\mapsto$ its
+  endpoint) to a tree-like closed walk of $G$ (left), $u\,a\,b\,a\,u$. Each step is an \textsc{extend}
+  (teal, advance to a fresh vertex / push) or a \textsc{retreat} (amber, backtrack to the parent /
+  pop). The walk on the left traverses the edges $ua,ab$ outward and retraces them back; the lift on
+  the right makes the path history explicit, and is the unique walk over it.}
+  \label{fig:bij}
+\end{figure}
+
+\emph{What does it take to trust a bijection?} A map, and its promise kept in two directions. The
+map is $\pi$ read on whole walks, $W\mapsto W.\mathrm{map}\,\pi$; its promise is three facts, and the
+three proof sections that follow are, in order, exactly those three. The map must \emph{land where it
+should}: a projected tree-walk is always tree-like, so $\pi$ carries the tree's walks \emph{into}
+$G$'s tree-like ones (Lemma~\ref{lem:img}, earned in Section~\ref{sec:inv}). It must \emph{forget
+nothing}: no two tree-walks cast the same shadow (Lemma~\ref{lem:inj}, Section~\ref{sec:inj}). And it
+must \emph{miss nothing}: every tree-like walk is some walk's shadow---the lift exists
+(Lemma~\ref{lem:surj}, Section~\ref{sec:surj}). Land, injective, surjective; that is the whole of
+Theorem~\ref{thm:bij}, and the rest of the paper is those three words made precise.
 
 \begin{lemma}[Image is tree-like, \lean{pathTreeProj\_map\_isTreeLike}]\label{lem:img}
 The $\pi$-projection of any closed walk at the root of $T(G,v)$ is tree-like.
@@ -194,7 +246,11 @@ Every tree-like closed walk of $G$ at $v$ is $W.\mathrm{map}\,\pi$ for some clos
 root of $T(G,v)$.
 \end{lemma}
 
-Two corollaries place the count on the spectral side, where the rest of the moment theorem lives.
+\emph{A bijection that only renames a finite set is bookkeeping---so what does this one buy?} Its
+worth is that the two sides are different \emph{kinds} of object: on the left, a combinatorial count;
+on the right, walks on a \emph{tree}. And a tree has a matrix. So the count on the right is a matrix
+power, a matrix power is a spectral quantity, and the rename has quietly moved us onto the spectral
+side, where the rest of the moment theorem lives. Two corollaries take the step.
 
 \begin{theorem}[Spectral form, \lean{treeLikeWalkCount\_eq\_sum\_pathTree\_adjMatrix\_pow}]
 \label{thm:spectral}
@@ -209,11 +265,12 @@ adjacency matrix: $\mu(T(G,v))=\mathrm{charpoly}\bigl(A(T(G,v))\bigr)$.
 \end{theorem}
 
 % ---------------------------------------------------------------
-\section{Why can a walk lift only one way?}
+\section{The path tree is an immersion}
 \label{sec:inj}
 
-If the path tree is the graph unrolled, what stops a walk from unrolling ambiguously---from having two
-different lifts? The answer is local, and it is the whole engine of injectivity. The neighbours of a
+\emph{If the path tree is the graph unrolled, what stops a walk from unrolling ambiguously---from
+having two different lifts?} The answer is local, and it is the whole engine of injectivity. The
+neighbours of a
 path-tree vertex $p$ are its unique parent (drop the last edge) and its
 children (append one edge each). The projection $\pi$ sends the parent to $p$'s penultimate vertex,
 which lies on $p$, and each child to its fresh endpoint, which does not; and distinct children have
@@ -229,13 +286,13 @@ local injection; an induction mirroring Mathlib's \lean{Walk.map\_injective\_of\
 global hypothesis replaced by the local one, gives Lemma~\ref{lem:inj}.
 
 % ---------------------------------------------------------------
-\section{How does a predicate that never mentions the tree know about the tree?}
+\section{The \texttt{liftSeq}$\leftrightarrow$path invariant}
 \label{sec:inv}
 
-\lean{IsTreeLike} is defined by a stack discipline on $G$ alone; the path tree appears nowhere in it.
-So why should it detect exactly the walks that come from the tree? Because the stack \emph{is} the
-tree vertex in disguise. The bridge is a single invariant: as one walks $T(G,v)$, running
-\lean{liftSeq} on the projected walk tracks the current path-tree vertex.
+\emph{\lean{IsTreeLike} is a stack discipline on $G$ alone---the path tree appears nowhere in it---so
+why should it detect exactly the walks that come from the tree?} Because the stack \emph{is} the tree
+vertex in disguise. The bridge is a single invariant: as one walks $T(G,v)$, running \lean{liftSeq} on
+the projected walk tracks the current path-tree vertex.
 
 \begin{lemma}[One step, \lean{liftSeq\_step}]
 For a path-tree edge $s\sim y$ and any tail $M$,
@@ -254,10 +311,12 @@ drives the lift: it is the bookkeeping that, run in reverse, reconstructs the pa
 tree-like walk.
 
 % ---------------------------------------------------------------
-\section{How does a tree-like walk climb back into the tree?}
+\section{The lift: climbing back into the tree}
 \label{sec:surj}
 
-Surjectivity is the only direction that builds a walk in the dependent type
+\emph{Every tree-like walk should come from the tree---but how do we exhibit the walk it comes from,
+when its very endpoints in the tree are not given but computed?} Surjectivity is the only direction
+that builds a walk in the dependent type
 $(T(G,v)).\mathrm{Walk}$, and its endpoints are computed, not given. The construction
 (\lean{exists\_lift}) is a recursion on the $G$-walk: the hypothesis ``\lean{liftSeq} accepts $w$ from
 the current vertex'' supplies, at each step, the \textsc{extend}/\textsc{retreat} decision, so there
@@ -275,10 +334,12 @@ with Lemma~\ref{lem:img} for well-definedness, Lemma~\ref{lem:inj} for injectivi
 Lemma~\ref{lem:surj} for surjectivity; lengths are preserved because $\mathrm{map}$ preserves them.
 
 % ---------------------------------------------------------------
-\section{Where does the machine-checked ground end?}
+\section{The boundary: what is built, and what is mapped}
 \label{sec:boundary}
 
-Godsil's moment theorem is
+\emph{The bijection counts; the moment theorem equates that count with a spectrum. Where, precisely,
+does the machine-checked ground end and the mapped-but-unbuilt algebra begin?} Godsil's moment theorem
+is
 \keyeq{p_k(G)\;=\;\sum_i\theta_i^{k}\;=\;\mathrm{treeLikeWalkCount}(G,k).}
 This paper builds its \emph{combinatorial} half---everything up to and including the spectral form
 (Theorem~\ref{thm:spectral}) and the forest bridge (Theorem~\ref{thm:forest}). The
@@ -312,8 +373,8 @@ bridge---are general results absent from Mathlib, and both are kept in the repos
 The proof was developed with AI assistance (Claude, Anthropic): the author set the targets,
 adjudicated the mathematics, and checked every claim against the Lean kernel; the assistant produced
 candidate proofs and the prose drafts. Every theorem cited here compiles \lean{sorry}-free against
-the pinned Mathlib revision and depends only on the three standard axioms, a fact the reader can
-re-verify with \lean{\#print axioms}. The corrected ``tree-like'' definition is itself a small
+the pinned Mathlib revision~\cite{Mathlib} and depends only on the three standard axioms, a fact the
+reader can re-verify with \lean{\#print axioms}. The corrected ``tree-like'' definition is itself a small
 methodological datapoint: the natural acyclic-support reading is plausible, compiles, and is
 \emph{false} for the theorem it is meant to serve; a cheap numerical check against the matching power
 sums caught it before any formal effort was spent, and the same check certifies the
@@ -361,20 +422,53 @@ walks, has it proved that the graph is, for the purpose of counting, a tree---or
 named the precise sense in which it refuses to be one?}
 
 % ---------------------------------------------------------------
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
+
+% --- the matching polynomial and its real-rootedness ---
+\bibitem{HeilmannLieb} O.~J. Heilmann and E.~H. Lieb, \emph{Theory of monomer--dimer systems},
+Comm.\ Math.\ Phys.\ \textbf{25} (1972), 190--232.
+\bibitem{Farrell1979} E.~J. Farrell, \emph{An introduction to matching polynomials}, J.~Combin.\
+Theory Ser.~B \textbf{27} (1979), 75--86.
+\bibitem{LovaszPlummer} L.~Lov\'asz and M.~D. Plummer, \emph{Matching Theory}, North-Holland Math.\
+Stud.\ \textbf{121}, Amsterdam, 1986.
+
+% --- Godsil's path tree: matchings and walks ---
 \bibitem{Godsil1981a} C.~D. Godsil, \emph{Matchings and walks in graphs}, J.~Graph Theory \textbf{5}
 (1981), 285--297.
 \bibitem{Godsil1981b} C.~D. Godsil and I.~Gutman, \emph{On the theory of the matching polynomial},
 J.~Graph Theory \textbf{5} (1981), 137--144.
-\bibitem{PartI} C.~Mar\'in, \emph{Random Signs into Matchings} (godsil--gutman--lean, Part~I), 2026.
-Zenodo, DOI \texttt{10.5281/zenodo.20517350}.
-\bibitem{PartII} C.~Mar\'in, \emph{Unfolding a Graph into a Tree: Heilmann--Lieb via Godsil's path
-tree} (Part~II), 2026. Zenodo, DOI \texttt{10.5281/zenodo.20561832}.
-\bibitem{Bass} C.~Mar\'in, \emph{Folding Edges into Vertices: Bass's determinant formula for the
-Ihara zeta in Lean~4}, 2026. Zenodo, DOI \texttt{10.5281/zenodo.20573120}.
-\bibitem{MSS} A.~Marcus, D.~Spielman, N.~Srivastava, \emph{Interlacing families I: Bipartite Ramanujan
-graphs of all degrees}, Ann. of Math. \textbf{182} (2015), 307--325.
-\bibitem{Mathlib} The mathlib Community, \emph{The Lean mathematical library}, CPP 2020.
+\bibitem{GodsilBook} C.~D. Godsil, \emph{Algebraic Combinatorics}, Chapman \& Hall, New York, 1993.
+
+% --- universal covers, non-backtracking spectra, the matching polynomial ---
+\bibitem{AngelFriedmanHoory} O.~Angel, J.~Friedman, and S.~Hoory, \emph{The non-backtracking spectrum
+of the universal cover of a graph}, Trans.\ Amer.\ Math.\ Soc.\ \textbf{367} (2015), 4287--4318.
+\bibitem{Spier2025} T.~J. Spier, \emph{Eigenvalues of universal covers and the matching polynomial},
+preprint, 2025. \texttt{arXiv:2510.05041}.
+
+% --- the Ihara zeta / cycle side ---
+\bibitem{Hashimoto} K.~Hashimoto, \emph{Zeta functions of finite graphs and representations of
+$p$-adic groups}, in \emph{Automorphic Forms and Geometry of Arithmetic Varieties}, Adv.\ Stud.\
+Pure Math.\ \textbf{15}, 1989, 211--280.
+\bibitem{IharaBass} H.~Bass, \emph{The Ihara--Selberg zeta function of a tree lattice}, Internat.\
+J.~Math.\ \textbf{3} (1992), 717--797.
+
+% --- Ramanujan graphs (the band edge $2\sqrt{\Delta-1}$) ---
+\bibitem{MSS} A.~Marcus, D.~A. Spielman, and N.~Srivastava, \emph{Interlacing families~I: Bipartite
+Ramanujan graphs of all degrees}, Ann.\ of Math.\ \textbf{182} (2015), 307--325.
+
+% --- this series (Lean 4 / Mathlib formalizations) ---
+\bibitem{PartI} C.~Mar\'in, \emph{Random Signs into Matchings: the Godsil--Gutman estimator and
+real-rootedness in Lean~4} (Part~I), 2026. Zenodo, DOI \texttt{10.5281/zenodo.20517350}.
+\bibitem{PartII} C.~Mar\'in, \emph{Unfolding a Graph into a Tree: A Machine-Checked Proof of the
+Heilmann--Lieb Theorem in Lean~4} (Part~II), 2026. Zenodo, DOI \texttt{10.5281/zenodo.20561832}.
+\bibitem{Bass} C.~Mar\'in, \emph{Folding Edges into Vertices: A Machine-Checked Proof of Bass's
+Determinant Formula for the Ihara Zeta in Lean~4}, 2026. Zenodo, DOI
+\texttt{10.5281/zenodo.20573120}.
+
+% --- the proof assistant ---
+\bibitem{Mathlib} The mathlib Community, \emph{The Lean mathematical library}, in \emph{Proc.\ 9th
+ACM SIGPLAN Int.\ Conf.\ on Certified Programs and Proofs} (CPP~2020), 367--381.
+
 \end{thebibliography}
 
 \end{document}
