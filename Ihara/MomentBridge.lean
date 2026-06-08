@@ -123,4 +123,61 @@ theorem pathTreeProj_walk_injective {v : V} : ∀ {x y : G.PathFrom v}
       subst hww
       rw [ih p' (eq_of_heq htail)]
 
+/-! ## The `liftSeq`↔path invariant (image is tree-like + surjectivity of the lift)
+
+`liftSeq` (the intrinsic tree-like test of `Ihara/PathTree.lean`) run on a projected path-tree walk
+tracks the current tree-vertex's path. One step in `T(G,v)` — `Grows s y` (extend) or `Grows y s`
+(retreat to parent) — mirrors exactly one `liftSeq` step (EXTEND push / RETREAT pop). -/
+
+/-- **One path-tree step = one `liftSeq` step.** Walking `T(G,v)` from `s` to a neighbour `y`,
+feeding `liftSeq` the next projected vertex `y.1` with stack `s`'s path-support turns the stack into
+`y`'s path-support: an EXTEND when `y` is a child of `s` (fresh endpoint, push) and a RETREAT when `y`
+is its parent (endpoint = penultimate, pop). -/
+theorem liftSeq_step [DecidableEq V] {v : V} {s y : G.PathFrom v}
+    (h : (G.pathTree v).Adj s y) (M : List V) :
+    liftSeq (y.1 :: M) s.2.1.support = liftSeq M y.2.1.support := by
+  rw [liftSeq_cons]
+  rcases h with ⟨he, hb⟩ | ⟨he, hb⟩
+  · -- Grows s y : EXTEND (y is a child of s; y.1 is fresh)
+    have hnotin : y.1 ∉ s.2.1.support := ((Walk.concat_isPath_iff he).mp (hb ▸ y.2.2)).2
+    rw [if_neg hnotin]
+    congr 1
+    rw [hb, Walk.support_concat]
+  · -- Grows y s : RETREAT (s is a child of y; y.1 = penultimate of s)
+    have hnnil : ¬ s.2.1.Nil := by
+      rw [hb, Walk.nil_iff_length_eq, Walk.length_concat]; omega
+    have hpenu : s.2.1.penultimate = y.1 := by rw [hb, Walk.penultimate_concat]
+    have hmem : y.1 ∈ s.2.1.support := hpenu ▸ Walk.getVert_mem_support _ _
+    rw [if_pos hmem]
+    have hgl : s.2.1.support.dropLast.getLast? = some y.1 := by
+      rw [s.2.1.support_dropLast_getLast?_eq_penultimate hnnil, hpenu]
+    rw [if_pos hgl]
+    congr 1
+    rw [hb, Walk.support_concat, List.dropLast_concat]
+
+/-- **The invariant.** Running `liftSeq` on the `G`-projection of a path-tree walk `W : s ⟶ x`,
+started from `s`'s path-support, returns `x`'s path-support. Each tree step is one `liftSeq` step
+(`liftSeq_step`), so the stack walks in lockstep with the current tree-vertex's path. -/
+theorem liftSeq_map_invariant [DecidableEq V] {v : V} {s x : G.PathFrom v}
+    (W : (G.pathTree v).Walk s x) :
+    liftSeq (W.map (G.pathTreeProj v)).support.tail s.2.1.support = some x.2.1.support := by
+  induction W with
+  | nil => simp [liftSeq]
+  | @cons s y x h rest ih =>
+    rw [Walk.map_cons, Walk.support_cons, List.tail_cons,
+      show (rest.map (G.pathTreeProj v)).support
+          = y.1 :: (rest.map (G.pathTreeProj v)).support.tail from
+        (Walk.cons_tail_support _).symm,
+      liftSeq_step h]
+    exact ih
+
+/-- **Image is tree-like (down well-definedness).** The `G`-projection of any closed walk at the root
+of `T(G,v)` is a tree-like closed walk at `v`: instantiate the invariant at `s = x = root`, whose
+path-support is `[v]`, giving `liftSeq (W.map π).support.tail [v] = some [v]`, i.e. `IsTreeLike`. -/
+theorem pathTreeProj_map_isTreeLike [DecidableEq V] {v : V}
+    (W : (G.pathTree v).Walk (pathTreeRoot G v) (pathTreeRoot G v)) :
+    (W.map (G.pathTreeProj v)).IsTreeLike := by
+  have h := liftSeq_map_invariant W
+  rwa [show (pathTreeRoot G v).2.1.support = [v] from rfl] at h
+
 end SimpleGraph
