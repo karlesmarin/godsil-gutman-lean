@@ -55,4 +55,48 @@ theorem pathTreeProj_map_length {u : V} (w : (G.pathTree u).Walk (pathTreeRoot G
     (w.map (G.pathTreeProj u)).length = w.length :=
   Walk.length_map _ _
 
+/-! ## Local injectivity of the projection (the path tree is an immersion of `G`)
+
+The bijection "closed walks at the root of `T(G,v)` ↔ closed tree-like walks of `G` at `v`" is
+realised by `Walk.map (pathTreeProj G v)`. Its injectivity rests on a purely local fact: `π` is
+injective on the neighbours of *each* path-tree vertex `p`. The neighbours of `p` are its unique
+parent (`dropLast`) and its children (one-edge extensions); `π` sends the parent to `p`'s penultimate
+vertex (which lies on `p`) and each child to its fresh endpoint (which does not), and distinct
+children have distinct endpoints — so the projection separates all neighbours of `p`. -/
+
+/-- **Child uniqueness** (dual of `Grows.parent_unique`): a one-edge extension of `p` is determined
+by its endpoint. If `a` and `a'` both grow from `p` and share an endpoint, they are equal. -/
+theorem Grows.child_unique {u : V} {p a a' : G.PathFrom u}
+    (h : Grows p a) (h' : Grows p a') (hv : a.1 = a'.1) : a = a' := by
+  obtain ⟨he, hb⟩ := h
+  obtain ⟨he', hb'⟩ := h'
+  obtain ⟨av, aw, hawp⟩ := a
+  obtain ⟨a'v, a'w, ha'wp⟩ := a'
+  subst hv
+  obtain rfl : aw = a'w := hb.trans hb'.symm
+  rfl
+
+/-- **`π` is injective on the neighbour set of each path-tree vertex** — the path tree is an
+immersion of `G`. Parents coincide by `parent_unique`, children by `child_unique`; a child's
+endpoint is fresh (`∉ p.support`) while a parent's endpoint is `p`'s penultimate (`∈ p.support`),
+so the two families never collide. This local injectivity drives the walk-lift bijection. -/
+theorem pathTreeProj_injOn_neighborSet (G : SimpleGraph V) (u : V) (p : G.PathFrom u) :
+    Set.InjOn (G.pathTreeProj u) ((G.pathTree u).neighborSet p) := by
+  intro a ha a' ha' hva
+  rw [SimpleGraph.mem_neighborSet, pathTree_adj] at ha ha'
+  simp only [pathTreeProj_apply] at hva
+  have child_new : ∀ {c : G.PathFrom u}, Grows p c → c.1 ∉ p.2.1.support := by
+    rintro c ⟨he, hb⟩
+    exact ((Walk.concat_isPath_iff he).mp (hb ▸ c.2.2)).2
+  have parent_on : ∀ {c : G.PathFrom u}, Grows c p → c.1 ∈ p.2.1.support := by
+    rintro c ⟨he, hb⟩
+    have hpen : p.2.1.penultimate = c.1 := by rw [hb, Walk.penultimate_concat]
+    have hmem : p.2.1.penultimate ∈ p.2.1.support := Walk.getVert_mem_support _ _
+    exact hpen ▸ hmem
+  rcases ha with hpa | hap <;> rcases ha' with hpa' | hap'
+  · exact Grows.child_unique hpa hpa' hva
+  · exact absurd (parent_on hap') (hva ▸ child_new hpa)
+  · exact absurd (parent_on hap) (hva.symm ▸ child_new hpa')
+  · exact Grows.parent_unique hap hap'
+
 end SimpleGraph
