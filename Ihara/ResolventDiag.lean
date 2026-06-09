@@ -5,6 +5,7 @@ Authors: Carles Marín
 -/
 import Ihara.ResolventGenfun
 import Ihara.AdjugateDiagMinor
+import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 
 /-!
 # Resolvent diagonal = principal-minor / determinant — Godsil moment theorem, Stone 3 (assembly)
@@ -68,5 +69,36 @@ theorem resolventGenfun_diag_mul_det (M : Matrix n n R) (i : n) :
     ⟨⟨det B, det M.resolventGenfun, hdet1, by rw [mul_comm]; exact hdet1⟩, rfl⟩
   rw [resolventGenfun_eq_inv, inv_def, smul_apply, smul_eq_mul, mul_right_comm,
     Ring.inverse_mul_cancel _ hunit, one_mul, adjugate_diag_eq_det_submatrix_ne]
+
+/-! ## Bridge to `charpolyRev`
+
+`det(1 - X·M)` over `R⟦X⟧` is the image of the reversed characteristic polynomial `charpolyRev M`
+(a `R[X]` object) under the canonical coercion `R[X] → R⟦X⟧`. This connects the resolvent
+determinants above to the polynomial world where Godsil's matching/charpoly identities live. -/
+
+/-- **`det(1 - X·M)` over `R⟦X⟧` is the coercion of `charpolyRev M`.** The canonical ring
+homomorphism `R[X] → R⟦X⟧` commutes with `det` (`RingHom.map_det`) and sends `X ↦ X`, `C a ↦ C a`
+(`Polynomial.coe_X`, `Polynomial.coe_C`), turning Mathlib's `charpolyRev M = det(1 - X·M.map C)` in
+`R[X]` into the same determinant in `R⟦X⟧`. -/
+theorem coe_charpolyRev_eq_det (M : Matrix n n R) :
+    (charpolyRev M : R⟦X⟧)
+      = det (1 - (PowerSeries.X : R⟦X⟧) • M.map (PowerSeries.C : R →+* R⟦X⟧)) := by
+  rw [charpolyRev, ← Polynomial.coeToPowerSeries.ringHom_apply, RingHom.map_det]
+  congr 1
+  ext i j
+  simp only [RingHom.mapMatrix_apply, map_apply, sub_apply, smul_apply, one_apply, smul_eq_mul,
+    map_sub, map_one, map_mul, Polynomial.coeToPowerSeries.ringHom_apply,
+    Polynomial.coe_X, Polynomial.coe_C]
+
+/-- **Diagonal resolvent as a `charpolyRev` ratio (cleared denominators), Stone 3 + bridge.**
+`(Σ_k (Mᵏ)_{ii} Xᵏ) · ↑charpolyRev(M) = ↑charpolyRev(M∖i)`: combine `resolventGenfun_diag_mul_det`
+with `coe_charpolyRev_eq_det` on both determinants (`one_sub_X_smul_submatrix_ne` identifies the
+deleted block as `1 - X·(M∖i)`). The matching-polynomial form of Godsil's resolvent step. -/
+theorem resolventGenfun_diag_mul_coe_charpolyRev (M : Matrix n n R) (i : n) :
+    M.resolventGenfun i i * (charpolyRev M : R⟦X⟧)
+      = (charpolyRev (M.submatrix (Subtype.val : {j // j ≠ i} → n)
+          (Subtype.val : {j // j ≠ i} → n)) : R⟦X⟧) := by
+  rw [coe_charpolyRev_eq_det, coe_charpolyRev_eq_det, resolventGenfun_diag_mul_det,
+    one_sub_X_smul_submatrix_ne]
 
 end Matrix
