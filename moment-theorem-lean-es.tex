@@ -106,9 +106,8 @@ las pr\'oximas preguntas, la Secci\'on~\ref{sec:questions}.
 \emph{El polinomio de emparejamientos de un grafo no es el polinomio caracter\'istico de ninguna
 matriz---\,?`d\'onde viven entonces las sumas de potencias de sus ra\'ices, y por qu\'e son un conteo
 de caminos?} La entrega anterior respondi\'o la primera cl\'ausula con un \'arbol y dej\'o la segunda
-como pagar\'e; este art\'iculo lo salda. La ruta tiene una historia larga---cuatro siglos---con un
-giro que conviene anunciar de antemano: su paso final prescinde de la herramienta m\'as antigua de la
-historia.
+como pagar\'e; este art\'iculo lo salda. La ruta tiene una historia larga---cuatro siglos---y una
+peque\~na sorpresa esperando en su \'ultimo paso (Secci\'on~\ref{sec:boundary}).
 
 \paragraph{Un hilo, en cinco cuentas.} En 1629 Albert Girard escribi\'o lo que Newton
 sistematizar\'ia una generaci\'on despu\'es: las sumas de potencias $p_k=\sum_i\theta_i^k$ de las
@@ -129,9 +128,8 @@ la cota de Godsil sobre las ra\'ices de emparejamiento y el umbral de
 Ramanujan~\cite{AngelFriedmanHoory,McKay,MSS}, y el conteo de caminos es una sombra finita de una
 f\'ormula de la traza sobre el cubrimiento. La quinta cuenta es esta serie: la Parte~II llev\'o la
 primera conclusi\'on de Godsil a Lean~\cite{PartII}, la Parte~III llev\'o la mitad combinatoria de la
-segunda~\cite{PartIII}, y este art\'iculo lleva el resto. El cierre, al final, no usa la recursi\'on de
-Newton (Secci\'on~\ref{sec:boundary}): la primera cuenta---la de Girard---es la \'unica que la
-demostraci\'on puede ahorrarse.
+segunda~\cite{PartIII}, y este art\'iculo lleva el resto---y, al ensartar la \'ultima cuenta, vuelve
+inesperadamente a la primera (Secci\'on~\ref{sec:boundary}).
 
 \paragraph{El polinomio sin matriz.} Un grafo finito $G$ de $n$ v\'ertices porta un polinomio de
 emparejamientos $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, con $m_k(G)$ el n\'umero de emparejamientos de
@@ -574,21 +572,18 @@ le\'ido.
 \section{Implicaciones y metodolog\'ia}
 \label{sec:methodology}
 
-El autor fij\'o los objetivos y valid\'o la matem\'atica; el asistente (Claude, Anthropic) redact\'o
-las demostraciones y esta prosa. Todo teorema nombrado aqu\'i compila \lean{sorry}-libre contra la
-revisi\'on fijada de Mathlib~\cite{Mathlib} y depende solo de los tres axiomas est\'andar,
-re-verificables con \lean{\#print axioms}.
+La formalizaci\'on y el manuscrito se desarrollaron con asistencia de IA (Claude, Anthropic); el autor
+fij\'o los objetivos de investigaci\'on, juzg\'o la matem\'atica, y es responsable de todas las
+afirmaciones. Todo teorema nombrado aqu\'i compila \lean{sorry}-libre contra la revisi\'on fijada de
+Mathlib~\cite{Mathlib} y depende solo de los tres axiomas est\'andar, re-verificables con
+\lean{\#print axioms}.
 
-\paragraph{Un verde falso, y la lecci\'on guardada.} Un paso de este trabajo estuvo, por un tiempo,
-silenciosamente roto. La identidad de divisibilidad invertida (\lean{godsil\_resolvent\_charpoly\_form})
-se hab\'ia confirmado con una compilaci\'on que reprodujo un objeto compilado obsoleto: \lean{lake
-build} report\'o \'exito mientras la fuente ya no compilaba, porque ninguna edici\'on posterior hab\'ia
-forzado a su m\'odulo a recompilar. Una recompilaci\'on limpia expuso dos defectos reales---un diamante
-de instancias en los polinomios de emparejamientos del \'arbol de caminos, y un argumento expl\'icito
-de m\'as---ambos ya corregidos. La disciplina que esto impone es simple y vale enunciarla: que una
-compilaci\'on por objetivo pase no es prueba de que un teorema compile; solo lo es una elaboraci\'on
-limpia del propio fichero. Cada identidad de este art\'iculo se re-verific\'o elaborando su m\'odulo
-desde la fuente, no confiando en una compilaci\'on incremental.
+\paragraph{Un verde falso, y la lecci\'on guardada.} Una identidad
+(\lean{godsil\_resolvent\_charpoly\_form}) estuvo, por un tiempo, silenciosamente rota: un
+\lean{lake build} incremental reprodujo un objeto compilado obsoleto y report\'o \'exito mientras la
+fuente ya no compilaba. La lecci\'on merece guardarse---que una compilaci\'on por objetivo pase no es
+prueba de que un teorema compile; solo lo es una elaboraci\'on limpia del propio fichero---y cada
+identidad de este art\'iculo se re-verific\'o elaborando su m\'odulo desde la fuente.
 
 \paragraph{D\'onde se aplica, y c\'omo.} El teorema del momento es el puente entre dos maneras de leer
 un grafo: como objeto combinatorio cuyos caminos se cuentan, y como portador de un espectro---que no

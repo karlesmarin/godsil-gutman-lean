@@ -100,8 +100,8 @@ Section~\ref{sec:methodology}; the next questions, Section~\ref{sec:questions}.
 \emph{A graph's matching polynomial is the characteristic polynomial of no matrix---so where do the
 power sums of its roots live, and why are they a count of walks?} The prequel answered the first
 clause with a tree and left the second as a promissory note; this paper redeems it. The route has a
-long history---four centuries---with one twist worth flagging in advance: its final step does without
-the oldest tool in the story.
+long history---four centuries---and a small surprise waiting at its last step
+(Section~\ref{sec:boundary}).
 
 \paragraph{A thread, in five beads.} In 1629 Albert Girard wrote down what Newton would
 systematize a generation later: the power sums $p_k=\sum_i\theta_i^k$ of a polynomial's roots are
@@ -119,9 +119,8 @@ its finite truncation, the cover's spectral edge $2\sqrt{\Delta-1}$ is Godsil's 
 roots and the Ramanujan threshold~\cite{AngelFriedmanHoory,McKay,MSS}, and the walk count is a finite
 shadow of a trace formula on the cover. The fifth bead is this series: Part~II carried Godsil's first
 conclusion into Lean~\cite{PartII}, Part~III carried the combinatorial half of the
-second~\cite{PartIII}, and this paper carries the rest. The closure, it turns out, uses no Newton
-recursion (Section~\ref{sec:boundary}): the first bead---Girard's---is the one the proof can do
-without.
+second~\cite{PartIII}, and this paper carries the rest---and, threading the last bead, comes back
+unexpectedly to the first (Section~\ref{sec:boundary}).
 
 \paragraph{The polynomial with no matrix.} A finite graph $G$ on $n$ vertices carries a matching
 polynomial $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, with $m_k(G)$ the number of $k$-edge
@@ -548,20 +547,17 @@ count of shortest cycles, waiting to be read off.
 \section{Implications and methodology}
 \label{sec:methodology}
 
-The author set the targets and adjudicated the mathematics; the assistant (Claude, Anthropic) drafted
-the proofs and this prose. Every theorem named here compiles \lean{sorry}-free against the pinned
-Mathlib revision~\cite{Mathlib} and depends only on the three standard axioms, re-verifiable with
-\lean{\#print axioms}.
+The formalization and manuscript were developed with AI assistance (Claude, Anthropic); the author set
+the research targets, judged the mathematics, and is responsible for all claims. Every theorem named
+here compiles \lean{sorry}-free against the pinned Mathlib revision~\cite{Mathlib} and depends only on
+the three standard axioms, re-verifiable with \lean{\#print axioms}.
 
-\paragraph{A false green, and the lesson banked.} One step in this work was, for a time, silently
-broken. The reversed-divisibility identity (\lean{godsil\_resolvent\_charpoly\_form}) had been
-committed with a build that replayed a stale compiled object: \lean{lake build} reported success while
-the source no longer compiled, because no later edit had forced its module to rebuild. A clean
-recompilation exposed two genuine defects---an instance-diamond on the path-tree matching polynomials,
-and a stray explicit argument---both since fixed. The discipline this enforces is simple and worth
-stating: a per-target build passing is not a proof that a theorem compiles; only a clean elaboration
-of the file itself is. Every identity in this paper was re-checked by elaborating its module from
-source, not by trusting an incremental build.
+\paragraph{A false green, and the lesson banked.} One identity
+(\lean{godsil\_resolvent\_charpoly\_form}) was, for a time, silently broken: an incremental
+\lean{lake build} replayed a stale compiled object and reported success while the source no longer
+compiled. The lesson is worth banking---a passing per-target build is not proof that a theorem
+compiles; only a clean elaboration of the file is---and every identity in this paper was re-checked by
+elaborating its module from source.
 
 \paragraph{Where it applies, and how.} The moment theorem is the bridge between two ways of reading a
 graph: as a combinatorial object whose walks one counts, and as the carrier of a spectrum---belonging
