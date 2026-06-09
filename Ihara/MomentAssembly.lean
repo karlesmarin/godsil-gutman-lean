@@ -122,4 +122,40 @@ theorem coe_charpolyRev_adjMatrix_deleteIncidenceSet (G : _root_.SimpleGraph V) 
   rw [det_eq_det_submatrix_ne_of_row_eq_single _ r hrow, one_sub_X_smul_submatrix_ne,
     adjMatrix_submatrix_deleteIncidenceSet]
 
+/-- **(M3) Per-vertex resolvent identity.** The root–root resolvent of the path tree `T_v`, times the
+reversed matching polynomial of `G`, equals the reversed matching polynomial of `G` with all edges at
+`v` deleted:
+
+  `(Σ_k [A(T_v)ᵏ]_{rr} Xᵏ) · ↑reverse μ(G) = ↑reverse μ(G.deleteIncidenceSet v)`.
+
+Assembled from Stone 3 (`resolventGenfun_diag_mul_coe_charpolyRev`, submatrix form) reconciled to the
+isolated-root tree (M1, `coe_charpolyRev_adjMatrix_deleteIncidenceSet`), the **reversed** Godsil
+identity (`godsil_resolvent_charpoly_form` under `reverse_mul_of_domain` over the domain `ℝ[X]`, with
+`reverse_charpoly` swapping `reverse ∘ charpoly = charpolyRev`), and cancellation of the unit factor
+`↑charpolyRev(A T_v)` (nonzero: `charpoly` is monic, `reverse` preserves nonzero). This is the trace
+side reduced to the **same** reversed matching polynomials the matching side speaks. -/
+theorem resolventGenfun_pathTree_mul_reverse_matchingPoly
+    (G : _root_.SimpleGraph V) [DecidableRel G.Adj] (v : V) :
+    ((G.pathTree v).adjMatrix ℝ).resolventGenfun (pathTreeRoot G v) (pathTreeRoot G v)
+        * (G.matchingPoly.reverse : ℝ⟦X⟧)
+      = ((G.deleteIncidenceSet v).matchingPoly.reverse : ℝ⟦X⟧) := by
+  have hres : ((G.pathTree v).adjMatrix ℝ).resolventGenfun (pathTreeRoot G v) (pathTreeRoot G v)
+        * (((G.pathTree v).adjMatrix ℝ).charpolyRev : ℝ⟦X⟧)
+      = ((((G.pathTree v).deleteIncidenceSet (pathTreeRoot G v)).adjMatrix ℝ).charpolyRev : ℝ⟦X⟧) := by
+    rw [resolventGenfun_diag_mul_coe_charpolyRev,
+      ← coe_charpolyRev_adjMatrix_deleteIncidenceSet (R := ℝ) (G.pathTree v) (pathTreeRoot G v)]
+  have hGRrev : (((G.pathTree v).deleteIncidenceSet (pathTreeRoot G v)).adjMatrix ℝ).charpolyRev
+        * G.matchingPoly.reverse
+      = ((G.pathTree v).adjMatrix ℝ).charpolyRev * (G.deleteIncidenceSet v).matchingPoly.reverse := by
+    rw [← reverse_charpoly, ← reverse_charpoly, ← Polynomial.reverse_mul_of_domain,
+      ← Polynomial.reverse_mul_of_domain, godsil_resolvent_charpoly_form]
+  have hcT : (((G.pathTree v).adjMatrix ℝ).charpolyRev : ℝ⟦X⟧) ≠ 0 := by
+    rw [Ne, Polynomial.coe_eq_zero_iff, ← reverse_charpoly, Polynomial.reverse_eq_zero]
+    exact ((G.pathTree v).adjMatrix ℝ).charpoly_monic.ne_zero
+  apply mul_left_cancel₀ hcT
+  rw [mul_comm (((G.pathTree v).adjMatrix ℝ).charpolyRev : ℝ⟦X⟧)
+        (((G.pathTree v).adjMatrix ℝ).resolventGenfun (pathTreeRoot G v) (pathTreeRoot G v)
+          * (G.matchingPoly.reverse : ℝ⟦X⟧)),
+    mul_right_comm, hres, ← Polynomial.coe_mul, hGRrev, Polynomial.coe_mul]
+
 end SimpleGraph
