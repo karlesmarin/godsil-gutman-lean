@@ -322,4 +322,52 @@ theorem mk_matchingPowerSum_mul_reverse_eq (G : _root_.SimpleGraph V) [Decidable
   simp only [matchingPowerSum]
   rw [← hcardV, Polynomial.mk_powerSum_mul_reverse _ hmonic]
 
+/-- **Godsil's moment theorem.** `matchingPowerSum G k = treeLikeWalkCount G k`: the `k`-th power sum
+of the roots of the matching polynomial equals the number of closed tree-like walks of length `k`.
+
+The trace side (M4, over `ℝ`) and the matching side (M5, over `ℂ`) both equal `↑reflect_n(X·μ')`.
+Mapping M4 along `ℝ → ℂ` (the coercion commutes with `map`, `reverse`, `reflect`, `derivative`)
+gives `mk(tlwc) · ↑reverse μ_ℂ = ↑reflect_n(X·μ_ℂ')`, matching M5. Since `↑reverse μ_ℂ` is a unit
+(`μ_ℂ` monic ⇒ nonzero), the two generating functions coincide; the `k`-th coefficient is the
+theorem. -/
+theorem matchingPowerSum_eq_treeLikeWalkCount (G : _root_.SimpleGraph V) [DecidableRel G.Adj]
+    (k : ℕ) : G.matchingPowerSum k = (G.treeLikeWalkCount k : ℂ) := by
+  have hmonic : (G.matchingPoly.map (algebraMap ℝ ℂ)).Monic := (matchingPoly_monic G).map _
+  have hmapmk : PowerSeries.map (algebraMap ℝ ℂ)
+        (PowerSeries.mk fun k => (G.treeLikeWalkCount k : ℝ))
+      = PowerSeries.mk fun k => (G.treeLikeWalkCount k : ℂ) := by
+    ext n; rw [PowerSeries.coeff_map, PowerSeries.coeff_mk, PowerSeries.coeff_mk, map_natCast]
+  have hmapcoe : ∀ p : Polynomial ℝ, PowerSeries.map (algebraMap ℝ ℂ) (p : PowerSeries ℝ)
+      = ((p.map (algebraMap ℝ ℂ)) : PowerSeries ℂ) := fun p => by
+    ext n
+    rw [PowerSeries.coeff_map, Polynomial.coeff_coe, Polynomial.coeff_coe, Polynomial.coeff_map]
+  have hrevmap : (G.matchingPoly.reverse).map (algebraMap ℝ ℂ)
+      = (G.matchingPoly.map (algebraMap ℝ ℂ)).reverse := by
+    rw [show G.matchingPoly.reverse = G.matchingPoly.reflect G.matchingPoly.natDegree from rfl,
+      ← Polynomial.reflect_map,
+      show (G.matchingPoly.map (algebraMap ℝ ℂ)).reverse
+        = (G.matchingPoly.map (algebraMap ℝ ℂ)).reflect
+          (G.matchingPoly.map (algebraMap ℝ ℂ)).natDegree from rfl,
+      Polynomial.natDegree_map_eq_of_injective (algebraMap ℝ ℂ).injective]
+  have hxder : (Polynomial.X * Polynomial.derivative G.matchingPoly).map (algebraMap ℝ ℂ)
+      = Polynomial.X * Polynomial.derivative (G.matchingPoly.map (algebraMap ℝ ℂ)) := by
+    rw [Polynomial.map_mul, Polynomial.map_X, ← Polynomial.derivative_map]
+  have hreflectmap : ((Polynomial.X * Polynomial.derivative G.matchingPoly).reflect
+        (Fintype.card V)).map (algebraMap ℝ ℂ)
+      = (Polynomial.X * Polynomial.derivative (G.matchingPoly.map (algebraMap ℝ ℂ))).reflect
+        (Fintype.card V) := by rw [← Polynomial.reflect_map, hxder]
+  have hbridge := congrArg (PowerSeries.map (algebraMap ℝ ℂ)) (mk_treeLikeWalkCount_mul_reverse_eq G)
+  rw [map_mul, hmapmk, hmapcoe, hmapcoe, hrevmap, hreflectmap] at hbridge
+  have hne : ((G.matchingPoly.map (algebraMap ℝ ℂ)).reverse : ℂ⟦X⟧) ≠ 0 := by
+    rw [Ne, Polynomial.coe_eq_zero_iff, Polynomial.reverse_eq_zero]
+    exact hmonic.ne_zero
+  have hmul : (PowerSeries.mk fun k => (G.treeLikeWalkCount k : ℂ))
+        * ((G.matchingPoly.map (algebraMap ℝ ℂ)).reverse : ℂ⟦X⟧)
+      = (PowerSeries.mk fun k => G.matchingPowerSum k)
+        * ((G.matchingPoly.map (algebraMap ℝ ℂ)).reverse : ℂ⟦X⟧) := by
+    rw [hbridge, mk_matchingPowerSum_mul_reverse_eq]
+  have hmkeq := mul_right_cancel₀ hne hmul
+  have hcoe := congrArg (PowerSeries.coeff k) hmkeq
+  rwa [PowerSeries.coeff_mk, PowerSeries.coeff_mk, eq_comm] at hcoe
+
 end SimpleGraph
