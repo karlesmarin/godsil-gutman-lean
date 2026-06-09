@@ -202,7 +202,7 @@ theorem exists_lift [DecidableEq V] {v : V} {a b : V} (w : G.Walk a b) :
   induction w with
   | nil =>
     intro pp hpp t h
-    simp only [Walk.support_nil, List.tail_nil, liftSeq] at h
+    simp only [Walk.support_nil] at h
     exact ⟨⟨_, pp, hpp⟩, Walk.nil, by simp, Option.some.inj h⟩
   | @cons a c b e w' ih =>
     intro pp hpp t h
@@ -325,18 +325,15 @@ vertex-deletion law `sum_matchingPoly_deleteIncidenceSet` sums (over `u`) to `μ
 Both forest bridges are sound: `T` is acyclic (`pathTree_isAcyclic`) and `T−r ≤ T` stays acyclic
 (`IsAcyclic.anti`).
 
-⚠️ **CONTAINS ONE `sorry` (2026-06-09)** — the final step only. This theorem was committed at
-`811fd84` with a build that *replayed a stale `.olean`* (false green); recompiling exposes two real
-issues: (1) `matchingPoly_pathTree_eq_charpoly G u` had an extra explicit `G` (`G` is a `{}`-implicit
-section variable) — FIXED to `… u`; (2) the remaining gap below is a **`DecidableRel` instance
-diamond** on the path-tree / `deleteIncidenceSet` matching polynomials (`Classical.propDecidable` vs
-the derived instance), the exact hell documented in `MSS/Divisibility.lean`. After folding the goal
-into `key`'s shape (commutativity), `exact key`/`linear_combination key` fail — `ring` sees the two
-instances as distinct atoms, and `exact`/`convert` `whnf`-loop on `matchingPoly`. The mathematics is
-complete (`godsil_identity` + both forest bridges); only the instance reconciliation remains. FIX
-NEXT SESSION via the Divisibility pattern: `letI`-pin `instDecidableRelPathTreeAdj` before `hT`/`hTr`
-so all three terms share one instance, or `show`-fold the head + `convert key using 1` +
-`Subsingleton.elim`. -/
+**SORRY-FREE (2026-06-09).** This theorem was briefly committed at `811fd84` with a build that
+*replayed a stale `.olean`* (false green); a clean rebuild exposed two real issues, both now fixed:
+(1) `matchingPoly_pathTree_eq_charpoly G u` had an extra explicit `G` (`G` is a `{}`-implicit section
+variable) — corrected to `… u`; (2) a **`DecidableRel` instance diamond** on the path-tree /
+`deleteIncidenceSet` matching polynomials (`Classical.propDecidable` vs the derived instance, the
+hell documented in `MSS/Divisibility.lean`) made `exact key` see the two instances as distinct atoms.
+Resolved exactly as `ForestComponents.brick_e_aux`: rewrite each of `key`'s four `μ` terms to the
+local instances via `matchingPoly_inst_irrel` (graph pinned ⇒ keyed, syntactic match, no `whnf`
+blow-up over the `Σ`-of-paths type), then `exact key`. -/
 theorem godsil_resolvent_charpoly_form [Fintype V] [DecidableEq V] [DecidableRel G.Adj] (u : V) :
     (((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).adjMatrix ℝ).charpoly * G.matchingPoly
       = ((G.pathTree u).adjMatrix ℝ).charpoly * (G.deleteIncidenceSet u).matchingPoly := by
@@ -348,13 +345,20 @@ theorem godsil_resolvent_charpoly_form [Fintype V] [DecidableEq V] [DecidableRel
       ((pathTree_isAcyclic G u).anti ((G.pathTree u).deleteIncidenceSet_le (pathTreeRoot G u)))
   have key := godsil_identity G u
   unfold godsil_identity_target at key
+  -- **Instance reconciliation** (mirrors `ForestComponents.brick_e_aux` close). `key` carries
+  -- Divisibility's def-time (`open Classical`) `Fintype`/`DecidableRel` instances on every `μ`;
+  -- `hT`/`hTr` and the goal carry the freshly-synthesized *local* ones. Rewrite each of `key`'s four
+  -- `μ` terms to the local instances via `matchingPoly_inst_irrel` (graph pinned ⇒ keyed, syntactic
+  -- match — no `whnf` blow-up over the `Σ`-of-paths type). Then `key` is all-local and `exact` lands.
+  rw [matchingPoly_inst_irrel _ _ G _ _,
+      matchingPoly_inst_irrel _ _
+        ((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)) _ _,
+      matchingPoly_inst_irrel _ _ (G.deleteIncidenceSet u) _ _,
+      matchingPoly_inst_irrel _ _ (G.pathTree u) _ _] at key
   rw [← hT, ← hTr,
     mul_comm ((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).matchingPoly,
     mul_comm (G.pathTree u).matchingPoly]
-  -- Goal is now `key` exactly, EXCEPT the path-tree / deleteIncidenceSet `matchingPoly`s carry a
-  -- different `DecidableRel …Adj` instance than `key` (propDecidable vs derived — the documented
-  -- `MSS/Divisibility` diamond). `exact key`/`linear_combination key` fail (distinct atoms);
-  -- `convert`/`exact` whnf-loop on `matchingPoly`. Math done; instance plumbing remains. See ⚠️ above.
-  sorry
+  -- Goal is now `μ(G)·μ(T−r) = μ(G−u)·μ(T)` with local instances throughout = `key`.
+  exact key
 
 end SimpleGraph
