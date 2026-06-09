@@ -323,19 +323,38 @@ generating-function step (Stone 3) consumes — the diagonal resolvent
 `Σ_k [A(T)ᵏ]_root z^k = charpoly(T−r)/charpoly(T)` is now pinned to `μ(G−u)/μ(G)`, which the
 vertex-deletion law `sum_matchingPoly_deleteIncidenceSet` sums (over `u`) to `μ'(G)/μ(G)`.
 Both forest bridges are sound: `T` is acyclic (`pathTree_isAcyclic`) and `T−r ≤ T` stays acyclic
-(`IsAcyclic.anti`). -/
+(`IsAcyclic.anti`).
+
+⚠️ **CONTAINS ONE `sorry` (2026-06-09)** — the final step only. This theorem was committed at
+`811fd84` with a build that *replayed a stale `.olean`* (false green); recompiling exposes two real
+issues: (1) `matchingPoly_pathTree_eq_charpoly G u` had an extra explicit `G` (`G` is a `{}`-implicit
+section variable) — FIXED to `… u`; (2) the remaining gap below is a **`DecidableRel` instance
+diamond** on the path-tree / `deleteIncidenceSet` matching polynomials (`Classical.propDecidable` vs
+the derived instance), the exact hell documented in `MSS/Divisibility.lean`. After folding the goal
+into `key`'s shape (commutativity), `exact key`/`linear_combination key` fail — `ring` sees the two
+instances as distinct atoms, and `exact`/`convert` `whnf`-loop on `matchingPoly`. The mathematics is
+complete (`godsil_identity` + both forest bridges); only the instance reconciliation remains. FIX
+NEXT SESSION via the Divisibility pattern: `letI`-pin `instDecidableRelPathTreeAdj` before `hT`/`hTr`
+so all three terms share one instance, or `show`-fold the head + `convert key using 1` +
+`Subsingleton.elim`. -/
 theorem godsil_resolvent_charpoly_form [Fintype V] [DecidableEq V] [DecidableRel G.Adj] (u : V) :
     (((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).adjMatrix ℝ).charpoly * G.matchingPoly
       = ((G.pathTree u).adjMatrix ℝ).charpoly * (G.deleteIncidenceSet u).matchingPoly := by
   have hT : (G.pathTree u).matchingPoly = ((G.pathTree u).adjMatrix ℝ).charpoly :=
-    matchingPoly_pathTree_eq_charpoly G u
+    matchingPoly_pathTree_eq_charpoly u
   have hTr : ((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).matchingPoly
       = (((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).adjMatrix ℝ).charpoly :=
     matchingPoly_forest_eq_charpoly _
       ((pathTree_isAcyclic G u).anti ((G.pathTree u).deleteIncidenceSet_le (pathTreeRoot G u)))
-  have hgod := godsil_identity G u
-  unfold godsil_identity_target at hgod
-  rw [hT, hTr] at hgod
-  linear_combination hgod
+  have key := godsil_identity G u
+  unfold godsil_identity_target at key
+  rw [← hT, ← hTr,
+    mul_comm ((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).matchingPoly,
+    mul_comm (G.pathTree u).matchingPoly]
+  -- Goal is now `key` exactly, EXCEPT the path-tree / deleteIncidenceSet `matchingPoly`s carry a
+  -- different `DecidableRel …Adj` instance than `key` (propDecidable vs derived — the documented
+  -- `MSS/Divisibility` diamond). `exact key`/`linear_combination key` fail (distinct atoms);
+  -- `convert`/`exact` whnf-loop on `matchingPoly`. Math done; instance plumbing remains. See ⚠️ above.
+  sorry
 
 end SimpleGraph
