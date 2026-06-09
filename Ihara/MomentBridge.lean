@@ -309,4 +309,33 @@ theorem matchingPoly_pathTree_eq_charpoly [Fintype V] [DecidableEq V] [Decidable
     (G.pathTree v).matchingPoly = ((G.pathTree v).adjMatrix ℝ).charpoly :=
   matchingPoly_forest_eq_charpoly (G.pathTree v) (pathTree_isAcyclic G v)
 
+/-- **Stone 2 in resolvent (charpoly) form.** Substituting the forest bridge
+`μ(forest) = charpoly(adjacency)` into Godsil's identity `godsil_identity`
+(`μ(G)·μ(T−r) = μ(G−u)·μ(T)`, the matching↔path-tree ratio, MSS/Divisibility) turns the
+matching-polynomial ratio into the **spectral** one:
+
+  `charpoly(A(T(G,u)−r)) · μ(G) = charpoly(A(T(G,u))) · μ(G−u)`,
+
+i.e. the path tree's root–root resolvent `charpoly(T−r)/charpoly(T)` equals the graph ratio
+`μ(G−u)/μ(G)`. (`T−r` and `G−u` are the incidence-isolated forms `deleteIncidenceSet`, so both
+sides carry the same isolated-vertex factor `X`.) This is the exact spectral input that the
+generating-function step (Stone 3) consumes — the diagonal resolvent
+`Σ_k [A(T)ᵏ]_root z^k = charpoly(T−r)/charpoly(T)` is now pinned to `μ(G−u)/μ(G)`, which the
+vertex-deletion law `sum_matchingPoly_deleteIncidenceSet` sums (over `u`) to `μ'(G)/μ(G)`.
+Both forest bridges are sound: `T` is acyclic (`pathTree_isAcyclic`) and `T−r ≤ T` stays acyclic
+(`IsAcyclic.anti`). -/
+theorem godsil_resolvent_charpoly_form [Fintype V] [DecidableEq V] [DecidableRel G.Adj] (u : V) :
+    (((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).adjMatrix ℝ).charpoly * G.matchingPoly
+      = ((G.pathTree u).adjMatrix ℝ).charpoly * (G.deleteIncidenceSet u).matchingPoly := by
+  have hT : (G.pathTree u).matchingPoly = ((G.pathTree u).adjMatrix ℝ).charpoly :=
+    matchingPoly_pathTree_eq_charpoly G u
+  have hTr : ((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).matchingPoly
+      = (((G.pathTree u).deleteIncidenceSet (pathTreeRoot G u)).adjMatrix ℝ).charpoly :=
+    matchingPoly_forest_eq_charpoly _
+      ((pathTree_isAcyclic G u).anti ((G.pathTree u).deleteIncidenceSet_le (pathTreeRoot G u)))
+  have hgod := godsil_identity G u
+  unfold godsil_identity_target at hgod
+  rw [hT, hTr] at hgod
+  linear_combination hgod
+
 end SimpleGraph
