@@ -37,6 +37,8 @@
 \newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
   arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
 \newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+\newtcolorbox{classicalbox}[1][]{colframe=ggteal,colback=ggband!22,boxrule=0.9pt,arc=3pt,
+  fonttitle=\bfseries,coltitle=white,colbacktitle=ggteal,title={#1},left=8pt,right=8pt,top=4pt,bottom=4pt}
 
 \title{\bf When Walks Become a Spectrum\\[4pt]
   \large\normalfont A machine-checked proof of Godsil's moment theorem
@@ -129,7 +131,7 @@ a fixed symmetric matrix only when $G$ is a forest. Their power sums $p_k(G)=\su
 therefore the moments of a \emph{ghost} spectrum---real numbers behaving like eigenvalues of a matrix
 that is not there. Godsil's moment theorem says where they come from: they \emph{count walks}.
 
-\paragraph{One tree, and a promissory note.} Godsil's device~\cite{Godsil1981a,Godsil1981b,GodsilBook}
+\paragraph{One tree, two theorems.} Godsil's device~\cite{Godsil1981a,Godsil1981b,GodsilBook}
 is the path tree $T(G,v)$, whose vertices are the simple paths of $G$ from $v$ and whose edges are
 single-edge extensions. It is a forest---a finite truncation of the universal cover unrolled from
 $v$---and Part~II of this series~\cite{PartII} used it to machine-check Heilmann--Lieb: $\mu(G)$
@@ -141,8 +143,18 @@ closed walks of $T(G,v)$ at its root, projected down by recording the current en
 consequence,
 \keyeq{\mathrm{treeLikeWalkCount}(G,k)\;=\;\sum_{v}\bigl[A(T(G,v))^{k}\bigr]_{\mathrm{root}},}
 is Part~III's headline (\lean{treeLikeWalkCount\_eq\_sum\_pathTree\_adjMatrix\_pow}). But Part~III was
-careful to mark its boundary: the equality of this count with the ghost moments $p_k$---the
-\emph{spectral} half---was mapped in its closing section, not formalized. This paper builds it.
+careful to mark its boundary: the equality of this count with the moments $p_k$---the \emph{spectral}
+half---was mapped in its closing section, not formalized. This paper builds it. The statement being
+built is Godsil's, in its classical form:
+
+\begin{classicalbox}[Godsil's moment theorem (1981, classical form)~\cite{Godsil1981a}]
+Let $G$ be a finite graph on $n$ vertices, with matching polynomial $\mu(G,x)$ of real roots
+$\theta_1,\dots,\theta_n$. For every $k\ge0$,
+\[
+  p_k(G)\;=\;\sum_{i=1}^{n}\theta_i^{\,k}\;=\;\#\{\text{closed tree-like walks of length }k\text{ in }G\}.
+\]
+\end{classicalbox}
+\noindent Theorem~\ref{thm:moment} below is the machine-checked form of this statement.
 
 \paragraph{What ``building it'' means.} The two halves are two generating functions:
 $\mathrm{mk}(k\mapsto\mathrm{treeLikeWalkCount}(G,k))$ on the trace side and $\mathrm{mk}(k\mapsto
@@ -155,14 +167,46 @@ $\overline{X\mu'(G)}$; since $\overline{\mu(G)}$ is a unit (its constant term is
 coefficient $1$ of the monic $\mu$), the two generating functions coincide, and the coefficient of
 $X^k$ is the theorem.
 
-\paragraph{What is new, and what is not.} The mathematics is Godsil's, four decades old. The
-contribution is the machine-checked completion of the moment theorem---the first I am aware of in any
-proof assistant---and, along the way, a handful of general, Mathlib-absent lemmas kept in canonical
-graph-free form: a principal-minor determinant collapse for an arbitrary finite index, a
-reflection-of-a-sum identity, and the reverse of a product of linear factors. The headline,
+\paragraph{What is new, and what is not.} The contribution divides cleanly. The \emph{mathematics} is
+Godsil's, four decades old; nothing in the classical statement above is new. What is new is, first,
+its \emph{complete machine certification}---the first I am aware of in any proof assistant---and,
+second, a handful of \emph{general lemmas} that the certification forced into existence and that did
+not previously exist in Mathlib (Table~\ref{tab:deps} traces the inputs).
+
+\paragraph{Why this was not routine to formalize.} A matching polynomial is not the characteristic
+polynomial of any single matrix, so none of the matrix machinery applies to it directly; the proof
+must route through Godsil's path tree and back, and every crossing is a coercion between a polynomial,
+its \emph{reverse}, and a formal power series---bookkeeping Mathlib does not package. Three specific
+gaps had to be filled. (i)~Mathlib's cofactor identity $\mathrm{adj}(M)_{ii}=\det(M\!\restriction_{j\neq
+i})$ existed only for the index type \lean{Fin\,n}; the path-tree indices are an arbitrary finite type,
+so a basis-free, block-triangular proof was needed. (ii)~There was no lemma that a sum of equal-degree
+polynomials reverses termwise ($\reflect_N$ is additive, $\rev$ is not), the fact that lets the
+per-vertex pieces be summed. (iii)~The reverse of a split product, $\rev\prod(X-\theta)=\prod(1-\theta
+X)$, and the geometric-series cancellation that replaces Newton's recursion, were likewise absent. None
+is deep; each is general, and all are kept graph-free for upstreaming. The headline,
 \lean{matchingPowerSum\_eq\_treeLikeWalkCount}, depends only on \lean{propext},
 \lean{Classical.choice}, and \lean{Quot.sound}; there is no \lean{sorry}, as \lean{\#print axioms}
 will confirm.
+
+\begin{table}[h]
+\centering\small
+\caption{What this paper rests on. The two preceding parts supply the real-rootedness and the
+combinatorial bijection; this paper supplies the spectral completion that joins them into the moment
+theorem.}
+\label{tab:deps}
+\rowcolors{2}{ggband!30}{white}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\rowcolor{ggteal}
+{\color{white}\textbf{Ingredient}} & {\color{white}\textbf{Statement}} & {\color{white}\textbf{Source}}\\
+\midrule
+Heilmann--Lieb / real-rootedness & $\mu(G)\mid\mu(T(G,v))$, forests real-rooted & Part~II~\cite{PartII}\\
+Tree-like walk bijection & $\mathrm{tlwc}(G,k)=\sum_v[A(T(G,v))^k]_{\rm root}$ & Part~III~\cite{PartIII}\\
+Divisibility identity & $\mu(G)\mu(T{-}r)=\mu(G{-}v)\mu(T)$ & Part~II~\cite{PartII}\\
+\textbf{Spectral completion} & \textbf{$p_k=\mathrm{tlwc}(G,k)$ (the moment theorem)} & \textbf{this paper}\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[t]
 \centering
@@ -386,7 +430,31 @@ series; the coefficient of $X^k$ is the moment theorem.}
 
 \emph{A formal proof certifies the implication; what certifies that the statement formalized is the
 one intended?} Every identity in this paper was de-risked numerically before any formal effort,
-against exact arithmetic, and the same checks fix the theorem's two sides side by side.
+against exact arithmetic, and the same checks fix the theorem's two sides side by side. It is worth
+seeing the theorem land on one small graph in full.
+
+\paragraph{A worked example: the pentagon $C_5$.} Take the $5$-cycle. Its matchings are the empty one,
+the five single edges, and the five pairs of non-adjacent edges, so $m_0=1,\,m_1=5,\,m_2=5$ and
+\[
+  \mu(C_5,x)\;=\;x^5-5x^3+5x\;=\;x\Bigl(x^2-\tfrac{5+\sqrt5}{2}\Bigr)\Bigl(x^2-\tfrac{5-\sqrt5}{2}\Bigr),
+\]
+with roots $\theta\in\bigl\{0,\ \pm\sqrt{(5+\sqrt5)/2},\ \pm\sqrt{(5-\sqrt5)/2}\bigr\}$. The
+\emph{matching} side reads the power sums off these roots:
+\[
+  p_2=\sum_i\theta_i^2=\tfrac{5+\sqrt5}{2}\cdot2+\tfrac{5-\sqrt5}{2}\cdot2=10,
+  \qquad
+  p_4=\sum_i\theta_i^4=\Bigl(\tfrac{5+\sqrt5}{2}\Bigr)^{\!2}\!\cdot2+\Bigl(\tfrac{5-\sqrt5}{2}\Bigr)^{\!2}\!\cdot2=30.
+\]
+The \emph{tree-like} side counts walks. For $k=2$, a closed tree-like walk at a vertex steps to a
+neighbour and back; each of the $5$ vertices has $2$ neighbours, giving $2\cdot5=10=p_2$. For $k=4$,
+the girth of $C_5$ is $5$, so \emph{every} closed walk of length $4$ is tree-like (none can yet
+enclose the pentagon), and the count is $\tr(A^4)=2^4+2\bigl(\tfrac{\sqrt5-1}{2}\bigr)^4+2\bigl(\tfrac{\sqrt5+1}{2}\bigr)^4=30=p_4$,
+using the adjacency eigenvalues $2,\ \tfrac{\sqrt5-1}{2}\,(\times2),\ -\tfrac{\sqrt5+1}{2}\,(\times2)$.
+The two sides agree, as Theorem~\ref{thm:moment} requires. The first \emph{disagreement} is the
+theorem's other content: at $k=5=\mathrm{girth}$, $p_5=0$ (the polynomial is odd) while
+$\tr(A^5)=10$, so the gap is $10=2\cdot5\cdot1$---the single pentagon, traversed from $5$ basepoints in
+$2$ orientations. The $5$-cycle is exactly the walk that is closed but not tree-like, and it appears,
+on the nose, at length $5$.
 
 Figure~\ref{fig:traceformula} plots the two sides of the trace formula on $K_4$ and the Petersen
 graph: the tree side $p_k=\sum_i\theta_i^k=\mathrm{treeLikeWalkCount}(G,k)$ (the content of
@@ -496,8 +564,8 @@ of the file itself is. Every identity in this paper was re-checked by elaboratin
 source, not by trusting an incremental build.
 
 \paragraph{Where it applies, and how.} The moment theorem is the bridge between two ways of reading a
-graph: as a combinatorial object whose walks one counts, and as the carrier of a ghost spectrum whose
-moments one bounds. It is precisely the identity invoked, usually tacitly, wherever one of these is
+graph: as a combinatorial object whose walks one counts, and as the carrier of a spectrum---belonging
+to no matrix---whose moments one bounds. It is precisely the identity invoked, usually tacitly, wherever one of these is
 estimated through the other. Concretely:
 \begin{itemize}
 \item \emph{Eigenvalue bounds by the method of moments.} The largest matching root obeys
@@ -585,9 +653,10 @@ existing Mathlib developments---resultants, companion matrices, the existing \le
 API---or are they only ever useful in the company of a path tree?
 \end{itemize}
 
-And one to keep. \emph{When a machine certifies that a graph's tree-like walks are exactly the power
-sums of a spectrum no matrix carries, has it proved that the ghost is real---or only named the precise
-sense in which a forest dreams the graph a matrix it never had?}
+And one to keep. \emph{The matching polynomial is the characteristic polynomial of no matrix, yet its
+root power sums count walks exactly as a matrix's would; the theorem says where those moments live---but
+is the spectrum they describe a bookkeeping artefact of the path tree, or, for every purpose that
+consumes its moments, as real as any matrix's?}
 
 % ---------------------------------------------------------------
 \begin{thebibliography}{99}

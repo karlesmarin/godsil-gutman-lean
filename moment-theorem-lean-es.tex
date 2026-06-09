@@ -38,6 +38,8 @@
 \newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
   arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
 \newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+\newtcolorbox{classicalbox}[1][]{colframe=ggteal,colback=ggband!22,boxrule=0.9pt,arc=3pt,
+  fonttitle=\bfseries,coltitle=white,colbacktitle=ggteal,title={#1},left=8pt,right=8pt,top=4pt,bottom=4pt}
 
 \title{\bf Cuando los caminos se vuelven espectro\\[4pt]
   \large\normalfont Una demostraci\'on verificada por m\'aquina del teorema del momento de Godsil
@@ -76,11 +78,11 @@ lo reescribe como cociente de polinomios de \emph{emparejamientos} invertidos; s
 aplicando la ley de borrado de v\'ertices $\sum_v\mu(G-v)=X\mu'(G)$ se obtiene
 $\mathrm{mk}(\mathrm{treeLikeWalkCount})\cdot\overline{\mu}=\overline{X\mu'}$. En el lado de los
 emparejamientos, la funci\'on generatriz de las sumas de potencias de las ra\'ices es igual, tras una
-cancelaci\'on de serie geom\'etrica contra el producto de factores invertidos, al \emph{mismo} objeto
+cancelaci\'on de serie geom\'etrica por el producto de factores invertidos, al \emph{mismo} objeto
 $\overline{X\mu'}$. Ambos coinciden; cancelar la unidad $\overline{\mu}$ y leer el coeficiente de
-$X^k$ es el teorema. Registro una sorpresa honesta: la conclusi\'on no necesita \emph{ninguna}
-identidad de Newton univariada---la ruta que la entrega anterior predijo---sino solo una contabilidad
-de reflexi\'on a grado fijo de polinomios invertidos. El resultado depende solo de los tres axiomas
+$X^k$ es el teorema. Dejo constancia de una sorpresa: la conclusi\'on no necesita \emph{ninguna}
+identidad de Newton univariada---la ruta que predijo la entrega anterior---sino solo un manejo, a grado
+fijo, de reflexiones de polinomios invertidos. El resultado depende solo de los tres axiomas
 est\'andar; no conozco una formalizaci\'on previa del teorema del momento de Godsil en ning\'un
 asistente de demostraci\'on. Con esto y el compa\~nero \emph{Bass}, ambos lados de la f\'ormula de la
 traza finita quedan, \lean{sorry}-libres, en una sola biblioteca.
@@ -90,10 +92,10 @@ traza finita quedan, \lean{sorry}-libres, en una sola biblioteca.
 su demostraci\'on: \emph{ambas} funciones generatrices, la que cuenta caminos y la de las sumas de
 potencias de autovalores, son forzadas a igualar uno y el mismo polinomio invertido
 $\overline{X\mu'(G)}$ (Figura~\ref{fig:weld}). Todo lo dem\'as es la versi\'on cuidadosa de esa frase:
-una identidad por v\'ertice que vuelve el lado de la traza polinomios de emparejamientos invertidos
-(Secci\'on~\ref{sec:trace}), una cancelaci\'on de serie geom\'etrica que vuelve el lado de los
-emparejamientos lo mismo (Secci\'on~\ref{sec:match}), y una extracci\'on de coeficiente una vez
-cancelada una unidad (Secci\'on~\ref{sec:weld}). La sorpresa honesta---sin Newton---es la
+una identidad por v\'ertice que convierte el lado de la traza en polinomios de emparejamientos
+invertidos (Secci\'on~\ref{sec:trace}), una cancelaci\'on de serie geom\'etrica que convierte el lado
+de los emparejamientos en lo mismo (Secci\'on~\ref{sec:match}), y una extracci\'on de coeficiente una
+vez cancelada una unidad (Secci\'on~\ref{sec:weld}). La sorpresa honesta---sin Newton---es la
 Secci\'on~\ref{sec:boundary}; los l\'imites y la metodolog\'ia, la Secci\'on~\ref{sec:methodology};
 las pr\'oximas preguntas, la Secci\'on~\ref{sec:questions}.
 
@@ -127,9 +129,9 @@ la cota de Godsil sobre las ra\'ices de emparejamiento y el umbral de
 Ramanujan~\cite{AngelFriedmanHoory,McKay,MSS}, y el conteo de caminos es una sombra finita de una
 f\'ormula de la traza sobre el cubrimiento. La quinta cuenta es esta serie: la Parte~II llev\'o la
 primera conclusi\'on de Godsil a Lean~\cite{PartII}, la Parte~III llev\'o la mitad combinatoria de la
-segunda~\cite{PartIII}, y este art\'iculo lleva el resto. El cierre, resulta, no usa recursi\'on de
-Newton (Secci\'on~\ref{sec:boundary}): la primera cuenta---la de Girard---es la que la demostraci\'on
-puede ahorrarse.
+segunda~\cite{PartIII}, y este art\'iculo lleva el resto. El cierre, al final, no usa la recursi\'on de
+Newton (Secci\'on~\ref{sec:boundary}): la primera cuenta---la de Girard---es la \'unica que la
+demostraci\'on puede ahorrarse.
 
 \paragraph{El polinomio sin matriz.} Un grafo finito $G$ de $n$ v\'ertices porta un polinomio de
 emparejamientos $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, con $m_k(G)$ el n\'umero de emparejamientos de
@@ -137,10 +139,10 @@ $k$ aristas~\cite{Farrell1979,LovaszPlummer}. Heilmann y Lieb demostraron que su
 $\theta_1,\dots,\theta_n$ son reales~\cite{HeilmannLieb}; pero $\mu(G)$ es el polinomio
 caracter\'istico de una matriz sim\'etrica fija solo cuando $G$ es un bosque. Sus sumas de potencias
 $p_k(G)=\sum_i\theta_i^k$ son, por tanto, los momentos de un espectro \emph{fantasma}: n\'umeros
-reales que se comportan como autovalores de una matriz que no est\'a. El teorema del momento de Godsil
-dice de d\'onde vienen: \emph{cuentan caminos}.
+reales que se comportan como autovalores de una matriz que no existe. El teorema del momento de Godsil
+dice de d\'onde salen: \emph{cuentan caminos}.
 
-\paragraph{Un \'arbol, y un pagar\'e.} El dispositivo de Godsil~\cite{Godsil1981a,Godsil1981b,GodsilBook}
+\paragraph{Un \'arbol, dos teoremas.} El dispositivo de Godsil~\cite{Godsil1981a,Godsil1981b,GodsilBook}
 es el \'arbol de caminos $T(G,v)$, cuyos v\'ertices son los caminos simples de $G$ desde $v$ y cuyas
 aristas son extensiones de una sola arista. Es un bosque---una truncaci\'on finita del cubrimiento
 universal desplegado desde $v$---y la Parte~II de esta serie~\cite{PartII} lo us\'o para verificar por
@@ -154,8 +156,18 @@ consecuencia,
 \keyeq{\mathrm{treeLikeWalkCount}(G,k)\;=\;\sum_{v}\bigl[A(T(G,v))^{k}\bigr]_{\mathrm{ra\acute{\imath}z}},}
 es el resultado central de la Parte~III (\lean{treeLikeWalkCount\_eq\_sum\_pathTree\_adjMatrix\_pow}).
 Pero la Parte~III marc\'o con cuidado su frontera: la igualdad de este conteo con los momentos
-fantasma $p_k$---la mitad \emph{espectral}---qued\'o mapeada en su secci\'on de cierre, no formalizada.
-Este art\'iculo la construye.
+$p_k$---la mitad \emph{espectral}---qued\'o mapeada en su secci\'on de cierre, no formalizada.
+Este art\'iculo la construye. El enunciado que se construye es el de Godsil, en su forma cl\'asica:
+
+\begin{classicalbox}[Teorema del momento de Godsil (1981, forma cl\'asica)~\cite{Godsil1981a}]
+Sea $G$ un grafo finito de $n$ v\'ertices, con polinomio de emparejamientos $\mu(G,x)$ de ra\'ices
+reales $\theta_1,\dots,\theta_n$. Para todo $k\ge0$,
+\[
+  p_k(G)\;=\;\sum_{i=1}^{n}\theta_i^{\,k}\;=\;\#\{\text{caminos cerrados tipo \'arbol de longitud }k\text{ en }G\}.
+\]
+\end{classicalbox}
+\noindent El Teorema~\ref{thm:moment} de m\'as abajo es la forma verificada por m\'aquina de este
+enunciado.
 
 \paragraph{Qu\'e significa ``construirla''.} Las dos mitades son dos funciones generatrices:
 $\mathrm{mk}(k\mapsto\mathrm{treeLikeWalkCount}(G,k))$ en el lado de la traza y $\mathrm{mk}(k\mapsto
@@ -168,14 +180,47 @@ iguala uno y el mismo polinomio invertido $\overline{X\mu'(G)}$; como $\overline
 (su t\'ermino constante es el coeficiente principal $1$ del m\'onico $\mu$), las dos generatrices
 coinciden, y el coeficiente de $X^k$ es el teorema.
 
-\paragraph{Qu\'e es nuevo, y qu\'e no.} La matem\'atica es de Godsil, de hace cuatro d\'ecadas. La
-contribuci\'on es la conclusi\'on verificada por m\'aquina del teorema del momento---la primera que
-conozco en cualquier asistente de demostraci\'on---y, de camino, un pu\~nado de lemas generales
-ausentes de Mathlib en forma can\'onica y libre de grafos: un colapso de determinante a un menor
-principal para un \'indice finito arbitrario, una identidad de reflexi\'on de una suma, y el invertido
-de un producto de factores lineales. El resultado, \lean{matchingPowerSum\_eq\_treeLikeWalkCount},
+\paragraph{Qu\'e es nuevo, y qu\'e no.} La contribuci\'on se separa con nitidez. La \emph{matem\'atica}
+es de Godsil, de hace cuatro d\'ecadas; nada del enunciado cl\'asico de arriba es nuevo. Lo nuevo es,
+primero, su \emph{certificaci\'on completa por m\'aquina}---la primera que conozco en cualquier
+asistente de demostraci\'on---y, segundo, un pu\~nado de \emph{lemas generales} que la certificaci\'on
+oblig\'o a construir y que no exist\'ian en Mathlib (la Tabla~\ref{tab:deps} traza las entradas).
+
+\paragraph{Por qu\'e no fue rutinario formalizarlo.} Un polinomio de emparejamientos no es el polinomio
+caracter\'istico de ninguna matriz, as\'i que ninguna de las herramientas matriciales se le aplica
+directamente; la demostraci\'on debe pasar por el \'arbol de caminos de Godsil y volver, y cada cruce
+es una coerci\'on entre un polinomio, su \emph{invertido} y una serie formal---contabilidad que Mathlib
+no empaqueta. Hubo que llenar tres huecos concretos. (i)~La identidad de cofactores de Mathlib
+$\mathrm{adj}(M)_{ii}=\det(M\!\restriction_{j\neq i})$ exist\'ia solo para el tipo de \'indice
+\lean{Fin\,n}; los \'indices del \'arbol de caminos son un tipo finito arbitrario, as\'i que hizo falta
+una demostraci\'on sin base, triangular en bloques. (ii)~No hab\'ia lema de que una suma de polinomios
+del mismo grado se invierta t\'ermino a t\'ermino ($\reflect_N$ es aditiva, $\rev$ no), el hecho que
+permite sumar las piezas por v\'ertice. (iii)~El invertido de un producto descompuesto,
+$\rev\prod(X-\theta)=\prod(1-\theta X)$, y la cancelaci\'on de serie geom\'etrica que sustituye a la
+recursi\'on de Newton, faltaban igualmente. Ninguno es profundo; cada uno es general, y todos se guardan
+libres de grafos para su env\'io aguas arriba. El resultado, \lean{matchingPowerSum\_eq\_treeLikeWalkCount},
 depende solo de \lean{propext}, \lean{Classical.choice} y \lean{Quot.sound}; no hay \lean{sorry}, como
 confirmar\'a \lean{\#print axioms}.
+
+\begin{table}[h]
+\centering\small
+\caption{En qu\'e se apoya este art\'iculo. Las dos partes precedentes aportan las ra\'ices reales y la
+biyecci\'on combinatoria; este art\'iculo aporta la conclusi\'on espectral que las une en el teorema
+del momento.}
+\label{tab:deps}
+\rowcolors{2}{ggband!30}{white}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\rowcolor{ggteal}
+{\color{white}\textbf{Ingrediente}} & {\color{white}\textbf{Enunciado}} & {\color{white}\textbf{Fuente}}\\
+\midrule
+Heilmann--Lieb / ra\'ices reales & $\mu(G)\mid\mu(T(G,v))$, bosques de ra\'ices reales & Parte~II~\cite{PartII}\\
+Biyecci\'on de caminos tipo \'arbol & $\mathrm{tlwc}(G,k)=\sum_v[A(T(G,v))^k]_{\rm ra\acute{\imath}z}$ & Parte~III~\cite{PartIII}\\
+Identidad de divisibilidad & $\mu(G)\mu(T{-}r)=\mu(G{-}v)\mu(T)$ & Parte~II~\cite{PartII}\\
+\textbf{Conclusi\'on espectral} & \textbf{$p_k=\mathrm{tlwc}(G,k)$ (el teorema del momento)} & \textbf{este art\'iculo}\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[t]
 \centering
@@ -277,7 +322,7 @@ general \lean{det\_eq\_det\_submatrix\_ne\_of\_row\_eq\_single}).
 \paragraph{La identidad por v\'ertice.} Ahora entra la Parte~II. Invirtiendo la identidad de
 divisibilidad $\mu(G)\,\mu(T_{\widehat r})=\mu(G-v)\,\mu(T)$ sobre el dominio \'integro $\R[X]$ (la
 inversi\'on es multiplicativa all\'i, y $\rev\circ\det=\charpolyRev$), el puente del bosque
-$\mu(T)=\det(xI-A(T))$ vuelve cada polinomio de emparejamientos invertido un $\charpolyRev$; cancelando
+$\mu(T)=\det(xI-A(T))$ convierte cada polinomio de emparejamientos invertido en un $\charpolyRev$; al cancelar
 el factor unidad com\'un $\overline{\charpolyRev(A(T))}$ colapsa toda la historia por \'arbol a un solo
 enunciado limpio sobre $G$:
 \keyeq{\Bigl(\sum_k[A(T(G,v))^k]_{\mathrm{ra\acute{\imath}z}}X^k\Bigr)\cdot\overline{\mu(G)}\;=\;\overline{\mu(G-v)} }
@@ -288,7 +333,7 @@ $\mu(G)$ y $\mu(G-v)$.
 \paragraph{Sumando sobre $v$.} Sumando la identidad por v\'ertice sobre todos los v\'ertices, el lado
 izquierdo se vuelve $W(G)\cdot\overline{\mu(G)}$ (la forma espectral de la Parte~III, con una coerci\'on
 $\N\to\R$ que aporta \lean{Matrix.map\_pow}). El derecho es $\sum_v\overline{\mu(G-v)}$, y aqu\'i la
-contabilidad de reflexi\'on rinde: todo $\mu(G-v)$ tiene el mismo grado $n$, as\'i que las inversiones
+contabilidad de reflexi\'on da su fruto: todo $\mu(G-v)$ tiene el mismo grado $n$, as\'i que las inversiones
 comparten longitud y $\sum_v\rev(\mu(G-v))=\reflect_n(\sum_v\mu(G-v))$ (\lean{sum\_reverse\_eq\_reflect\_sum}).
 La ley derivada de borrado de v\'ertices $\sum_v\mu(G-v)=X\,\mu'(G)$
 (\lean{sum\_matchingPoly\_deleteIncidenceSet}) cierra el movimiento:
@@ -402,7 +447,33 @@ identifica las dos series; el coeficiente de $X^k$ es el teorema del momento.}
 \emph{Una demostraci\'on formal certifica la implicaci\'on; \,?`qu\'e certifica que el enunciado
 formalizado es el que se pretend\'ia?} Cada identidad de este art\'iculo se de-arriesg\'o
 num\'ericamente antes de todo esfuerzo formal, contra aritm\'etica exacta, y las mismas comprobaciones
-fijan los dos lados del teorema lado a lado.
+fijan los dos lados del teorema, uno junto al otro. Vale la pena ver el teorema aterrizar entero sobre
+un grafo peque\~no.
+
+\paragraph{Un ejemplo trabajado: el pent\'agono $C_5$.} Tomemos el $5$-ciclo. Sus emparejamientos son
+el vac\'io, las cinco aristas sueltas, y los cinco pares de aristas no adyacentes, as\'i que
+$m_0=1,\,m_1=5,\,m_2=5$ y
+\[
+  \mu(C_5,x)\;=\;x^5-5x^3+5x\;=\;x\Bigl(x^2-\tfrac{5+\sqrt5}{2}\Bigr)\Bigl(x^2-\tfrac{5-\sqrt5}{2}\Bigr),
+\]
+con ra\'ices $\theta\in\bigl\{0,\ \pm\sqrt{(5+\sqrt5)/2},\ \pm\sqrt{(5-\sqrt5)/2}\bigr\}$. El lado de
+los \emph{emparejamientos} lee las sumas de potencias de estas ra\'ices:
+\[
+  p_2=\sum_i\theta_i^2=\tfrac{5+\sqrt5}{2}\cdot2+\tfrac{5-\sqrt5}{2}\cdot2=10,
+  \qquad
+  p_4=\sum_i\theta_i^4=\Bigl(\tfrac{5+\sqrt5}{2}\Bigr)^{\!2}\!\cdot2+\Bigl(\tfrac{5-\sqrt5}{2}\Bigr)^{\!2}\!\cdot2=30.
+\]
+El lado \emph{tipo \'arbol} cuenta caminos. Para $k=2$, un camino cerrado tipo \'arbol en un v\'ertice
+va a un vecino y vuelve; cada uno de los $5$ v\'ertices tiene $2$ vecinos, lo que da $2\cdot5=10=p_2$.
+Para $k=4$, el cuello de $C_5$ es $5$, as\'i que \emph{todo} camino cerrado de longitud $4$ es tipo
+\'arbol (ninguno puede a\'un encerrar el pent\'agono), y el conteo es
+$\tr(A^4)=2^4+2\bigl(\tfrac{\sqrt5-1}{2}\bigr)^4+2\bigl(\tfrac{\sqrt5+1}{2}\bigr)^4=30=p_4$, con los
+autovalores de adyacencia $2,\ \tfrac{\sqrt5-1}{2}\,(\times2),\ -\tfrac{\sqrt5+1}{2}\,(\times2)$. Los
+dos lados coinciden, como exige el Teorema~\ref{thm:moment}. El primer \emph{desacuerdo} es el otro
+contenido del teorema: en $k=5=\mathrm{cuello}$, $p_5=0$ (el polinomio es impar) mientras $\tr(A^5)=10$,
+de modo que el hueco es $10=2\cdot5\cdot1$---el \'unico pent\'agono, recorrido desde $5$ bases en $2$
+orientaciones. El $5$-ciclo es justo el camino cerrado que no es tipo \'arbol, y aparece, exactamente,
+en la longitud $5$.
 
 La Figura~\ref{fig:traceformula} dibuja los dos lados de la f\'ormula de la traza en $K_4$ y el grafo
 de Petersen: el lado del \'arbol $p_k=\sum_i\theta_i^k=\mathrm{treeLikeWalkCount}(G,k)$ (el contenido
@@ -475,8 +546,8 @@ de Newton en la formalizaci\'on, y no se a\~nadi\'o ning\'un lema de Newton de r
 \'area de preparaci\'on de Mathlib.
 
 Lo que lo reemplaz\'o es la cancelaci\'on de la Secci\'on~\ref{sec:match}: la generatriz
-$\sum_\theta(1-\theta X)^{-1}$ multiplicada por $\prod_\theta(1-\theta X)$ se telescopa, por el valor
-de la cancelaci\'on de un factor, en la suma ``dejando uno fuera''
+$\sum_\theta(1-\theta X)^{-1}$ multiplicada por $\prod_\theta(1-\theta X)$ se telescopa, al cancelarse
+un solo factor, en la suma ``dejando uno fuera''
 $\sum_\theta\prod_{\varphi\neq\theta}(1-\varphi X)$, que la regla del producto y una reflexi\'on
 identifican con $\overline{X\mu'}$. Las identidades de Newton relacionan sumas de potencias con
 funciones sim\'etricas elementales por una recursi\'on; aqu\'i el mismo contenido aparece como una sola
@@ -503,7 +574,7 @@ le\'ido.
 \section{Implicaciones y metodolog\'ia}
 \label{sec:methodology}
 
-El autor fij\'o los objetivos y adjudic\'o la matem\'atica; el asistente (Claude, Anthropic) redact\'o
+El autor fij\'o los objetivos y valid\'o la matem\'atica; el asistente (Claude, Anthropic) redact\'o
 las demostraciones y esta prosa. Todo teorema nombrado aqu\'i compila \lean{sorry}-libre contra la
 revisi\'on fijada de Mathlib~\cite{Mathlib} y depende solo de los tres axiomas est\'andar,
 re-verificables con \lean{\#print axioms}.
@@ -520,13 +591,13 @@ limpia del propio fichero. Cada identidad de este art\'iculo se re-verific\'o el
 desde la fuente, no confiando en una compilaci\'on incremental.
 
 \paragraph{D\'onde se aplica, y c\'omo.} El teorema del momento es el puente entre dos maneras de leer
-un grafo: como objeto combinatorio cuyos caminos se cuentan, y como portador de un espectro fantasma
-cuyos momentos se acotan. Es precisamente la identidad invocada, casi siempre t\'acitamente, all\'i
+un grafo: como objeto combinatorio cuyos caminos se cuentan, y como portador de un espectro---que no
+pertenece a ninguna matriz---cuyos momentos se acotan. Es precisamente la identidad invocada, casi siempre t\'acitamente, all\'i
 donde uno de ellos se estima a trav\'es del otro. En concreto:
 \begin{itemize}
 \item \emph{Cotas de autovalores por el m\'etodo de los momentos.} La mayor ra\'iz de emparejamiento
-cumple $\theta_{\max}=\lim_k p_{2k}^{1/2k}$, y el teorema del momento vuelve cada $p_{2k}$ un
-\emph{conteo de caminos} en el \'arbol de caminos---una cantidad combinatoria expl\'icitamente acotada,
+cumple $\theta_{\max}=\lim_k p_{2k}^{1/2k}$, y el teorema del momento convierte cada $p_{2k}$ en un
+\emph{conteo de caminos} sobre el \'arbol de caminos---una cantidad combinatoria expl\'icitamente acotada,
 dominada por los caminos en el cubrimiento universal $(\Delta-1)$-ario infinito, cuya densidad
 espectral es la ley de Kesten--McKay~\cite{McKay,AngelFriedmanHoory}. Esta es la ruta a la cota de
 Godsil $\theta_{\max}\le2\sqrt{\Delta-1}$, el an\'alogo en emparejamientos de la estimaci\'on del radio
@@ -550,8 +621,8 @@ $\tr(A^g)-p_g=2g\,c_g$, es un conteo certificado de ciclos m\'as cortos.
 Este art\'iculo no a\~nade ninguna cota ni ning\'un algoritmo a ninguno de ellos. Pone el \emph{puente
 mismo}---la identidad exacta que cada uno cruza---en terreno certificado, en la misma biblioteca donde
 el \'arbol de caminos ya porta un espectro real (Parte~II) y cuenta caminos tipo \'arbol (Parte~III).
-El mismo bosque hace ahora un tercer trabajo: vuelve el conteo \emph{igual} al espectro. Un cimiento, y
-el cierre de un arco de cuatro partes.
+El mismo bosque hace ahora un tercer trabajo: \emph{iguala} el conteo al espectro. Un cimiento, y el
+cierre de un arco de cuatro partes.
 
 \paragraph{El andamiaje formalizado.} La Tabla~\ref{tab:results} lista los resultados portantes, sus
 nombres en Lean, y d\'onde se demuestra cada uno; los lemas generales y libres de grafos (marcados
@@ -613,10 +684,11 @@ $\tr(A^k)=p_k+(\text{t\'erminos de ciclo})$ sea una identidad en vez de dos mita
 de \lean{charpolyRev}---o solo son \'utiles en compa\~n\'ia de un \'arbol de caminos?
 \end{itemize}
 
-Y una para guardar. \emph{Cuando una m\'aquina certifica que los caminos tipo \'arbol de un grafo son
-exactamente las sumas de potencias de un espectro que ninguna matriz porta, \,?`ha demostrado que el
-fantasma es real---o solo ha nombrado el sentido preciso en que un bosque sue\~na al grafo una matriz
-que nunca tuvo?}
+Y una para guardar. \emph{El polinomio de emparejamientos no es el polinomio caracter\'istico de
+ninguna matriz y, sin embargo, las sumas de potencias de sus ra\'ices cuentan caminos exactamente como
+lo har\'ian las de una matriz; el teorema dice d\'onde viven esos momentos---pero el espectro que
+describen, \,?`es un artefacto contable del \'arbol de caminos, o, para todo uso que consuma sus
+momentos, tan real como el de cualquier matriz?}
 
 % ---------------------------------------------------------------
 \begin{thebibliography}{99}
