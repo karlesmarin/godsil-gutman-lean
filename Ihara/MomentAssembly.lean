@@ -74,6 +74,25 @@ theorem det_eq_det_submatrix_ne_of_row_eq_single (B : Matrix n n R) (i : n)
 
 end Matrix
 
+namespace Polynomial
+
+variable {R : Type*} [CommRing R]
+
+/-- **Reflection of a sum at a fixed length = sum of reverses, when all degrees agree.** If every
+`p i` (`i ∈ s`) has `natDegree = N`, then `Σ reverse (p i) = reflect N (Σ p i)`. Each
+`reverse (p i) = reflect (natDegree (p i)) (p i) = reflect N (p i)`, and `reflect N` is additive
+(`reflect_add`), so it commutes with the finite sum. This packages the degree-bookkeeping that lets
+the per-vertex/per-root reversed pieces of the moment theorem be summed under a single reflection. -/
+theorem sum_reverse_eq_reflect_sum {ι : Type*} (s : Finset ι) (p : ι → R[X]) (N : ℕ)
+    (hp : ∀ i ∈ s, (p i).natDegree = N) :
+    ∑ i ∈ s, (p i).reverse = reflect N (∑ i ∈ s, p i) := by
+  let φ : R[X] →+ R[X] := ⟨⟨reflect N, reflect_zero⟩, fun a b => reflect_add a b N⟩
+  rw [show reflect N (∑ i ∈ s, p i) = ∑ i ∈ s, reflect N (p i) from map_sum φ p s]
+  exact Finset.sum_congr rfl fun i hi => by
+    rw [show (p i).reverse = reflect (p i).natDegree (p i) from rfl, hp i hi]
+
+end Polynomial
+
 namespace SimpleGraph
 
 open Matrix PowerSeries
@@ -157,5 +176,54 @@ theorem resolventGenfun_pathTree_mul_reverse_matchingPoly
         (((G.pathTree v).adjMatrix ℝ).resolventGenfun (pathTreeRoot G v) (pathTreeRoot G v)
           * (G.matchingPoly.reverse : ℝ⟦X⟧)),
     mul_right_comm, hres, ← Polynomial.coe_mul, hGRrev, Polynomial.coe_mul]
+
+/-- The `ℕ`-valued and `ℝ`-valued adjacency-matrix powers agree under the cast `ℕ → ℝ`: the
+adjacency matrix over `ℝ` is the entrywise cast of the one over `ℕ` (`adjMatrix_apply` + `apply_ite`),
+and casting commutes with matrix powers (`Matrix.map_pow`). -/
+theorem adjMatrix_pow_apply_cast (H : _root_.SimpleGraph V) [DecidableRel H.Adj] (k : ℕ) (i j : V) :
+    (((H.adjMatrix ℕ) ^ k) i j : ℝ) = ((H.adjMatrix ℝ) ^ k) i j := by
+  have hmap : (H.adjMatrix ℕ).map (Nat.castRingHom ℝ) = H.adjMatrix ℝ := by
+    ext a b
+    simp [adjMatrix_apply]
+  rw [← hmap, ← Matrix.map_pow, Matrix.map_apply, Nat.coe_castRingHom]
+
+/-- **(M4a) Trace generating function as a sum of path-tree resolvents.** The generating function of
+the tree-like-walk counts is the sum over vertices of the root–root resolvent of each path tree:
+`mk (tlwc G ·) = Σ_v resolventGenfun(A T_v)_{rr}` (over `ℝ`). Stone 1
+(`treeLikeWalkCount_eq_sum_pathTree_adjMatrix_pow`) coefficientwise, with the `ℕ→ℝ` cast. -/
+theorem mk_treeLikeWalkCount_eq_sum_resolventGenfun (G : _root_.SimpleGraph V)
+    [DecidableRel G.Adj] :
+    (PowerSeries.mk fun k => (G.treeLikeWalkCount k : ℝ))
+      = ∑ v : V, ((G.pathTree v).adjMatrix ℝ).resolventGenfun (pathTreeRoot G v)
+          (pathTreeRoot G v) := by
+  ext k
+  simp only [PowerSeries.coeff_mk, map_sum, resolventGenfun_apply]
+  rw [treeLikeWalkCount_eq_sum_pathTree_adjMatrix_pow, Nat.cast_sum]
+  exact Finset.sum_congr rfl fun v _ => adjMatrix_pow_apply_cast (G.pathTree v) k _ _
+
+/-- **(M4) Trace side reduced to the reflected derivative.** The tree-like-walk generating function,
+times `↑reverse μ(G)`, equals `↑reflect_n(X·μ'(G))` (`n = card V`):
+
+  `mk (tlwc G ·) · ↑reverse μ(G) = ↑reflect_n(X · μ'(G))`.
+
+Sum the per-vertex resolvent identity (M3) over `v` (`Finset.sum_mul`), push the coercion through the
+sum, collapse `Σ_v reverse μ(G.deleteIncidenceSet v) = reflect_n(Σ_v μ(G.deleteIncidenceSet v))`
+(`sum_reverse_eq_reflect_sum`, every `μ(G−v)` has `natDegree = n`), and apply the vertex-deletion law
+`Σ_v μ(G.deleteIncidenceSet v) = X·μ'`. The whole trace side now lives in the reflected matching
+polynomials — the exact object the matching side produces. -/
+theorem mk_treeLikeWalkCount_mul_reverse_eq (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    (PowerSeries.mk fun k => (G.treeLikeWalkCount k : ℝ)) * (G.matchingPoly.reverse : ℝ⟦X⟧)
+      = ((Polynomial.X * Polynomial.derivative G.matchingPoly).reflect (Fintype.card V) : ℝ⟦X⟧) := by
+  have hpoly : (∑ v : V, (G.deleteIncidenceSet v).matchingPoly.reverse)
+      = (Polynomial.X * Polynomial.derivative G.matchingPoly).reflect (Fintype.card V) := by
+    rw [Polynomial.sum_reverse_eq_reflect_sum Finset.univ
+        (fun v => (G.deleteIncidenceSet v).matchingPoly) (Fintype.card V)
+        (fun v _ => matchingPoly_natDegree _),
+      sum_matchingPoly_deleteIncidenceSet]
+  rw [mk_treeLikeWalkCount_eq_sum_resolventGenfun, Finset.sum_mul,
+    Finset.sum_congr rfl (fun v _ => resolventGenfun_pathTree_mul_reverse_matchingPoly G v),
+    ← hpoly]
+  exact (map_sum Polynomial.coeToPowerSeries.ringHom
+    (fun v => (G.deleteIncidenceSet v).matchingPoly.reverse) Finset.univ).symm
 
 end SimpleGraph
