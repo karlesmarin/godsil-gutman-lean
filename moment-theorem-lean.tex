@@ -97,8 +97,8 @@ Section~\ref{sec:methodology}; the next questions, Section~\ref{sec:questions}.
 \section{Introduction: a count, and the spectrum it hides}
 \label{sec:intro}
 
-\emph{A graph's matching polynomial is the characteristic polynomial of no matrix---so where do the
-power sums of its roots live, and why are they a count of walks?} The prequel answered the first
+\emph{A graph's matching polynomial is not the characteristic polynomial of its adjacency matrix---so
+where do the power sums of its roots live, and why are they a count of walks?} The prequel answered the first
 clause with a tree and left the second as a promissory note; this paper redeems it. The route has a
 long history---four centuries---and a small surprise waiting at its last step
 (Section~\ref{sec:boundary}).
@@ -110,8 +110,8 @@ name~\cite{Girard,Macdonald}. That recursion is the canonical bridge between a p
 its data, and it will be the bead this paper, at its very end, declines to use. In 1972 Heilmann and
 Lieb produced a polynomial that seemed to have no right to real roots at all---the matching
 polynomial of a graph, born in the statistical mechanics of monomer--dimer systems---and proved its
-roots real anyway~\cite{HeilmannLieb}, even though it is the characteristic polynomial of no symmetric
-matrix unless the graph is a forest. In 1981 Godsil resolved the paradox with a single device, the
+roots real anyway~\cite{HeilmannLieb}, even though it is not the characteristic polynomial of the
+graph's adjacency matrix unless the graph is a forest. In 1981 Godsil resolved the paradox with a single device, the
 \emph{path tree}, and drew from it \emph{two} conclusions: that the matching polynomial is real-rooted
 (it divides a forest's, and forests have symmetric spectra), and that its root power sums \emph{count
 walks}~\cite{Godsil1981a,GodsilBook}. The fourth bead is the \emph{universal cover}: the path tree is
@@ -122,13 +122,17 @@ conclusion into Lean~\cite{PartII}, Part~III carried the combinatorial half of t
 second~\cite{PartIII}, and this paper carries the rest---and, threading the last bead, comes back
 unexpectedly to the first (Section~\ref{sec:boundary}).
 
-\paragraph{The polynomial with no matrix.} A finite graph $G$ on $n$ vertices carries a matching
-polynomial $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, with $m_k(G)$ the number of $k$-edge
+\paragraph{The polynomial off the adjacency spectrum.} A finite graph $G$ on $n$ vertices carries a
+matching polynomial $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, with $m_k(G)$ the number of $k$-edge
 matchings~\cite{Farrell1979,LovaszPlummer}. Heilmann and Lieb proved its roots
-$\theta_1,\dots,\theta_n$ real~\cite{HeilmannLieb}; but $\mu(G)$ is the characteristic polynomial of
-a fixed symmetric matrix only when $G$ is a forest. Their power sums $p_k(G)=\sum_i\theta_i^k$ are
-therefore the moments of a \emph{ghost} spectrum---real numbers behaving like eigenvalues of a matrix
-that is not there. Godsil's moment theorem says where they come from: they \emph{count walks}.
+$\theta_1,\dots,\theta_n$ real~\cite{HeilmannLieb}; but $\mu(G)$ equals the characteristic polynomial
+of the adjacency matrix $A(G)$ only when $G$ is a forest.\footnote{Every monic polynomial is,
+trivially, the characteristic polynomial of its companion matrix, and---being real-rooted---of
+$\mathrm{diag}(\theta_1,\dots,\theta_n)$. The point is that $\mu(G)$ is not the characteristic
+polynomial of the matrix built \emph{canonically from the graph}, its adjacency matrix, unless $G$ is a
+forest. We thank Scott Hotton for prompting this clarification.} Their power sums
+$p_k(G)=\sum_i\theta_i^k$ are therefore the moments of a \emph{ghost} spectrum---real numbers behaving
+like eigenvalues, yet not those of the graph's own adjacency matrix. Godsil's moment theorem says where they come from: they \emph{count walks}.
 
 \paragraph{One tree, two theorems.} Godsil's device~\cite{Godsil1981a,Godsil1981b,GodsilBook}
 is the path tree $T(G,v)$, whose vertices are the simple paths of $G$ from $v$ and whose edges are
@@ -560,8 +564,8 @@ compiles; only a clean elaboration of the file is---and every identity in this p
 elaborating its module from source.
 
 \paragraph{Where it applies, and how.} The moment theorem is the bridge between two ways of reading a
-graph: as a combinatorial object whose walks one counts, and as the carrier of a spectrum---belonging
-to no matrix---whose moments one bounds. It is precisely the identity invoked, usually tacitly, wherever one of these is
+graph: as a combinatorial object whose walks one counts, and as the carrier of a spectrum---a ghost
+one, not the graph's adjacency spectrum---whose moments one bounds. It is precisely the identity invoked, usually tacitly, wherever one of these is
 estimated through the other. Concretely:
 \begin{itemize}
 \item \emph{Eigenvalue bounds by the method of moments.} The largest matching root obeys
@@ -649,8 +653,8 @@ existing Mathlib developments---resultants, companion matrices, the existing \le
 API---or are they only ever useful in the company of a path tree?
 \end{itemize}
 
-And one to keep. \emph{The matching polynomial is the characteristic polynomial of no matrix, yet its
-root power sums count walks exactly as a matrix's would; the theorem says where those moments live---but
+And one to keep. \emph{The matching polynomial is not the characteristic polynomial of the graph's own
+adjacency matrix, yet its root power sums count walks exactly as a spectrum's would; the theorem says where those moments live---but
 is the spectrum they describe a bookkeeping artefact of the path tree, or, for every purpose that
 consumes its moments, as real as any matrix's?}
 

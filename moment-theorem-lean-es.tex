@@ -103,9 +103,9 @@ las pr\'oximas preguntas, la Secci\'on~\ref{sec:questions}.
 \section{Introducci\'on: un conteo, y el espectro que esconde}
 \label{sec:intro}
 
-\emph{El polinomio de emparejamientos de un grafo no es el polinomio caracter\'istico de ninguna
-matriz---\,?`d\'onde viven entonces las sumas de potencias de sus ra\'ices, y por qu\'e son un conteo
-de caminos?} La entrega anterior respondi\'o la primera cl\'ausula con un \'arbol y dej\'o la segunda
+\emph{El polinomio de emparejamientos de un grafo no es el polinomio caracter\'istico de su matriz de
+adyacencia---\,?`d\'onde viven entonces las sumas de potencias de sus ra\'ices, y por qu\'e son un
+conteo de caminos?} La entrega anterior respondi\'o la primera cl\'ausula con un \'arbol y dej\'o la segunda
 como pagar\'e; este art\'iculo lo salda. La ruta tiene una historia larga---cuatro siglos---y una
 peque\~na sorpresa esperando en su \'ultimo paso (Secci\'on~\ref{sec:boundary}).
 
@@ -117,8 +117,8 @@ entre las ra\'ices de un polinomio y sus datos, y ser\'a la cuenta que este art\
 declina usar. En 1972 Heilmann y Lieb produjeron un polinomio que parec\'ia no tener derecho alguno a
 ra\'ices reales---el polinomio de emparejamientos de un grafo, nacido en la mec\'anica estad\'istica de
 los sistemas mon\'omero--d\'imero---y demostraron sus ra\'ices reales de todos
-modos~\cite{HeilmannLieb}, aunque no es el polinomio caracter\'istico de ninguna matriz sim\'etrica
-salvo que el grafo sea un bosque. En 1981 Godsil resolvi\'o la paradoja con un solo dispositivo, el
+modos~\cite{HeilmannLieb}, aunque no es el polinomio caracter\'istico de la matriz de adyacencia del
+grafo salvo que sea un bosque. En 1981 Godsil resolvi\'o la paradoja con un solo dispositivo, el
 \emph{\'arbol de caminos}, y extrajo de \'el \emph{dos} conclusiones: que el polinomio de
 emparejamientos tiene ra\'ices reales (divide al de un bosque, y los bosques tienen espectros
 sim\'etricos), y que las sumas de potencias de sus ra\'ices \emph{cuentan
@@ -131,13 +131,18 @@ primera conclusi\'on de Godsil a Lean~\cite{PartII}, la Parte~III llev\'o la mit
 segunda~\cite{PartIII}, y este art\'iculo lleva el resto---y, al ensartar la \'ultima cuenta, vuelve
 inesperadamente a la primera (Secci\'on~\ref{sec:boundary}).
 
-\paragraph{El polinomio sin matriz.} Un grafo finito $G$ de $n$ v\'ertices porta un polinomio de
-emparejamientos $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, con $m_k(G)$ el n\'umero de emparejamientos de
-$k$ aristas~\cite{Farrell1979,LovaszPlummer}. Heilmann y Lieb demostraron que sus ra\'ices
-$\theta_1,\dots,\theta_n$ son reales~\cite{HeilmannLieb}; pero $\mu(G)$ es el polinomio
-caracter\'istico de una matriz sim\'etrica fija solo cuando $G$ es un bosque. Sus sumas de potencias
-$p_k(G)=\sum_i\theta_i^k$ son, por tanto, los momentos de un espectro \emph{fantasma}: n\'umeros
-reales que se comportan como autovalores de una matriz que no existe. El teorema del momento de Godsil
+\paragraph{El polinomio fuera del espectro de adyacencia.} Un grafo finito $G$ de $n$ v\'ertices porta
+un polinomio de emparejamientos $\mu(G,x)=\sum_k(-1)^k m_k(G)x^{n-2k}$, con $m_k(G)$ el n\'umero de
+emparejamientos de $k$ aristas~\cite{Farrell1979,LovaszPlummer}. Heilmann y Lieb demostraron que sus
+ra\'ices $\theta_1,\dots,\theta_n$ son reales~\cite{HeilmannLieb}; pero $\mu(G)$ es igual al polinomio
+caracter\'istico de la matriz de adyacencia $A(G)$ solo cuando $G$ es un bosque.\footnote{Todo
+polinomio m\'onico es, trivialmente, el polinomio caracter\'istico de su matriz compa\~nera, y---al
+tener ra\'ices reales---de $\mathrm{diag}(\theta_1,\dots,\theta_n)$. Lo relevante es que $\mu(G)$ no es
+el polinomio caracter\'istico de la matriz construida \emph{can\'onicamente a partir del grafo}, su
+matriz de adyacencia, salvo que $G$ sea un bosque. Agradecemos a Scott Hotton el haber suscitado esta
+aclaraci\'on.} Sus sumas de potencias $p_k(G)=\sum_i\theta_i^k$ son, por tanto, los momentos de un
+espectro \emph{fantasma}: n\'umeros reales que se comportan como autovalores, pero no los de la matriz
+de adyacencia del propio grafo. El teorema del momento de Godsil
 dice de d\'onde salen: \emph{cuentan caminos}.
 
 \paragraph{Un \'arbol, dos teoremas.} El dispositivo de Godsil~\cite{Godsil1981a,Godsil1981b,GodsilBook}
@@ -185,7 +190,7 @@ asistente de demostraci\'on---y, segundo, un pu\~nado de \emph{lemas generales} 
 oblig\'o a construir y que no exist\'ian en Mathlib (la Tabla~\ref{tab:deps} traza las entradas).
 
 \paragraph{Por qu\'e no fue rutinario formalizarlo.} Un polinomio de emparejamientos no es el polinomio
-caracter\'istico de ninguna matriz, as\'i que ninguna de las herramientas matriciales se le aplica
+caracter\'istico de la matriz de adyacencia del grafo, as\'i que ninguna de las herramientas matriciales se le aplica
 directamente; la demostraci\'on debe pasar por el \'arbol de caminos de Godsil y volver, y cada cruce
 es una coerci\'on entre un polinomio, su \emph{invertido} y una serie formal---contabilidad que Mathlib
 no empaqueta. Hubo que llenar tres huecos concretos. (i)~La identidad de cofactores de Mathlib
@@ -587,7 +592,7 @@ identidad de este art\'iculo se re-verific\'o elaborando su m\'odulo desde la fu
 
 \paragraph{D\'onde se aplica, y c\'omo.} El teorema del momento es el puente entre dos maneras de leer
 un grafo: como objeto combinatorio cuyos caminos se cuentan, y como portador de un espectro---que no
-pertenece a ninguna matriz---cuyos momentos se acotan. Es precisamente la identidad invocada, casi siempre t\'acitamente, all\'i
+es de adyacencia del grafo---cuyos momentos se acotan. Es precisamente la identidad invocada, casi siempre t\'acitamente, all\'i
 donde uno de ellos se estima a trav\'es del otro. En concreto:
 \begin{itemize}
 \item \emph{Cotas de autovalores por el m\'etodo de los momentos.} La mayor ra\'iz de emparejamiento
@@ -679,9 +684,9 @@ $\tr(A^k)=p_k+(\text{t\'erminos de ciclo})$ sea una identidad en vez de dos mita
 de \lean{charpolyRev}---o solo son \'utiles en compa\~n\'ia de un \'arbol de caminos?
 \end{itemize}
 
-Y una para guardar. \emph{El polinomio de emparejamientos no es el polinomio caracter\'istico de
-ninguna matriz y, sin embargo, las sumas de potencias de sus ra\'ices cuentan caminos exactamente como
-lo har\'ian las de una matriz; el teorema dice d\'onde viven esos momentos---pero el espectro que
+Y una para guardar. \emph{El polinomio de emparejamientos no es el polinomio caracter\'istico de la
+matriz de adyacencia del propio grafo y, sin embargo, las sumas de potencias de sus ra\'ices cuentan
+caminos exactamente como lo har\'ian las de un espectro; el teorema dice d\'onde viven esos momentos---pero el espectro que
 describen, \,?`es un artefacto contable del \'arbol de caminos, o, para todo uso que consuma sus
 momentos, tan real como el de cualquier matriz?}
 
