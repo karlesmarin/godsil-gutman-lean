@@ -76,3 +76,23 @@ theorem geomSeries_sum_mul_prod (s : Multiset R) :
     geomSeries_mul_one_sub, one_mul]
 
 end PowerSeries
+
+namespace Polynomial
+
+variable {R : Type*} [CommRing R] [DecidableEq R]
+
+/-- **(B2) The product rule for a split polynomial — `μ' = Σ_θ ∏_{φ≠θ}(X - φ)`.** The derivative of
+`∏_{θ∈s}(X - θ)` is the sum, over the multiset of roots, of the "leave-one-out" products
+`∏_{φ∈s.erase θ}(X - φ)`. Immediate from `Polynomial.derivative_prod` (the multiset product rule)
+with `derivative (X - C θ) = 1`. The numerator of the reversed logarithmic derivative
+(`reverse_{n-1}[μ']`) is the degree-`(n-1)` reflection of this sum — and the reflection of a sum of
+equal-degree terms is the sum of the reflections (`reflect` is additive at a fixed length), each
+`reflect (X - φ) = 1 - φ·X`, matching the right-hand side of `geomSeries_sum_mul_prod`. -/
+theorem derivative_prod_X_sub_C (s : Multiset R) :
+    derivative ((s.map fun a => X - C a).prod)
+      = (s.map fun a => ((s.erase a).map fun b => X - C b).prod).sum := by
+  rw [derivative_prod]
+  refine congrArg Multiset.sum (Multiset.map_congr rfl fun a _ => ?_)
+  rw [derivative_X_sub_C, mul_one]
+
+end Polynomial
