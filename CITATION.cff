@@ -59,3 +59,11 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20600326"
     notes: "Part III"
+  - type: article
+    title: "When Walks Become a Spectrum: A Machine-Checked Proof of Godsil's Moment Theorem in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20613247"
+    notes: "Part IV — closes the moment theorem p_k = treeLikeWalkCount"

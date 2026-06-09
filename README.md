@@ -19,8 +19,17 @@ papers:
   path tree (`card_treeLike_eq_pathTreeWalks`) — the *combinatorial half* of Godsil's
   **moment theorem** `p_k = Σ_i θ_i^k = treeLikeWalkCount` — together with the spectral
   form `treeLikeWalkCount = Σ_v [A(T(G,v))^k]_root` and the forest bridge `μ(T)=charpoly`.
-  The same path tree of Paper II, taught to count walks. The spectral half (single-entry
-  resolvent + univariate Newton) is **mapped, not built**; `sorry`-free, three standard axioms.
+  The same path tree of Paper II, taught to count walks. The spectral half was **mapped, not built**
+  there — now built in Paper IV; `sorry`-free, three standard axioms.
+- **Paper IV — *When Walks Become a Spectrum*** ([`moment-theorem-lean.pdf`](moment-theorem-lean.pdf)):
+  the **spectral half** that closes Godsil's **moment theorem**
+  `p_k = Σ_i θ_i^k = treeLikeWalkCount` (`matchingPowerSum_eq_treeLikeWalkCount`). Each path tree's
+  root–root resolvent is folded through Paper II's `godsil_identity` into reversed matching
+  polynomials; both the walk-count and the root-power-sum generating functions are forced to the same
+  `reflect_n(X·μ')`, then a unit is cancelled. Needs **no** univariate Newton — a geometric-series /
+  reversed-product cancellation replaces it. With the Bass companion, both sides of the finite
+  matching/Ihara trace formula now stand `sorry`-free in one library. DOI
+  [10.5281/zenodo.20613247](https://doi.org/10.5281/zenodo.20613247). EN + ES.
 
 A companion strand formalizes the **Ihara side** of spectral graph theory:
 
@@ -202,6 +211,12 @@ Paper II figures and SageMath cross-checks:
   author = {Mar\'in, Carles},
   title  = {Walks that Forget the Cycles: A Machine-Checked Bijection between Tree-Like Walks and Godsil's Path Tree in Lean 4},
   year   = {2026}, doi = {10.5281/zenodo.20600326},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026MomentTheoremLean,
+  author = {Mar\'in, Carles},
+  title  = {When Walks Become a Spectrum: A Machine-Checked Proof of Godsil's Moment Theorem in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20613247},
   note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
