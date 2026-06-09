@@ -91,6 +91,84 @@ theorem sum_reverse_eq_reflect_sum {ι : Type*} (s : Finset ι) (p : ι → R[X]
   exact Finset.sum_congr rfl fun i hi => by
     rw [show (p i).reverse = reflect (p i).natDegree (p i) from rfl, hp i hi]
 
+/-- Multiset form of `sum_reverse_eq_reflect_sum`: if every polynomial in `m` has `natDegree = N`,
+then `(m.map reverse).sum = reflect N m.sum`. Same proof (`reflect_add` additivity, `reverse =
+reflect natDegree`), over a multiset rather than a `Finset`. -/
+theorem sum_map_reverse_eq_reflect_sum (m : Multiset R[X]) (N : ℕ)
+    (hp : ∀ p ∈ m, p.natDegree = N) :
+    (m.map reverse).sum = reflect N m.sum := by
+  let φ : R[X] →+ R[X] := ⟨⟨reflect N, reflect_zero⟩, fun a b => reflect_add a b N⟩
+  rw [show reflect N m.sum = (m.map (reflect N)).sum from map_multiset_sum φ m]
+  exact congrArg Multiset.sum (Multiset.map_congr rfl fun p hp' => by
+    rw [show p.reverse = reflect p.natDegree p from rfl, hp p hp'])
+
+/-- **(PB) Matching-side polynomial identity.** For a monic split `p` over `ℂ`, the sum over its
+roots of the "leave-one-out" reversed-factor products equals the reflected `X·p'`:
+
+  `Σ_{θ∈roots} ∏_{φ∈roots.erase θ}(1 - φX) = reflect_n(X · p')`,   `n = natDegree p`.
+
+This is the polynomial heart of the matching side of the moment theorem. `p` splits as `∏(X-θ)`
+(`Splits.eq_prod_roots_of_monic`), so `p' = Σ_θ ∏_{erase}(X-φ)` (`derivative_prod_X_sub_C`, B2), and
+`X·p' = Σ_θ X·∏_{erase}`; each `X·∏_{erase}` has `natDegree = n` (`natDegree_X_mul` + the
+product-of-`(n-1)`-monic-linears degree), so the reflected sum splits termwise
+(`sum_map_reverse_eq_reflect_sum`) into `Σ_θ reverse(X·∏_{erase}) = Σ_θ ∏_{erase}(1-φX)` via
+`reverse_X_mul` + `reverse_prod_X_sub_C`. -/
+theorem reflect_X_mul_derivative_eq_sum_prod (p : ℂ[X]) (hm : p.Monic) :
+    (p.roots.map fun a => ((p.roots.erase a).map fun b => (1 : ℂ[X]) - C b * X).prod).sum
+      = (X * derivative p).reflect p.natDegree := by
+  have hp : Splits p := IsAlgClosed.splits p
+  have hcard : p.roots.card = p.natDegree := splits_iff_card_roots.mp hp
+  have hsplit : p = (p.roots.map fun a => X - C a).prod := hp.eq_prod_roots_of_monic hm
+  have hder : derivative p
+      = (p.roots.map fun a => ((p.roots.erase a).map fun b => X - C b).prod).sum := by
+    conv_lhs => rw [hsplit]
+    exact derivative_prod_X_sub_C _
+  have hnd : ∀ q ∈ p.roots.map fun a => X * ((p.roots.erase a).map fun b => X - C b).prod,
+      q.natDegree = p.natDegree := by
+    intro q hq
+    obtain ⟨a, ha, rfl⟩ := Multiset.mem_map.mp hq
+    have hne : ((p.roots.erase a).map fun b => X - C b).prod ≠ 0 :=
+      (monic_multiset_prod_of_monic _ _ fun b _ => monic_X_sub_C b).ne_zero
+    rw [natDegree_X_mul hne, natDegree_multiset_prod_X_sub_C_eq_card,
+      Multiset.card_erase_add_one ha, hcard]
+  rw [hder, ← Multiset.sum_map_mul_left,
+    ← sum_map_reverse_eq_reflect_sum _ p.natDegree hnd, Multiset.map_map]
+  exact congrArg Multiset.sum (Multiset.map_congr rfl fun a _ => by
+    simp only [Function.comp_apply, reverse_X_mul, reverse_prod_X_sub_C])
+
+/-- **(M5-core) Matching generating function times the reversed polynomial.** For a monic `p` over
+`ℂ`, the generating function of the power sums of its roots, times `↑reverse p`, is `↑reflect_n(X·p')`:
+
+  `mk (Σ_θ θᵏ) · ↑reverse p = ↑reflect_n(X · p')`,   `n = natDegree p`.
+
+`mk (Σ_θ θᵏ) = Σ_θ geomSeries θ` (`powerSum_genfun`); `↑reverse p = ∏_θ (1 - θX)` in `ℂ⟦X⟧`
+(splitting + `reverse_prod_X_sub_C` + the coercion of a polynomial product); so by
+`geomSeries_sum_mul_prod` (★) the product collapses to `Σ_θ ∏_{erase}(1 - φX)`, which is `↑` of the
+polynomial identity `reflect_X_mul_derivative_eq_sum_prod` (PB). -/
+theorem mk_powerSum_mul_reverse (p : ℂ[X]) (hm : p.Monic) :
+    (PowerSeries.mk fun k => (p.roots.map (· ^ k)).sum) * (p.reverse : ℂ⟦X⟧)
+      = ((X * derivative p).reflect p.natDegree : ℂ⟦X⟧) := by
+  have hsplit : p = (p.roots.map fun a => X - C a).prod :=
+    (IsAlgClosed.splits p).eq_prod_roots_of_monic hm
+  have hcoe : ∀ m : Multiset ℂ,
+      (m.map fun a => 1 - PowerSeries.C a * PowerSeries.X).prod
+        = (((m.map fun a => 1 - C a * X).prod : ℂ[X]) : ℂ⟦X⟧) := fun m => by
+    rw [← Polynomial.coeToPowerSeries.ringHom_apply, map_multiset_prod, Multiset.map_map]
+    exact congrArg Multiset.prod (Multiset.map_congr rfl fun a _ => by
+      simp [Polynomial.coeToPowerSeries.ringHom_apply])
+  have hrev : (p.reverse : ℂ⟦X⟧)
+      = (p.roots.map fun a => 1 - PowerSeries.C a * PowerSeries.X).prod := by
+    rw [hcoe, ← reverse_prod_X_sub_C, ← hsplit]
+  have hbcoe : (p.roots.map fun a =>
+        ((p.roots.erase a).map fun b => 1 - PowerSeries.C b * PowerSeries.X).prod).sum
+      = (((p.roots.map fun a =>
+          ((p.roots.erase a).map fun b => 1 - C b * X).prod).sum : ℂ[X]) : ℂ⟦X⟧) := by
+    rw [← Polynomial.coeToPowerSeries.ringHom_apply, map_multiset_sum, Multiset.map_map]
+    refine congrArg Multiset.sum (Multiset.map_congr rfl fun a _ => ?_)
+    rw [Function.comp_apply, Polynomial.coeToPowerSeries.ringHom_apply, ← hcoe]
+  rw [PowerSeries.powerSum_genfun, hrev, PowerSeries.geomSeries_sum_mul_prod, hbcoe,
+    reflect_X_mul_derivative_eq_sum_prod p hm]
+
 end Polynomial
 
 namespace SimpleGraph
@@ -225,5 +303,23 @@ theorem mk_treeLikeWalkCount_mul_reverse_eq (G : _root_.SimpleGraph V) [Decidabl
     ← hpoly]
   exact (map_sum Polynomial.coeToPowerSeries.ringHom
     (fun v => (G.deleteIncidenceSet v).matchingPoly.reverse) Finset.univ).symm
+
+/-- **(M5) Matching side reduced to the reflected derivative.** Specialise `mk_powerSum_mul_reverse`
+to `μ_ℂ = μ(G).map(ℝ→ℂ)` (monic, `natDegree = card V`):
+
+  `mk (matchingPowerSum G ·) · ↑reverse μ_ℂ = ↑reflect_n(X · μ_ℂ')`,   `n = card V`.
+
+The matching generating function now lives in the same reflected matching polynomials as the trace
+side (M4), the two halves ready to be welded after the `ℝ→ℂ` bridge. -/
+theorem mk_matchingPowerSum_mul_reverse_eq (G : _root_.SimpleGraph V) [DecidableRel G.Adj] :
+    (PowerSeries.mk fun k => G.matchingPowerSum k)
+        * ((G.matchingPoly.map (algebraMap ℝ ℂ)).reverse : ℂ⟦X⟧)
+      = ((Polynomial.X * Polynomial.derivative (G.matchingPoly.map (algebraMap ℝ ℂ))).reflect
+          (Fintype.card V) : ℂ⟦X⟧) := by
+  have hmonic : (G.matchingPoly.map (algebraMap ℝ ℂ)).Monic := (matchingPoly_monic G).map _
+  have hcardV : (G.matchingPoly.map (algebraMap ℝ ℂ)).natDegree = Fintype.card V := by
+    rw [Polynomial.natDegree_map_eq_of_injective (algebraMap ℝ ℂ).injective, matchingPoly_natDegree]
+  simp only [matchingPowerSum]
+  rw [← hcardV, Polynomial.mk_powerSum_mul_reverse _ hmonic]
 
 end SimpleGraph
