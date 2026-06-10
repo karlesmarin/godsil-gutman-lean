@@ -109,9 +109,15 @@ failure (drop the `set`); beta-redex blocks `rw` (use `show`/explicit `have` typ
   entry analysis. Realistic ~300–500 lines + walk-API study. **Fresh-session grind.**
 - Sign bookkeeping NOT needed (only `det² = 1` feeds Stone 4).
 
-### ⏳ Stone 4 — assemble: `det L₀ = #spanning trees`. ALL pieces ready: rw Stone-2 sum,
-per-S apply `sq_det_minor_eq_ite`, sum-of-ite = card of filter; tie to `IsTree` via
-`isTree_iff_connected_and_card` + `edgeSet_fromEdgeSet`. Over [CommRing R][IsDomain R].
-Sage pre-validated (the 40-graph run above already checks ∑ ite = #spanning trees = det L₀).
+### ✅✅✅ Stone 4 DONE 2026-06-10 — KIRCHHOFF CLOSED (`Ihara/Kirchhoff.lean`, commit d30de99)
+`det_reducedLapMatrix_eq_card_spanningTrees` sorry-free: over any integral domain,
+det L₀ = #{(card V −1)-subsets S : ↑S ⊆ G.edgeSet ∧ (fromEdgeSet ↑S).IsTree}. Assembly =
+Stone-2 sum + Stone-3 ite per S + `Finset.sum_boole`; connected↔tree via
+`isTree_iff_connected_and_card` (helpers `card_ne_root_add_one`, `connected_fromEdgeSet_iff_isTree`).
+Axioms = 3 std, zero warnings, full library build green (3074 jobs).
+
+## ARC COMPLETE 2026-06-10 (one session): Cauchy–Binet → N·Nᵀ=L → reduced CB → dichotomy → Kirchhoff.
+First ITP formalization of matrix-tree found in NO other proof assistant (wheel-checked).
+**Next: paper (Paper-V, godsil series style) + Mathlib-PR packaging decision + push branch.**
 
 ## Status: Lemma A banked sorry-free. Regrouping = math done, Lean bijection pending (next focused pass).
