@@ -17,6 +17,14 @@ det (A * B) = ∑ S : {s : Finset n // s.card = card m},
 ```
 `e := Fintype.equivFin m`. Sorted-subset indexing on both minors ⇒ NO loose sign (Sage-confirmed).
 
+## ✅✅ STATUS: Cauchy–Binet PROVEN sorry-free 2026-06-10 (`det_mul_cauchyBinet`)
+Whole `Ihara/CauchyBinet.lean` compiles clean (zero warnings); `#print axioms` = `propext,
+Classical.choice, Quot.sound` (the 3 Mathlib-standard axioms). Pieces: `det_mul_eq_sum_submatrix`
+(Lemma A) · `fiber_sum` · `card_image_eq` · `cbPerm` + `cbPerm_spec` · `image_Phi` · main.
+The bijection went `Σ S, Perm (Fin k) → {g injective}` (`Finset.sum_bij`), so the only nontrivial
+obligations were `inj` (via `image_Phi` + `orderEmbOfFin` injectivity, NO cbPerm reconstruction) and
+`surj` (= `cbPerm_spec`).  **Next: Target 2 (Kirchhoff matrix-tree) + Mathlib PR packaging.**
+
 ## Progress
 ### ✅ Lemma A — `det_mul_eq_sum_submatrix` (PROVEN, sorry-free, compiles 7s)
 ```
