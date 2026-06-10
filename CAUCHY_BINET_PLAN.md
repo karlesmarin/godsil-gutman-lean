@@ -1,39 +1,60 @@
-# Cauchy–Binet → Matrix-Tree in Lean — plan (scoped 2026-06-09)
+# Cauchy–Binet → Matrix-Tree in Lean — plan (updated 2026-06-10)
 
 ## Why: novel, timeless, our edge (det machinery). A merged Mathlib PR = real standing.
 
-## GATE result
-- **Cauchy–Binet: ABSENT from Mathlib** (confirmed). → PR-able, fundamental, many downstream uses.
+## GATE result (re-confirmed 2026-06-10, Mathlib v4.30)
+- **Cauchy–Binet: ABSENT from Mathlib** (re-grepped `Mathlib/LinearAlgebra`). → PR-able.
 - **Matrix-tree (Kirchhoff): ABSENT.** Builds on Cauchy–Binet.
-- Building blocks PRESENT: `Matrix.det_mul`, `Finset.powersetCard`, **`Matrix.TotallyUnimodular`**
-  (incidence det-submatrix ∈ {0,±1} — big bonus for matrix-tree), `SimpleGraph.lapMatrix`
-  (posSemidef, kernel=components), `SimpleGraph.incMatrix`.
+- Building blocks PRESENT: `Matrix.det_apply'`, `Fintype.prod_sum`, `Matrix.det_submatrix_equiv_self`,
+  `Matrix.det_permute'`, `Matrix.det_zero_of_column_eq`, `Finset.orderEmbOfFin`,
+  `Matrix.TotallyUnimodular`, `SimpleGraph.lapMatrix`.
 
-## Target 1 — Cauchy–Binet
-For `A : Matrix m n R`, `B : Matrix n m R`, `[Fintype m] [Fintype n] [DecidableEq n]`, `m ≤ n`
-(`Fintype.card m ≤ Fintype.card n`):
+## Statement (validated in Sage, 2×3·3×2 exact match)
+For `A : m×n`, `B : n×m`, `m ≤ n`:
 ```
-det (A * B) = ∑ S ∈ (Finset.univ : Finset n).powersetCard (Fintype.card m),
-                det (A.submatrix id (S-embedding)) * det (B.submatrix (S-embedding) id)
+det (A * B) = ∑ S : {s : Finset n // s.card = card m},
+                det (A.submatrix e.symm S.orderEmbOfFin) * det (B.submatrix S.orderEmbOfFin e.symm)
 ```
-(handle S→Fin m via `S.orderIsoOfFin` / an equiv `Fin m ≃ ↥S`.)
+`e := Fintype.equivFin m`. Sorted-subset indexing on both minors ⇒ NO loose sign (Sage-confirmed).
 
-### Proof steps
-1. `det (A*B) = ∑_σ sgn σ ∏_i ∑_k A i k * B k (σ i)`  [Matrix.det_apply, Matrix.mul_apply]
-2. expand ∏ over `∑_k` → `∑ (φ : m → n) ∏_i A i (φ i) * B (φ i) (σ i)`  [Finset.prod_sum]
-3. swap order: `∑_φ (∏_i A i (φ i)) * (∑_σ sgn σ ∏_i B (φ i) (σ i))`
-   inner sum `= det (B.submatrix φ id)`.
-4. φ non-injective ⇒ det = 0 (two equal rows). Keep injective φ.
-5. group injective φ by image set S (card m): each S contributes `det(A_{·,S}) det(B_{S,·})`
-   via factoring φ = (sorted S) ∘ (perm), sgn bookkeeping.
+## Progress
+### ✅ Lemma A — `det_mul_eq_sum_submatrix` (PROVEN, sorry-free, compiles 7s)
+```
+det (A * B) = ∑ g : m → n, det (A.submatrix id g) * ∏ i, B (g i) i
+```
+The analytic core. Proof: `det_apply'` → `mul_apply` → `Fintype.prod_sum` (expand ∏∑ over
+functions `g`) → `sum_comm` → per-`g` recognise the inner `∑_σ sign σ ∏ A (σ i) (g i)` as
+`det (A.submatrix id g)` via `det_apply'` again; `prod_mul_distrib` + `ring`.
 
-Likely 100–200 lines. Mirrors the det expansions already done in `Ihara/MomentAssembly.lean` and
-`Ihara/AdjugateDiagMinor.lean`.
+### ⏳ Remaining — the combinatorial regrouping (sorry)
+Math FULLY derived + de-risked 2026-06-10 (below). Only the Lean fiber bijection is left.
+
+**Fiber computation (DONE on paper).** Fix `S` (card k = card m), `φ_S := S.orderEmbOfFin`,
+`g := φ_S ∘ π ∘ e` for `π : Perm (Fin k)`:
+1. `det (A.submatrix id g) = sign π · det (A.submatrix e.symm φ_S)`.
+   Key collapse: `A.submatrix id g = (A.submatrix e.symm φ_S).submatrix e (e.trans π)`; the two-equiv
+   determinant twist `τ = e.symm.trans (e.trans π) = π` (since `e.symm.trans e = refl`), so
+   `det_submatrix_equiv_self e` + `det_permute' π` give exactly `sign π · minorA(S)`.
+2. `∑_π sign π · ∏_{i:m} B (g i) i`: reindex the product by `a = e i` ⇒ `∏_{a:Fin k} B (φ_S (π a)) (e.symm a)`,
+   so `∑_π sign π · ∏_a B (φ_S (π a)) (e.symm a) = det (B.submatrix φ_S e.symm) = minorB(S)`.
+   **The B-determinant emerges from summing the plain product over π weighted by the A-minor's sign.**
+3. ⟹ `∑_{π : Perm (Fin k)} F (φ_S ∘ π ∘ e) = minorA(S) · minorB(S)`, where `F g := det(A.sub id g)·∏B`.
+
+**The only Lean gap** = the global reindexing
+```
+∑ g : m → n, F g
+  = ∑ g (injective), F g                       -- non-injective: A.submatrix id g has 2 equal cols,
+                                                --   det = 0  (Matrix.det_zero_of_column_eq)
+  = ∑ S, ∑ π : Perm (Fin k), F (φ_S ∘ π ∘ e)    -- bijection {g injective} ≃ Σ S, Perm (Fin k)
+  = ∑ S, minorA(S) · minorB(S)                  -- step 3 above
+```
+Bijection maps: forward `(S, π) ↦ (fun j => φ_S (π (e j)))`; backward `g ↦ (image g, the perm)`.
+~150 lines (`Finset.sum_bij'` or an explicit `Equiv`). Fiddly bits: `card (image g) = k` for injective
+`g`, and inverting `orderEmbOfFin` to recover `π`. Cheap compiles (7s warm) ⇒ tractable in a focused pass.
 
 ## Target 2 — Matrix-Tree (Kirchhoff), after CB
-- `lapMatrix = B Bᵀ` for oriented incidence `B` (degree − adjacency). [need oriented incidence]
-- reduced Laplacian `L₀` (delete one row/col), `det L₀ = #spanning trees`.
-- Cauchy–Binet on `L₀ = B₀ B₀ᵀ` ⇒ `det L₀ = ∑_S det(B₀_{·,S})²`, sum over edge-sets S of size n−1.
-- `det(B₀_{·,S}) ∈ {0,±1}` (TotallyUnimodular), `= ±1` iff S is a spanning tree ⇒ count.
+- `lapMatrix = B Bᵀ` for oriented incidence `B`; reduced Laplacian `L₀`, `det L₀ = #spanning trees`.
+- Cauchy–Binet on `L₀ = B₀ B₀ᵀ` ⇒ `det L₀ = ∑_S det(B₀_{·,S})²`; `det(B₀_{·,S}) ∈ {0,±1}`
+  (`TotallyUnimodular`), `= ±1` iff `S` is a spanning tree ⇒ count.
 
-## Status: plan only. Execution = fresh focused session (iterative compile). Statement + strategy ready.
+## Status: Lemma A banked sorry-free. Regrouping = math done, Lean bijection pending (next focused pass).
