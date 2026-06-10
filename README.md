@@ -30,6 +30,15 @@ papers:
   reversed-product cancellation replaces it. With the Bass companion, both sides of the finite
   matching/Ihara trace formula now stand `sorry`-free in one library. DOI
   [10.5281/zenodo.20613247](https://doi.org/10.5281/zenodo.20613247). EN + ES.
+- **Paper V — *Counting Trees Without Listing Them*** ([`matrix-tree-lean.pdf`](matrix-tree-lean.pdf)):
+  **Kirchhoff's matrix-tree theorem** `det L_0 = #spanning trees`
+  (`det_reducedLapMatrix_eq_card_spanningTrees`), over any integral domain, assembled from a
+  self-contained **Cauchy--Binet** (`det_mul_cauchyBinet`), the **oriented incidence matrix** and
+  its Gram factorization `N*Nᵀ = D − A` (`orientedIncMatrix_mul_transpose`), the reduced
+  sum-of-squared-minors expansion, and a spanning-tree **minor dichotomy** proved by sorting
+  (parent edges + a distance key make the minor triangular) instead of leaf-deletion induction.
+  To the best of our knowledge the **first machine-checked matrix-tree theorem in any proof
+  assistant**. DOI [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746). EN + ES.
 
 A companion strand formalizes the **Ihara side** of spectral graph theory:
 
@@ -219,13 +228,21 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20613247},
   note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026MatrixTreeLean,
+  author = {Mar\'in, Carles},
+  title  = {Counting Trees Without Listing Them: A Machine-Checked Proof of Kirchhoff's Matrix-Tree Theorem in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20629746},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
 Part I [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350),
 Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832),
 Ihara/Bass [10.5281/zenodo.20573120](https://doi.org/10.5281/zenodo.20573120),
-Part III [10.5281/zenodo.20600326](https://doi.org/10.5281/zenodo.20600326).
+Part III [10.5281/zenodo.20600326](https://doi.org/10.5281/zenodo.20600326),
+Part IV [10.5281/zenodo.20613247](https://doi.org/10.5281/zenodo.20613247),
+Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746).
 
 ## Author and license
 
