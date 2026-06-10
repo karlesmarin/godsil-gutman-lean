@@ -67,3 +67,11 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20613247"
     notes: "Part IV — closes the moment theorem p_k = treeLikeWalkCount"
+  - type: article
+    title: "Counting Trees Without Listing Them: A Machine-Checked Proof of Kirchhoff's Matrix-Tree Theorem in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20629746"
+    notes: "Part V — Kirchhoff via Cauchy–Binet + oriented incidence + sorting dichotomy"
