@@ -75,9 +75,42 @@ one's knowledge.
 
 \noindent\emph{Reader's map.} If you read only one thing, read Theorem~\ref{thm:kirchhoff} and
 Figure~\ref{fig:triangular}---the statement, and the picture of why a spanning tree's minor is
-$\pm1$. The proof is a single chain (Figure~\ref{fig:road}); every link has its own section, its
-own figure, and a worked example small enough to check by hand. The honest limits are in
+$\pm1$. The proof is a single chain (Figure~\ref{fig:road}); every link has its own section,
+a figure or a worked table, and an example small enough to check by hand. The honest limits are in
 Section~\ref{sec:boundary}.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  theme/.style={draw=ggteal!70,fill=ggband!30,rounded corners=3pt,align=center,
+    inner sep=5pt,font=\footnotesize,minimum height=9mm},
+  hist/.style={draw=ggteal!70,fill=white,rounded corners=3pt,align=center,
+    inner sep=5pt,font=\footnotesize,minimum height=9mm},
+  last/.style={draw=ggamber,fill=ggamber!10,rounded corners=3pt,align=center,
+    inner sep=5pt,font=\footnotesize,minimum height=9mm},
+  flow/.style={-{Stealth[length=2.2mm]},semithick,ggteal!80}]
+  \node[hist]  (a) at (0,1.5)    {1812: a determinant\\of a product\ \S\ref{sec:cb}};
+  \node[hist]  (b) at (4.05,1.5) {1847: a circuit\\asks for trees\ \S\ref{sec:intro}};
+  \node[theme] (c) at (8.1,1.5)  {the claim\\$\det L_0=\tau(G)$\ \S\ref{sec:result}};
+  \node[theme] (d) at (12.15,1.5){the Laplacian\\factors: $NN^{\mathsf T}$\ \S\ref{sec:gram}};
+  \node[theme] (e) at (12.15,-0.4){the census\\$\sum_S(\det N_{0,S})^2$\ \S\ref{sec:sum}};
+  \node[theme] (f) at (8.1,-0.4) {the dichotomy:\\who survives\ \S\ref{sec:dichotomy}};
+  \node[theme] (g) at (4.05,-0.4){made sure:\\Sage + axioms\ \S\ref{sec:verification}};
+  \node[last]  (h) at (0,-0.4)   {limits, uses,\\questions\ \S\ref{sec:boundary}--\ref{sec:questions}};
+  \draw[flow] (a) -- (b);
+  \draw[flow] (b) -- (c);
+  \draw[flow] (c) -- (d);
+  \draw[flow] (d) -- (e);
+  \draw[flow] (e) -- (f);
+  \draw[flow] (f) -- (g);
+  \draw[flow] (g) -- (h);
+\end{tikzpicture}
+\caption{The reader's map: the themes of the paper in their logical order---two classical
+ingredients, the claim, the factorization that decomposes it, the census, the decision, the
+checks, and what remains.}
+\label{fig:readermap}
+\end{figure}
+
 
 % ---------------------------------------------------------------
 \section{Introduction: two memoirs and a circuit}
@@ -92,8 +125,9 @@ and the deepest single ingredient.
 
 Thirty-five years later, Gustav Kirchhoff was not studying determinants. He was studying
 electrical circuits---the linear equations governing currents in a resistor
-network~\cite{Kirchhoff1847}---and found that the quantity controlling their solvability counts
-something purely combinatorial: the spanning trees of the network's graph. In modern dress, with
+network~\cite{Kirchhoff1847}---and found that the common denominator of their solution, the
+determinant that Cramer's rule places under every current, counts something purely
+combinatorial: the spanning trees of the network's graph. In modern dress, with
 $D$ the diagonal of vertex degrees and $A$ the adjacency matrix, the \emph{Laplacian} $L=D-A$ of
 a graph $G$ on $n$ vertices is singular (its rows sum to zero), but striking any one row and the
 matching column leaves an $(n-1)\times(n-1)$ matrix $L_0$ with
@@ -104,9 +138,10 @@ the number of spanning trees of $G$---whichever row was struck. A determinant co
 polynomial time counts a family that is typically exponential; the matrix knows the answer
 without anyone listing a single tree.
 
-The theorem then led a double life. Borchardt gave the first determinantal proof in
-1860~\cite{Borchardt1860}; Cayley's celebrated $n^{n-2}$ count of labelled trees, in a short
-note of 1889, is the formula evaluated on the complete graph~\cite{Cayley1889}. In 1940,
+The theorem then led a double life. Borchardt, in 1860, was the first to obtain the
+labelled-tree count $n^{n-2}$ by evaluating a determinant~\cite{Borchardt1860}; Cayley's short
+note of 1889, which gave the formula its name and credits Borchardt, exhibits the count that
+the matrix-tree determinant produces on the complete graph~\cite{Cayley1889}. In 1940,
 Brooks, Smith, Stone and Tutte dissected rectangles into squares by interpreting the dissection
 as a current flowing through a planar network---Kirchhoff's circuits returning to
 mathematics~\cite{BSST1940}. Tutte extended the count to directed graphs and
@@ -283,7 +318,7 @@ sets. Figure~\ref{fig:cb} works the smallest nontrivial case by hand.
   \caption{Cauchy--Binet for a $2\times3$ times $3\times2$ product. Three ways to choose two of
   the three middle indices; each contributes the product of the two shaded minors. The three
   products $-162-150+48$ sum to $\det(AB)=-264$, which one checks directly:
-  $AB=\left(\begin{smallmatrix}20&29\\56&80\end{smallmatrix}\right)$.}
+  $AB=\left(\begin{smallmatrix}20&29\\56&68\end{smallmatrix}\right)$.}
   \label{fig:cb}
 \end{figure}
 
@@ -508,8 +543,8 @@ full library build & \lean{lake build} & 3074 jobs, no errors \\
 \end{table}
 
 \emph{Size and dependencies.} The development is small: $834$ lines of Lean across the five
-files of Table~\ref{tab:loadbearing}, containing $35$ declarations in total (theorems, lemmas,
-two definitions, and two scoped instances), importing eleven Mathlib files (the
+files of Table~\ref{tab:loadbearing}, containing $35$ declarations in total ($28$ theorems and
+lemmas, six definitions, one scoped instance), importing eleven Mathlib files (the
 \lean{SimpleGraph} core, \lean{LapMatrix}, \lean{IncMatrix}, the graph metric, the determinant
 and block-triangular API, and \lean{Sym2} ordering). Against a warm Mathlib v4.30 cache each
 file rechecks in $7$--$9$ seconds; the full project build (library and all parts of the series)
@@ -574,8 +609,8 @@ counts, and Table~\ref{tab:numbers} is how one computes them. \emph{Random spann
 Wilson's algorithm~\cite{Wilson1996} samples uniformly among $\tau(G)$ trees; the
 transfer-current theorem~\cite{BurtonPemantle1993} makes edge-membership probabilities
 determinantal---ratios $\tau(G/e)/\tau(G)$ of tree counts, i.e.\ effective resistances.
-\emph{Spectral sparsification}: sampling edges by effective resistance preserves the Laplacian
-spectrum~\cite{SpielmanSrivastava2011}; the quantity being sampled by is, again, a ratio of the
+\emph{Spectral sparsification}: sampling edges by effective resistance approximately preserves
+the Laplacian quadratic form, with high probability~\cite{SpielmanSrivastava2011}; the quantity being sampled by is, again, a ratio of the
 two sides of this theorem. None of these pipelines is formalized here; what is formalized is the
 identity they all stand on.
 
@@ -623,9 +658,11 @@ the combinatorial object it counts (there, closed walks; here, cycles). Is there
 formal interface---``count by triangularizing a Gram minor''---under which the matching-side
 and tree-side determinants become instances of one lemma?
 \item Mathlib's \lean{Matrix.TotallyUnimodular} is exactly the predicate ``every square minor
-is $0$ or $\pm1$''. The dichotomy proves a sharp instance of it for $N$. Would registering
-$N$'s total unimodularity connect this development to the optimization-flavoured part of the
-library, and does the parent-edge argument give the shortest such proof?
+is $0$ or $\pm1$''. The dichotomy establishes this for the \emph{maximal} minors of the reduced
+matrix $N_0$; the classical fact is that oriented incidence matrices are totally unimodular,
+all orders included. Would proving and registering full total unimodularity connect this
+development to the optimization-flavoured part of the library, and does the parent-edge
+argument extend below the top order?
 \end{itemize}
 
 And one to keep. \emph{Kirchhoff wanted currents, and the determinant handed him the trees he
@@ -639,7 +676,7 @@ already know, and simply not yet say?}
 % --- the two memoirs of 1812 ---
 \bibitem{Binet1812} J.~P.~M. Binet, \emph{M\'emoire sur un syst\`eme de formules analytiques,
 et leur application \`a des consid\'erations g\'eom\'etriques}, J.~\'Ec.\ Polytech.\
-\textbf{9}, cahier~16 (1813), 280--354. Read 30 November 1812.
+\textbf{9}, cahier~16 (1813). Read 30 November 1812.
 \bibitem{Cauchy1812} A.-L. Cauchy, \emph{M\'emoire sur les fonctions qui ne peuvent obtenir que
 deux valeurs \'egales et de signes contraires par suite des transpositions op\'er\'ees entre
 les variables qu'elles renferment}, J.~\'Ec.\ Polytech.\ \textbf{10}, cahier~17 (1815),

@@ -82,8 +82,41 @@ afirmaci\'on as\'i solo puede hacerse hasta donde alcanza el conocimiento de uno
 \noindent\emph{Mapa del lector.} Si lee una sola cosa, lea el Teorema~\ref{thm:kirchhoff} y la
 Figura~\ref{fig:triangular}: el enunciado, y el dibujo de por qu\'e el menor de un \'arbol
 generador vale $\pm1$. La demostraci\'on es una sola cadena (Figura~\ref{fig:road}); cada
-eslab\'on tiene su secci\'on, su figura y un ejemplo lo bastante peque\~no para comprobarlo a
-mano. Los l\'imites honestos est\'an en la Secci\'on~\ref{sec:boundary}.
+eslab\'on tiene su secci\'on, una figura o una tabla trabajada, y un ejemplo lo bastante
+peque\~no para comprobarlo a mano. Los l\'imites honestos est\'an en la Secci\'on~\ref{sec:boundary}.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  theme/.style={draw=ggteal!70,fill=ggband!30,rounded corners=3pt,align=center,
+    inner sep=5pt,font=\footnotesize,minimum height=9mm},
+  hist/.style={draw=ggteal!70,fill=white,rounded corners=3pt,align=center,
+    inner sep=5pt,font=\footnotesize,minimum height=9mm},
+  last/.style={draw=ggamber,fill=ggamber!10,rounded corners=3pt,align=center,
+    inner sep=5pt,font=\footnotesize,minimum height=9mm},
+  flow/.style={-{Stealth[length=2.2mm]},semithick,ggteal!80}]
+  \node[hist]  (a) at (0,1.5)    {1812: el determinante\\de un producto\ \S\ref{sec:cb}};
+  \node[hist]  (b) at (4.05,1.5) {1847: un circuito\\pide \'arboles\ \S\ref{sec:intro}};
+  \node[theme] (c) at (8.1,1.5)  {la afirmaci\'on\\$\det L_0=\tau(G)$\ \S\ref{sec:result}};
+  \node[theme] (d) at (12.15,1.5){el laplaciano\\factoriza: $NN^{\mathsf T}$\ \S\ref{sec:gram}};
+  \node[theme] (e) at (12.15,-0.4){el censo\\$\sum_S(\det N_{0,S})^2$\ \S\ref{sec:sum}};
+  \node[theme] (f) at (8.1,-0.4) {la dicotom\'ia:\\qui\'en sobrevive\ \S\ref{sec:dichotomy}};
+  \node[theme] (g) at (4.05,-0.4){comprobado:\\Sage + axiomas\ \S\ref{sec:verification}};
+  \node[last]  (h) at (0,-0.4)   {l\'imites, usos,\\preguntas\ \S\ref{sec:boundary}--\ref{sec:questions}};
+  \draw[flow] (a) -- (b);
+  \draw[flow] (b) -- (c);
+  \draw[flow] (c) -- (d);
+  \draw[flow] (d) -- (e);
+  \draw[flow] (e) -- (f);
+  \draw[flow] (f) -- (g);
+  \draw[flow] (g) -- (h);
+\end{tikzpicture}
+\caption{El mapa del lector: los temas del art\'iculo en su orden l\'ogico---dos ingredientes
+cl\'asicos, la afirmaci\'on, la factorizaci\'on que la descompone, el censo, la decisi\'on, las
+comprobaciones, y lo que queda.}
+\label{fig:readermap}
+\end{figure}
+
 
 % ---------------------------------------------------------------
 \section{Introducci\'on: dos memorias y un circuito}
@@ -99,8 +132,9 @@ profundo.
 
 Treinta y cinco a\~nos despu\'es, Gustav Kirchhoff no estudiaba determinantes. Estudiaba
 circuitos el\'ectricos---las ecuaciones lineales que gobiernan las corrientes en una red de
-resistencias~\cite{Kirchhoff1847}---y encontr\'o que la cantidad que controla su resolubilidad
-cuenta algo puramente combinatorio: los \'arboles generadores del grafo de la red. En lenguaje
+resistencias~\cite{Kirchhoff1847}---y encontr\'o que el denominador com\'un de su soluci\'on,
+el determinante que la regla de Cramer coloca bajo cada corriente, cuenta algo puramente
+combinatorio: los \'arboles generadores del grafo de la red. En lenguaje
 moderno, con $D$ la diagonal de grados y $A$ la matriz de adyacencia, el \emph{laplaciano}
 $L=D-A$ de un grafo $G$ con $n$ v\'ertices es singular (sus filas suman cero), pero al tachar
 una fila cualquiera y su columna queda una matriz $L_0$ de orden $(n-1)$ con
@@ -111,9 +145,10 @@ el n\'umero de \'arboles generadores de $G$---sea cual sea la fila tachada. Un d
 computable en tiempo polin\'omico cuenta una familia t\'ipicamente exponencial; la matriz sabe
 la respuesta sin que nadie haya listado un solo \'arbol.
 
-El teorema llev\'o despu\'es una doble vida. Borchardt dio la primera demostraci\'on
-determinantal en 1860~\cite{Borchardt1860}; la c\'elebre cuenta $n^{n-2}$ de Cayley para los
-\'arboles etiquetados, en una nota breve de 1889, es la f\'ormula evaluada en el grafo
+El teorema llev\'o despu\'es una doble vida. Borchardt fue el primero, en 1860, en obtener la
+cuenta $n^{n-2}$ de los \'arboles etiquetados evaluando un determinante~\cite{Borchardt1860};
+la nota breve de Cayley de 1889, que dio nombre a la f\'ormula y acredita a Borchardt, exhibe
+la cuenta que el determinante matricial de los \'arboles produce sobre el grafo
 completo~\cite{Cayley1889}. En 1940, Brooks, Smith, Stone y Tutte diseccionaron rect\'angulos
 en cuadrados interpretando la disecci\'on como una corriente que fluye por una red
 plana---los circuitos de Kirchhoff regresando a las matem\'aticas~\cite{BSST1940}. Tutte
@@ -298,7 +333,7 @@ m\'as peque\~no.
   \caption{Cauchy--Binet para un producto $2\times3$ por $3\times2$. Tres maneras de elegir dos
   de los tres \'indices intermedios; cada una aporta el producto de los dos menores sombreados.
   Los tres productos $-162-150+48$ suman $\det(AB)=-264$, que se comprueba directamente:
-  $AB=\left(\begin{smallmatrix}20&29\\56&80\end{smallmatrix}\right)$.}
+  $AB=\left(\begin{smallmatrix}20&29\\56&68\end{smallmatrix}\right)$.}
   \label{fig:cb}
 \end{figure}
 
@@ -534,8 +569,9 @@ compilaci\'on completa de la biblioteca & \lean{lake build} & 3074 trabajos, sin
 \end{table}
 
 \emph{Tama\~no y dependencias.} El desarrollo es peque\~no: $834$ l\'ineas de Lean en los
-cinco ficheros de la Tabla~\ref{tab:loadbearing}, con $35$ declaraciones en total (teoremas,
-lemas, dos definiciones y dos instancias locales), que importan once ficheros de Mathlib (el
+cinco ficheros de la Tabla~\ref{tab:loadbearing}, con $35$ declaraciones en total ($28$
+teoremas y lemas, seis definiciones, una instancia local), que importan once ficheros de
+Mathlib (el
 n\'ucleo de \lean{SimpleGraph}, \lean{LapMatrix}, \lean{IncMatrix}, la m\'etrica de grafos, el
 API de determinantes y matrices triangulares por bloques, y el orden de \lean{Sym2}). Con la
 cach\'e de Mathlib v4.30 caliente, cada fichero se reverifica en $7$--$9$ segundos; la
@@ -603,8 +639,9 @@ generadores aleatorios}: el algoritmo de Wilson~\cite{Wilson1996} muestrea unifo
 $\tau(G)$ \'arboles; el teorema de las corrientes de transferencia~\cite{BurtonPemantle1993}
 hace determinantales las probabilidades de pertenencia de una arista---cocientes
 $\tau(G/e)/\tau(G)$ de cuentas de \'arboles, es decir, resistencias efectivas.
-\emph{Dispersi\'on espectral}: muestrear aristas por resistencia efectiva preserva el espectro
-del laplaciano~\cite{SpielmanSrivastava2011}; la cantidad por la que se muestrea es, otra vez,
+\emph{Dispersi\'on espectral}: muestrear aristas por resistencia efectiva preserva
+aproximadamente la forma cuadr\'atica del laplaciano, con alta
+probabilidad~\cite{SpielmanSrivastava2011}; la cantidad por la que se muestrea es, otra vez,
 un cociente de los dos lados de este teorema. Ninguna de esas tuber\'ias est\'a formalizada
 aqu\'i; lo formalizado es la identidad sobre la que todas se apoyan.
 
@@ -657,10 +694,11 @@ aqu\'i, ciclos). ?`Hay una interfaz formal com\'un---((contar triangularizando u
 Gram))---bajo la cual los determinantes del lado de los emparejamientos y del lado de los
 \'arboles sean instancias de un mismo lema?
 \item El predicado \lean{Matrix.TotallyUnimodular} de Mathlib es exactamente ((todo menor
-cuadrado vale $0$ o $\pm1$)). La dicotom\'ia demuestra una instancia af\'inada de \'el para
-$N$. ?`Conectar\'ia registrar la unimodularidad total de $N$ este desarrollo con la parte de la
-biblioteca de sabor optimizaci\'on, y da el argumento de la arista padre la demostraci\'on
-m\'as corta de ese hecho?
+cuadrado vale $0$ o $\pm1$)). La dicotom\'ia lo establece para los menores \emph{maximales} de
+la matriz reducida $N_0$; el hecho cl\'asico es que las matrices de incidencia orientadas son
+totalmente unimodulares, en todos los \'ordenes. ?`Conectar\'ia demostrar y registrar la
+unimodularidad total completa este desarrollo con la parte de la biblioteca de sabor
+optimizaci\'on, y se extiende el argumento de la arista padre por debajo del orden m\'aximo?
 \end{itemize}
 
 Y una para guardar. \emph{Kirchhoff quer\'ia corrientes, y el determinante le entreg\'o unos
@@ -675,7 +713,7 @@ todav\'ia no dice?}
 % --- las dos memorias de 1812 ---
 \bibitem{Binet1812} J.~P.~M. Binet, \emph{M\'emoire sur un syst\`eme de formules analytiques,
 et leur application \`a des consid\'erations g\'eom\'etriques}, J.~\'Ec.\ Polytech.\
-\textbf{9}, cahier~16 (1813), 280--354. Le\'ida el 30 de noviembre de 1812.
+\textbf{9}, cahier~16 (1813). Le\'ida el 30 de noviembre de 1812.
 \bibitem{Cauchy1812} A.-L. Cauchy, \emph{M\'emoire sur les fonctions qui ne peuvent obtenir que
 deux valeurs \'egales et de signes contraires par suite des transpositions op\'er\'ees entre
 les variables qu'elles renferment}, J.~\'Ec.\ Polytech.\ \textbf{10}, cahier~17 (1815),
