@@ -83,7 +83,17 @@ UNORIENTED `incMatrix` (Gram = D+A) — the oriented def + D−A factorization a
 `det L₀ = ∑_{S : (card V −1)-subsets of Sym2 V} det(N₀_S)²` (CB + `det_transpose`).
 `LinearOrder (Sym2 V)` provided as a scoped instance, lex on `(inf, sup)` via `LinearOrder.lift'`.
 
-### ⏳ Stone 3 — THE MOUNTAIN: `det(N₀_S) = ±1` iff `S` = spanning-tree edge set, else `0`
+### ✅✅ Stone 3 DONE 2026-06-10 (`Ihara/SpanningTreeMinor.lean`, commit e9e2fa1, sorry-free)
+`sq_det_minor_eq_ite : det(N₀_S)² = if ↑S ⊆ G.edgeSet ∧ (fromEdgeSet ↑S).Connected then 1 else 0`
+(+ the 3 case theorems). All axioms = 3 std, zero warnings. **Verification battery**: minor
+expression syntactically identical to Stone 2 summand; Sage end-to-end 40 random graphs × ALL
+(n−1)-subsets with the FAITHFUL model (zero columns at non-edges — the first sloppy model was
+caught by the test, good): per-S det² == ite AND ∑ == det L₀ == #spanning trees. Loops s(v,v)
+handled by case (a). Lean lessons: `set H` + hypotheses mentioning H ⇒ dependent-motive rewrite
+failure (drop the `set`); beta-redex blocks `rw` (use `show`/explicit `have` types); `Fintype.sum_equiv`
++ `Finset.sum_subtype` + `sum_erase_add` for subtype↔univ sum transport.
+
+### Original Stone 3 design (implemented as above): `det(N₀_S) = ±1` iff spanning tree, else `0`
 **Design (Sage-validated 2026-06-10: 200 random trees + 158 non-tree (n−1)-edge graphs, all pass):**
 - **(a) `S ⊄ edgeSet`** → zero column → `det_eq_zero_of_column_eq_zero`. Easy.
 - **(b) `S ⊆ edges`, `|S| = n−1`, not a tree** → some connected component `C` of `(V,S)` misses
@@ -99,6 +109,9 @@ UNORIENTED `incMatrix` (Gram = D+A) — the oriented def + D−A factorization a
   entry analysis. Realistic ~300–500 lines + walk-API study. **Fresh-session grind.**
 - Sign bookkeeping NOT needed (only `det² = 1` feeds Stone 4).
 
-### Stone 4 — assemble: `det L₀ = #spanning trees` (count the surviving S; cast ℕ).
+### ⏳ Stone 4 — assemble: `det L₀ = #spanning trees`. ALL pieces ready: rw Stone-2 sum,
+per-S apply `sq_det_minor_eq_ite`, sum-of-ite = card of filter; tie to `IsTree` via
+`isTree_iff_connected_and_card` + `edgeSet_fromEdgeSet`. Over [CommRing R][IsDomain R].
+Sage pre-validated (the 40-graph run above already checks ∑ ite = #spanning trees = det L₀).
 
 ## Status: Lemma A banked sorry-free. Regrouping = math done, Lean bijection pending (next focused pass).
