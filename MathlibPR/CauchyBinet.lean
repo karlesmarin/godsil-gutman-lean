@@ -3,10 +3,12 @@ Copyright (c) 2026 Carles Marín. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Carles Marín
 -/
-import Mathlib.Algebra.BigOperators.Ring.Finset
-import Mathlib.Data.Finset.Sort
-import Mathlib.Data.Fintype.Card
-import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+module
+
+public import Mathlib.Algebra.BigOperators.Ring.Finset
+public import Mathlib.Data.Finset.Sort
+public import Mathlib.Data.Fintype.Card
+public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 
 /-!
 # The Cauchy–Binet formula
@@ -37,6 +39,8 @@ and groups the injective ones by their image `S`: summing over the `(Fintype.car
 relabellings of the columns of one minor reassembles the determinant of the other
 (`Matrix.fiberSum`). A linear order on `n` is required only to name the sorted minors.
 -/
+
+@[expose] public section
 
 open Equiv Finset
 

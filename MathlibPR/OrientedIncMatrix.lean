@@ -3,9 +3,11 @@ Copyright (c) 2026 Carles Marín. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Carles Marín
 -/
-import Mathlib.Combinatorics.SimpleGraph.IncMatrix
-import Mathlib.Combinatorics.SimpleGraph.LapMatrix
-import Mathlib.Data.Sym.Sym2.Order
+module
+
+public import Mathlib.Combinatorics.SimpleGraph.IncMatrix
+public import Mathlib.Combinatorics.SimpleGraph.LapMatrix
+public import Mathlib.Data.Sym.Sym2.Order
 
 /-!
 # Oriented incidence matrix
@@ -35,6 +37,8 @@ The orientation (each edge points from its smaller to its larger endpoint) is in
 linear order on the vertex type. Any orientation yields the same Gram matrix, since each edge
 contributes `(±1)²` to a diagonal entry and `(+1) * (-1)` to an off-diagonal one.
 -/
+
+@[expose] public section
 
 open Finset Matrix Sym2
 
@@ -132,9 +136,9 @@ theorem orientedIncMatrix_mul_transpose :
   by_cases huw : u = w
   · subst huw
     simp_rw [G.orientedIncMatrix_mul_self]
-    rw [sum_incMatrix_apply, lapMatrix, sub_apply, degMatrix, diagonal_apply_eq,
+    rw [sum_incMatrix_apply, lapMatrix, Matrix.sub_apply, degMatrix, diagonal_apply_eq,
       adjMatrix_apply, if_neg (G.irrefl), sub_zero]
-  · rw [lapMatrix, sub_apply, degMatrix, diagonal_apply_ne _ huw, adjMatrix_apply, zero_sub]
+  · rw [lapMatrix, Matrix.sub_apply, degMatrix, diagonal_apply_ne _ huw, adjMatrix_apply, zero_sub]
     by_cases hadj : G.Adj u w
     · rw [if_pos hadj, Finset.sum_eq_single s(u, w)
         (fun e _ he => G.orientedIncMatrix_apply_mul_apply_of_ne huw he)
