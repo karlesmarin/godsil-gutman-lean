@@ -17,6 +17,16 @@ det (A * B) = ∑ S : {s : Finset n // s.card = card m},
 ```
 `e := Fintype.equivFin m`. Sorted-subset indexing on both minors ⇒ NO loose sign (Sage-confirmed).
 
+## ⚠️ NOVELTY (wheel-checked 2026-06-10, post-proof)
+- **NOT first Cauchy–Binet in Lean**: `facebookresearch/algebraic-combinatorics` (faabian fork,
+  Grinberg-book formalization) has `CauchyBinet.cauchyBinet` complete (blueprint sect. 5.2 ✓).
+  Different architecture (extractAlpha/extractBeta/constructSigma vs our cbPerm/fiber_sum).
+- **Mathlib: still ABSENT; zero PRs ever mention Cauchy–Binet** (GitHub API search, total=0).
+  Their project states no upstreaming plans. → our independent proof = the Mathlib-PR candidate.
+  Honest claim: *first in Mathlib-scope, independent proof* — NOT "first in Lean".
+- **Matrix-tree (Target 2): not found in ANY ITP** (Lean ecosystem, Isabelle AFP, Coq/Rocq,
+  coq100 list; also absent from the faabian project). Strong-novelty target.
+
 ## ✅✅ STATUS: Cauchy–Binet PROVEN sorry-free 2026-06-10 (`det_mul_cauchyBinet`)
 Whole `Ihara/CauchyBinet.lean` compiles clean (zero warnings); `#print axioms` = `propext,
 Classical.choice, Quot.sound` (the 3 Mathlib-standard axioms). Pieces: `det_mul_eq_sum_submatrix`
