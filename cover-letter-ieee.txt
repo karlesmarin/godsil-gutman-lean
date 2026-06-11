@@ -1,0 +1,25 @@
+Dear IEEE Access Editors,
+
+Please consider the enclosed manuscript, "Certified Short-Cycle Diagnostics for Deployed LDPC
+Codes: From WiFi to Quantum, with a Covering-Tower Factorization," for publication in IEEE
+Access.
+
+The manuscript contributes a short-cycle diagnostic for LDPC Tanner graphs whose defining
+counting identity is a machine-checked theorem (verified in the Lean 4 proof assistant) and
+whose per-code outputs are validated by three mutually independent computations. We apply it to
+the four deployed IEEE 802.11n LDPC codes and, to our knowledge for the first time, to a
+deployed quantum LDPC code (the IBM gross code [[144,12,12]]), and we give a covering-tower
+factorization that lifts the short-cycle profile across a bivariate-bicycle code family.
+
+The work has not been published and is not under consideration elsewhere. Earlier components are
+available as preprints on Zenodo (the IEEE 802.11n census, doi:10.5281/zenodo.20649056, and the
+underlying theory, doi:10.5281/zenodo.20648488); the present manuscript is the unified, extended
+version. The cycle censuses were computed with AI assistance, disclosed in the Acknowledgment;
+the mathematics and all claims are the author's responsibility. All code is open-source
+(https://github.com/karlesmarin/godsil-gutman-lean) and the results are reproducible. The
+manuscript is explicit about the scope of the certificate.
+
+Thank you for your consideration.
+
+Sincerely,
+Carles Marin (independent researcher)
