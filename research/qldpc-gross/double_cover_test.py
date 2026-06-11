@@ -110,12 +110,13 @@ trCov = nb_traces(Gc, K)
 trBase = nb_traces(Gb, K)
 trSign = nb_traces(Gb, K, sign)
 
-print("\n  k :   tr B^k(cover)   tr B^k(base)+tr B_s^k(base)   match")
+print("\n  k :   tr B^k(cover)   tr B^k(base)   tr B_s^k(base)   base+signed   match")
 allok = True
 for k in range(K):
     lhs, rhs = trCov[k], trBase[k] + trSign[k]
     ok = (lhs == rhs); allok = allok and ok
-    print(f"  {k+1} : {lhs:14d}   {rhs:14d}              {'OK' if ok else 'MISMATCH'}")
+    print(f"  {k+1} : {lhs:13d} {trBase[k]:13d} {trSign[k]:14d} {rhs:13d}      "
+          f"{'OK' if ok else 'MISMATCH'}")
 
 print(f"\nArtin-Ihara / 2-lift identity  tr B^k(cover) = tr B^k(base) + tr B_s^k(base): "
       f"{'HOLDS' if allok else 'FAILS'}")

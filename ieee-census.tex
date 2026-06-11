@@ -6,6 +6,8 @@
 \documentclass[journal]{IEEEtran}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
 \usepackage{url}
 \usepackage{hyperref}
 \DeclareMathOperator{\tr}{tr}
@@ -34,7 +36,7 @@ $\tr A^k - p_k = \tr B^k$, with $A$ the adjacency matrix, $B$ the Hashimoto non-
 operator and $p_k$ the power sums of the matching-polynomial roots---and whose per-code outputs
 are validated by three mutually independent computations that agree exactly. We report a
 certified census of the four deployed LDPC codes of the IEEE~802.11n (WiFi) standard at block
-length $n=648$, and, as the first such diagnostic on a \emph{quantum} LDPC code, of the IBM
+length $n=648$, and, to our knowledge the first such diagnostic on a \emph{quantum} LDPC code, of the IBM
 ``gross code'' $[[144,12,12]]$ bivariate-bicycle (BB) code, finding girth~6 and $c_6=144$
 shortest cycles. We then give a covering-tower factorization: a BB code whose Tanner graph is a
 double cover of a smaller code's inherits its short-cycle profile through the classical
@@ -70,7 +72,7 @@ proof in the Lean~4 proof assistant~\cite{PartVI}, and each per-code count is pr
 computations that share no code path and agree exactly. To the best of our knowledge no prior
 cycle-counting tool carries a machine-checked guarantee on its defining identity.
 
-\emph{(2) The first such diagnostic on a deployed quantum code.} We run the census, unchanged,
+\emph{(2) The first such diagnostic, to our knowledge, on a deployed quantum code.} We run the census, unchanged,
 on the IBM gross code $[[144,12,12]]$~\cite{Bravyi} (Section~\ref{sec:quantum}).
 
 \emph{(3) A covering-tower factorization.} Bivariate-bicycle codes form covering
@@ -173,6 +175,48 @@ $[[72,12,6]]$ (base) & 108 & 216 & 6 & $72$ \\
 
 \section{The Covering-Tower Factorization}
 \label{sec:cover}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=stealth,
+  box/.style={draw,rounded corners=2pt,align=center,inner sep=3.5pt,minimum width=4.3cm}]
+  \node[box] (base) at (0,0) {base $[[72,12,6]]$\\[-1pt]girth 6,\ \ $c_6=72$};
+  \node[box,fill=black!5] (covb) at (0.22,1.74) {};
+  \node[box,fill=black!5] (cov)  at (0,1.6) {gross $[[144,12,12]]$\\[-1pt]girth 6,\ \ $c_6=144=2\cdot 72$};
+  \draw[->,thick] (base.north) -- (cov.south)
+    node[midway,right=1.5mm,align=left,font=\scriptsize]{double cover\\($2$-lift, signing $s$)};
+  \draw[->,dashed] ([xshift=-3mm]cov.north) -- ++(0,6.5mm)
+    node[above,font=\scriptsize]{BB covering tower $\cdots$};
+  \node[below=2.2mm of base,font=\scriptsize]
+    {$\tr B^k(\widehat G)=\tr B^k(G)+\tr B_s^k(G)$};
+\end{tikzpicture}
+\caption{The covering-tower factorization. The gross code's Tanner graph is a double cover
+($2$-lift) of the $[[72,12,6]]$ graph (two sheets, shown stacked); its certified short-cycle
+profile lifts through the signed non-backtracking trace~\eqref{eq:lift}. Girth cycles carry
+voltage $+1$, so $c_6$ doubles ($72\!\to\!144$); past the girth the signing is nontrivial
+(Table~\ref{tab:lift}).}
+\label{fig:cover}
+\end{figure}
+
+\begin{table}[t]
+\caption{Verification of the $2$-lift factorization~\eqref{eq:lift} on the
+gross/$[[72,12,6]]$ pair, in exact arithmetic. The identity holds for every $k$; past the
+girth ($k=8$) the signed trace is nontrivial, so the factorization is informative, not a mere
+doubling.}
+\label{tab:lift}
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+$k$ & $\tr B^k(\widehat G)$ & $\tr B^k(G)$ & $\tr B_s^k(G)$ \\
+\midrule
+$1$--$5$ & $0$ & $0$ & $0$ \\
+$6$ & $1\,728$ & $864$ & $864$ \\
+$7$ & $0$ & $0$ & $0$ \\
+$8$ & $27\,648$ & $31\,104$ & $-3\,456$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 The clean value $c_6=2\cdot72$ is not a coincidence. BB codes form \emph{covering
 towers}~\cite{Symons}: the gross Tanner graph is a \emph{double cover} ($2$-lift) of the
 $[[72,12,6]]$ Tanner graph, which we confirm independently (each base edge lifts to exactly one
@@ -184,11 +228,14 @@ identity~\cite{StarkTerras,MSS}:
 \label{eq:lift}
 \end{equation}
 where $B_s$ is the \emph{signed} non-backtracking operator of the base. We verify
-\eqref{eq:lift} exactly for all $k=1,\dots,8$ on the gross/$[[72,12,6]]$ pair; at $k=6$,
-$1728=864+864$. Every base $6$-cycle has signing voltage $+1$ and lifts to two cover
-$6$-cycles, so $c_6$ doubles. Consequently the certified short-cycle profile of a BB \emph{code
-family} is determined by its base together with the covering signing, through the Artin--Ihara
-$L$-function factorization---a practical handle on whole towers rather than one code at a time.
+\eqref{eq:lift} exactly for all $k=1,\dots,8$ on the gross/$[[72,12,6]]$ pair
+(Table~\ref{tab:lift}). At the girth, $\tr B^6(\widehat G)=1728=864+864$: every base $6$-cycle
+carries voltage $+1$ and lifts to two cover $6$-cycles, so $c_6$ doubles ($72\to144$). Past the
+girth the signing is nontrivial---at $k=8$ the signed trace is $-3456$---so the cover's
+longer-cycle structure genuinely differs from its base. Consequently the certified short-cycle
+profile of a BB \emph{code family} is determined by its base together with the covering
+signing, through the Artin--Ihara $L$-function factorization (Fig.~\ref{fig:cover})---a
+practical handle on whole towers rather than one code at a time.
 
 \section{Discussion: Scope and Guarantees}
 \label{sec:honest}
@@ -215,10 +262,32 @@ code can correct in principle; the short-cycle profile concerns the practical BP
 \emph{What it does not reach.} The error-floor structures past the girth (trapping and
 absorbing sets) are not addressed; we count shortest cycles, the entry-level diagnostic.
 
+\section{Open Questions}
+\label{sec:open}
+We leave four questions, in increasing reach, for others to take up.
+\begin{enumerate}
+\item \emph{The corrected window.} The gap law is exact for $k\le g+1$; engineers count to
+$2g-2$ with correction terms~\cite{Blake}. What walk family does the $k=g+2$ defect
+$\tr A^k-p_k-\tr B^k$ count, and can the corrected multiplicities be given a theorem-backed
+form?
+\item \emph{The tower as a design principle.} The short-cycle profile factorizes across a BB
+cover through the signed trace~\eqref{eq:lift}. Can the covering signing be \emph{chosen} to
+suppress the short-cycle population---or raise the girth---at every level of the tower, turning
+the factorization from a diagnostic into a construction rule?
+\item \emph{From cycles to expansion.} The decoder-relevant quantity for expander-based qLDPC
+codes is the spectral gap (the Ramanujan property), set by the leading non-backtracking
+eigenvalue. How tightly do the certified low moments $\tr B^g$ and $\tr B^{g+1}$ bound that
+gap, and hence the BP threshold?
+\item \emph{Beyond shortest cycles.} The error floor is governed by trapping and absorbing
+sets, not by the girth alone. Is there a trace-formula-style identity that certifies the
+smallest such sets, extending the present diagnostic from the entry level to the structures
+that actually limit performance?
+\end{enumerate}
+
 \section{Conclusion}
 We have presented a short-cycle diagnostic for LDPC Tanner graphs whose defining identity is a
 machine-checked theorem and whose outputs are validated by three independent routes, applied to
-the deployed IEEE~802.11n codes and, for the first time, to a deployed quantum LDPC code, with a
+the deployed IEEE~802.11n codes and, for the first time to our knowledge, to a deployed quantum LDPC code, with a
 covering-tower factorization that lifts the profile across a BB code family. The same pipeline
 applies to the 3GPP~5G~NR base graphs and to larger BB towers; certifying spectral expansion
 (the Ramanujan property), which governs distance and decoding for expander-based qLDPC codes, is
