@@ -1,0 +1,24 @@
+=== 802.11n n=648 z=27 r1_2: |V|=972 |E|=2376 girth=6
+  StoneA tr(B^k)=0 k<g: OK
+  R1 NB-trace:   c_6 = 3942.0
+  R2 gap-law:    c_6 = 3942
+  R3 VF2:        c_6 = 3942
+  CENSUS AGREES  [25s]
+=== 802.11n n=648 z=27 r2_3: |V|=864 |E|=2376 girth=6
+  StoneA tr(B^k)=0 k<g: OK
+  R1 NB-trace:   c_6 = 8046.0
+  R2 gap-law:    c_6 = 8046
+  R3 VF2:        c_6 = 8046
+  CENSUS AGREES  [26s]
+=== 802.11n n=648 z=27 r3_4: |V|=810 |E|=2376 girth=4
+  StoneA tr(B^k)=0 k<g: OK
+  R1 NB-trace:   c_4 = 54.0
+  R2 gap-law:    c_4 = 54
+  R3 codegree:   c_4 = 54
+  CENSUS AGREES  [3s]
+=== 802.11n n=648 z=27 r5_6: |V|=756 |E|=2376 girth=6
+  StoneA tr(B^k)=0 k<g: OK
+  R1 NB-trace:   c_6 = 32346.0
+  R2 gap-law:    c_6 = 32346
+  R3 VF2:        c_6 = 32346
+  CENSUS AGREES  [45s]
