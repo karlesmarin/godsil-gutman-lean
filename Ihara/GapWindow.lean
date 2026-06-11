@@ -77,6 +77,57 @@ theorem Walk.even_countP_edges_of_closed {u : V} [DecidableEq V] (p : G.Walk u u
     Even (p.edges.countP fun e => x ∈ e) :=
   (p.even_countP_edges_iff' x).mpr fun h => absurd rfl h
 
+/-! ## W2: incidence counts on a cycle
+
+Transfer of `IsCycle.ncard_neighborSet_toSubgraph_eq_two` from neighbour sets to edge-slot
+incidence counts: a cycle meets each vertex of its support in exactly two edge slots, and
+vertices outside the support in none. Together with W1 (parity) this is what bounds the
+shapes a window walk can take. -/
+
+/-- No edge of a walk is incident to a vertex outside its support. -/
+theorem Walk.countP_edges_eq_zero_of_notMem_support [DecidableEq V] {u v x : V}
+    {w : G.Walk u v} (hx : x ∉ w.support) :
+    w.edges.countP (fun e => x ∈ e) = 0 := by
+  rw [List.countP_eq_zero]
+  intro e he
+  simp only [decide_eq_true_eq]
+  exact fun hxe => hx (Walk.mem_support_of_mem_edges he hxe)
+
+/-- **W2: a cycle meets each of its support vertices in exactly two edge slots.** -/
+theorem Walk.countP_edges_of_isCycle [DecidableEq V] {u x : V} {c : G.Walk u u}
+    (hc : c.IsCycle) (hx : x ∈ c.support) :
+    c.edges.countP (fun e => x ∈ e) = 2 := by
+  have hnd : c.edges.Nodup := hc.isCircuit.isTrail.edges_nodup
+  have hfin : (c.toSubgraph.neighborSet x).Finite := c.finite_neighborSet_toSubgraph
+  have h2 := hc.ncard_neighborSet_toSubgraph_eq_two hx
+  rw [Set.ncard_eq_toFinset_card _ hfin] at h2
+  have hndf : (c.edges.filter (fun e => decide (x ∈ e))).Nodup := hnd.filter _
+  have hflen : (c.edges.filter (fun e => decide (x ∈ e))).length
+      = (c.edges.filter (fun e => decide (x ∈ e))).toFinset.card := by
+    rw [List.card_toFinset, List.dedup_eq_self.mpr hndf]
+  rw [List.countP_eq_length_filter, hflen, ← h2]
+  have hmem : ∀ e ∈ (c.edges.filter fun e => decide (x ∈ e)).toFinset, x ∈ e := by
+    intro e he
+    simp only [List.mem_toFinset, List.mem_filter, decide_eq_true_eq] at he
+    exact he.2
+  refine Finset.card_bij' (fun e he => Sym2.Mem.other' (hmem e he))
+    (fun y _ => s(x, y)) ?_ ?_ ?_ ?_
+  · intro e he
+    rw [Set.Finite.mem_toFinset, Subgraph.mem_neighborSet, ← Subgraph.mem_edgeSet,
+      Sym2.other_spec' (hmem e he), Walk.mem_edges_toSubgraph]
+    have := List.mem_toFinset.mp he
+    exact (List.mem_filter.mp this).1
+  · intro y hy
+    rw [Set.Finite.mem_toFinset, Subgraph.mem_neighborSet] at hy
+    simp only [List.mem_toFinset, List.mem_filter, decide_eq_true_eq]
+    refine ⟨?_, Sym2.mem_mk_left x y⟩
+    rw [← Walk.mem_edges_toSubgraph, Subgraph.mem_edgeSet]
+    exact hy
+  · intro e he
+    exact Sym2.other_spec' (hmem e he)
+  · intro y hy
+    exact Sym2.congr_right.mp (Sym2.other_spec' _)
+
 /-- **Trails never backtrack.** Consecutive darts of a trail form a non-backtracking chain:
 a reversal `d_{i+1} = d_i.symm` would repeat the edge `d_i.edge` at two distinct positions,
 contradicting `edges_nodup`. This gives every cycle (in particular) its NB chain. -/
