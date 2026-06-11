@@ -43,6 +43,33 @@ relating `tr B^k` of a BB code to that of its base graph via the covering, with 
 giving the short-cycle profile of the whole tower at once. This ties our formalized theory to
 the *construction* of the codes, not just their measurement.
 
+## VERIFIED (2026-06-11): the cover factorization holds (`double_cover_test.py`)
+
+We constructed the [[72,12,6]] base (l=6,m=6) and the gross [[144,12,12]] (l=12,m=6) Tanner
+graphs and checked, numerically in exact arithmetic:
+
+- **The gross graph IS a double cover of the [[72,12,6]] graph** (each base edge lifts to
+  exactly one sheet; |V(cover)| = 2|V(base)|) -- an independent confirmation of
+  Symons-Rajput-Browne on our own graphs.
+- **The Artin-Ihara / Bilu-Linial 2-lift trace identity holds exactly for every k = 1..8:**
+  `tr B^k(cover) = tr B^k(base) + tr B_s^k(base)`, where `B_s` is the signed non-backtracking
+  operator of the base with the signing induced by the covering map. (e.g. k=6: 1728 = 1728.)
+- **The short-cycle profile factorizes across the cover:** `c_6(cover) = 2 * c_6(base)
+  = 2 * 72 = 144`. Moreover `tr B_s^6 = tr B^6` on the base, so every base 6-cycle has voltage
+  +1 and lifts to two cover 6-cycles -- the girth cycles do not feel the cover.
+
+So the certified short-cycle profile of a BB *cover tower* is determined by the base code plus
+the covering signing, via the (classical) Artin-Ihara L-function factorization -- the
+adjacency half of which is the Bilu-Linial 2-lift we already formalized in Part I. This is the
+concrete bridge between Symons et al.'s covering construction and our certified
+Ihara/non-backtracking + gap-law machinery.
+
+**Honest boundary**: the Artin-Ihara factorization for graph covers (Stark-Terras 1996/2000)
+and the 2-lift adjacency decomposition (Bilu-Linial; our Part I) are classical -- no new
+mathematics. The candidate novelty is the synthesis: applying this to the BB/qLDPC covering
+towers (Symons et al. is Nov 2025), the *certified* angle, and the "short-cycle profile of a
+whole tower from one base" framing. A focused wheel-check is required before any claim.
+
 ## Honest scope
 
 - We reach the **shortest cycles** (girth-length), the entry-level BP diagnostic — **not**
