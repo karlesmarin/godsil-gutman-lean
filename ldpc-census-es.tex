@@ -1,0 +1,370 @@
+% !TeX program = pdflatex
+% Paper aplicado (compañero de la Parte VI de la serie godsil-gutman-lean). Versión en
+% español, espejo fiel de ldpc-census.tex.
+% Conteos certificados de ciclos cortos para los códigos LDPC del IEEE 802.11n (WiFi).
+% Compilación: pdflatex ldpc-census-es.tex (dos veces, por las referencias)
+% Datos: research/ldpc-gaplaw/ (CENSUS.md, census_out.txt, census_pilot2.py).
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref}
+\usepackage{xurl}
+\usepackage[table]{xcolor}
+\definecolor{ggteal}{HTML}{1B6F8C}
+\definecolor{ggband}{HTML}{DCE7EB}
+\definecolor{ggamber}{HTML}{E08A1E}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Teorema}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\DeclareMathOperator{\tr}{tr}
+\hypersetup{colorlinks=true,linkcolor=ggteal,citecolor=ggteal,urlcolor=ggteal}
+\newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
+  arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
+\newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+
+\title{\bf Conteos certificados de ciclos cortos para los códigos LDPC del IEEE 802.11n
+  (WiFi)\\[4pt]
+  \large\normalfont Un censo verificado a máquina de los grafos de control de paridad
+  desplegados,\\ vía la ley del gap de fórmula de traza}
+\author{Carles Mar\'in\thanks{Censo computado con asistencia de IA (Claude, Anthropic); la
+matemática, el teorema sobre el que descansa y todas las afirmaciones son responsabilidad
+del autor. La identidad certificada se demuestra en el artículo
+gemelo~\cite{MarinGapWindow2026}.}\\[3pt]
+  \normalsize Investigador independiente\\
+  \normalsize \texttt{karlesmarin@gmail.com}}
+\date{Junio de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Los ciclos cortos en el grafo de Tanner de un código de control de paridad de baja densidad
+(LDPC) degradan la decodificación por propagación de creencias, y contarlos es una tarea
+estándar en el diseño de códigos. Este artículo no los cuenta más rápido. Los cuenta
+\emph{con un certificado}: para cada uno de los cuatro códigos LDPC del estándar IEEE 802.11n
+(WiFi) con longitud de bloque $n = 648$, el número de ciclos más cortos se obtiene de una
+identidad verificada a máquina ---la ley del gap de fórmula de traza, demostrada libre de
+\lean{sorry} en Lean~4 en el artículo gemelo~\cite{MarinGapWindow2026}--- y se contrasta con
+tres cómputos mutuamente independientes que coinciden exactamente: la traza non-backtracking
+$\tr B^g/2g$, la ley del gap $(\tr A^g - p_g)/2g$ y la enumeración directa. El censo da
+$c_6 = 3942$ (rate $1/2$), $c_6 = 8046$ (rate $2/3$), $c_4 = 54$ (rate $3/4$, donde el cuello
+colapsa a $4$) y $c_6 = 32\,346$ (rate $5/6$), y cuenta una historia de diseño: el código de
+rate $3/4$ paga su densidad con cuadrados, los ciclos más dañinos, mientras que el de
+rate $5/6$ recupera su cuello al precio de treinta y dos mil hexágonos. Los algoritmos de
+conteo de la literatura de códigos son más rápidos y llegan más lejos; la contribución aquí
+es la capa de certificación ---una identidad exacta respaldada por un teorema con prueba
+comprobable--- que, según mi mejor conocimiento, ninguna herramienta de conteo previa lleva.
+\end{abstract}
+
+\noindent\emph{Mapa del lector.} El teorema es prestado (Sección~\ref{sec:identity};
+demostrado en el gemelo). Lo nuevo es el censo auditado: tres rutas independientes
+(Sección~\ref{sec:routes}), los cuatro códigos desplegados (Sección~\ref{sec:census},
+Tabla~\ref{tab:census}) y la contabilidad honesta de lo que el certificado compra y no compra
+(Secciones~\ref{sec:buys}--\ref{sec:boundary}).
+
+% ---------------------------------------------------------------
+\section{Introducción: un número del que vive un decodificador}
+\label{sec:intro}
+
+¿Qué significa \emph{fiarse} de un conteo de ciclos? Cuando Gallager inventó los códigos LDPC
+en 1962 el mundo no les dio uso; treinta años después volvieron ---al WiFi, al 5G, al espacio
+profundo--- decodificados por propagación de creencias sobre un \emph{grafo de Tanner}
+bipartito~\cite{Tanner1981} cuyos dos lados son los bits del código y sus controles de
+paridad~\cite{Gallager1962,MacKay1999}. La propagación de creencias es exacta sobre un árbol
+y solo aproximada sobre un grafo con ciclos: un ciclo corto deja que un mensaje vuelva a su
+origen y se refuerce a sí mismo, un rumor confundido con una confirmación independiente.
+Cuanto más corto el ciclo, más cerrado el lazo, así que el \emph{cuello} (girth) del grafo de
+Tanner ---la longitud de su ciclo más corto--- y el \emph{número} de ciclos en el cuello y
+justo por encima se volvieron cantidades que un diseñador de códigos
+mide~\cite{Tanner1981,KarimiBanihashemi2013}.
+
+Medirlas es un problema resuelto. Algoritmos espectrales y de paso de mensajes cuentan ciclos
+cortos con eficiencia, y sobre los grafos cuasi-cíclicos de los estándares reales cuentan
+bastante más allá del cuello~\cite{KarimiBanihashemi2013,BlakeLin2018,Dehghan2018}. Este
+artículo no añade nada a su velocidad ni a su alcance. Añade una cosa que les falta: un conteo
+cuya identidad definitoria es un \emph{teorema con una prueba verificada a máquina}. El
+artículo gemelo~\cite{MarinGapWindow2026} demuestra, libre de \lean{sorry} en Lean~4 sobre
+Mathlib, que para un grafo finito de cuello $g$ el número de ciclos más cortos es
+\[
+c_g \;=\; \frac{\tr A^g - p_g}{2g} \;=\; \frac{\tr B^g}{2g},
+\]
+con $A$ la matriz de adyacencia, $B$ el operador non-backtracking de Hashimoto y $p_g$ la
+$g$-ésima suma de potencias de las raíces del polinomio de matchings. Aquí aplicamos esa
+identidad, como \emph{censo certificado}, a los códigos LDPC que un chip de WiFi ejecuta de
+verdad.
+
+% ---------------------------------------------------------------
+\section{La identidad que aplicamos, y hasta dónde está certificada}
+\label{sec:identity}
+
+¿En qué teorema nos apoyamos, y dónde se detiene su garantía? El artículo
+gemelo~\cite{MarinGapWindow2026} demuestra la \emph{ley del gap de fórmula de traza}: para
+todo $k$ en la ventana exacta $1 \le k \le g+1$,
+\keyeq{\tr A^k \;-\; p_k \;=\; \tr B^k .}
+Por debajo del cuello ($k < g$) ambos lados se anulan; en $k \in \{g, g+1\}$ ambos valen
+$2k\,c_k$, donde $c_k$ es el número de $k$-ciclos. Dos consecuencias son todo lo que
+necesitamos. Primera: la anulación bajo el cuello, $\tr B^k = 0$ para $k < g$, es un
+certificado de cordura: un grafo de Tanner de cuello $g$ \emph{tiene} que reportar cero
+caminatas cerradas non-backtracking más cortas que $g$, y cualquier grafo de código que lo
+incumpla está mal interpretado. Segunda: en $k = g$ la ley es el conteo de ciclos más cortos
+de arriba.
+
+\emph{¿Hasta dónde está certificada?} Ambos hechos son teoremas en Lean, que dependen solo de
+los tres axiomas estándar (\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}); la
+anulación bajo el cuello es la ``Piedra~A'' y la igualdad en la ventana es el capstone
+``Piedra~B'' del gemelo. Así que la \emph{identidad} que convierte espectros y conteos de
+matchings en un conteo de ciclos está verificada a máquina de extremo a extremo. Lo que
+\emph{no} forma parte del teorema es la aritmética sobre una matriz concreta: evaluar
+$\tr A^g$, $p_g$ o $\tr B^g$ sobre un grafo de Tanner concreto de $2376$ aristas es cómputo
+exacto ordinario, no una prueba en Lean. Esa brecha ---entre una fórmula certificada y su
+evaluación sobre una entrada concreta--- es exactamente lo que el cruce de tres rutas de la
+sección siguiente está construido para cerrar.
+
+% ---------------------------------------------------------------
+\section{Tres rutas a un mismo número}
+\label{sec:routes}
+
+¿Por qué computar el mismo entero de tres maneras? Porque una \emph{fórmula} certificada
+evaluada por código falible solo es tan fiable como la evaluación, y la guarda más barata
+contra un desliz de implementación es la redundancia por método independiente. El censo
+computa cada $c_g$ por tres rutas que no comparten ninguna ruta de código y se encuentran
+solo en la respuesta.
+
+\begin{tcolorbox}[colframe=ggteal!70,colback=ggband!20,arc=3pt,boxrule=0.8pt,
+  title=\textbf{Las tres rutas (mutuamente independientes)},
+  coltitle=white,colbacktitle=ggteal]
+\textbf{R1 --- traza non-backtracking.} Constrúyase el operador de Hashimoto $B$ sobre los
+$2|E|$ dardos como matriz dispersa $0/1$ y fórmese $\tr B^g$ sin densificar nunca (potencias
+por productos dispersos, trazas por la identidad de Hadamard $\tr B^k = \sum (B^a \circ
+(B^b)^{\!\top})$, $a+b=k$); entonces $c_g = \tr B^g / 2g$.\\[2pt]
+\textbf{R2 --- la ley del gap.} Calcúlese $\tr A^g$ desde la matriz de adyacencia y $p_g$ por
+Newton desde conteos de matchings ---$p_4 = 2m_1^2 - 4m_2$, $p_6 = 2m_1^3 - 6m_1m_2 + 6m_3$,
+con $m_1 = |E|$, $m_2 = \binom{m_1}{2} - \sum_v \binom{d_v}{2}$, y $m_3$ por una recursión
+exacta de borrado de aristas bipartita---; entonces $c_g = (\tr A^g - p_g)/2g$.\\[2pt]
+\textbf{R3 --- enumeración directa.} Cuéntense los ciclos combinatoriamente: para $g = 4$,
+súmese $\binom{\text{codeg}}{2}$ sobre pares de vértices del mismo lado (cuatro-ciclos
+bipartitos); para $g = 6$, una búsqueda de subgrafo VF2 de $C_6$, dividida por sus $12$
+enraizamientos automorfos.
+\end{tcolorbox}
+
+R1 vive en el mundo geodésico del operador non-backtracking; R2 en el mundo
+espectral-más-matchings de la ley del gap; R3 en la enumeración llana. Invocan bibliotecas
+disjuntas y aritmética disjunta. Cuando las tres devuelven el mismo entero, un error tendría
+que ser una \emph{coincidencia entre tres métodos} ---y la ley del gap es justo el teorema que
+dice que R1 y R2 deben coincidir, así que un acuerdo a tres bandas también reconfirma la
+identidad en cada grafo real.
+
+La ruta de conteo de matchings merece una observación. La recursión $m_3 = \tfrac13
+\sum_{(u,v)\in E} m_2(G - \{u,v\})$ se evalúa en forma cerrada sobre el grafo bipartito
+---$N(u)$ y $N(v)$ son disjuntos, así que los números de matchings del borrado se reducen a
+sumas de grados--- sin copiar nunca el grafo; esto es lo que mantiene R2 en unos segundos en
+vez de unas horas sobre una instancia de $2376$ aristas.
+
+% ---------------------------------------------------------------
+\section{El censo: cuatro códigos que un chip de WiFi ejecuta}
+\label{sec:census}
+
+¿Qué aspecto tienen de verdad los códigos desplegados? El IEEE 802.11n especifica códigos
+LDPC en tres longitudes de bloque; tomamos la mayor, $n = 648$, con tamaño de lifting
+cuasi-cíclico $z = 27$, en las cuatro rates. Cada matriz de control de paridad da un grafo de
+Tanner sobre $|V| = n + m$ vértices ($m = n(1-\text{rate})$ controles) con un número
+constante $|E| = 2376$ de aristas. El censo, con los ceros bajo el cuello confirmados en cada
+código, es la Tabla~\ref{tab:census}.
+
+\begin{table}[h]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+\rowcolor{ggteal!18} rate & $|V|$ & $|E|$ & cuello $g$ & $c_g$ (R1\,=\,R2\,=\,R3) & ciclo más corto \\
+\midrule
+$1/2$ & 972 & 2376 & 6 & $3\,942$  & hexágono \\
+$2/3$ & 864 & 2376 & 6 & $8\,046$  & hexágono \\
+$3/4$ & 810 & 2376 & 4 & $54$      & \textbf{cuadrado} \\
+$5/6$ & 756 & 2376 & 6 & $32\,346$ & hexágono \\
+\bottomrule
+\end{tabular}
+\caption{El censo certificado de ciclos cortos de los códigos LDPC del IEEE 802.11n,
+$n = 648$, $z = 27$. Para cada código las tres rutas independientes de la
+Sección~\ref{sec:routes} devuelven el mismo entero, y la anulación bajo el cuello certificada
+en Lean, $\tr B^k = 0$ ($k < g$), vale en los cuatro grafos de Tanner. Computado en
+aritmética exacta; la \emph{pipeline} es \lean{research/ldpc-gaplaw/census\_pilot2.py}.}
+\label{tab:census}
+\end{table}
+
+\emph{La historia que cuentan los cuatro números.} Léase la tabla hacia abajo y aparece un
+compromiso de diseño (Figura~\ref{fig:tradeoff}). En rate $1/2$ el grafo es bastante disperso
+para sostener cuello $6$ con los menos hexágonos, $3942$ ---el más limpio de los cuatro---. En
+rate $2/3$ el cuello sobrevive pero la población de hexágonos se duplica. En rate $3/4$ el
+cuello \emph{colapsa} a $4$: la densidad fuerza $54$ cuadrados, los ciclos más dañinos que un
+grafo de Tanner puede llevar. En rate $5/6$, aún más denso, los diseñadores recuperan cuello
+$6$ ---intercambiando los cuadrados--- pero lo pagan con $32\,346$ hexágonos, un salto de
+ocho veces sobre rate $1/2$. El certificado no juzga el intercambio; hace exacto su precio.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[xscale=2.4,yscale=1.05]
+  \draw[->,ggteal!70,semithick] (-0.2,0) -- (4.1,0) node[right,font=\footnotesize]{rate};
+  \draw[->,ggteal!70,semithick] (-0.2,0) -- (-0.2,5.3)
+     node[above,font=\footnotesize,align=center]{$\log_{10} c_g$};
+  \foreach \y in {1.73,3.60,3.91,4.51}
+    \draw[ggband] (-0.25,\y) -- (4.05,\y);
+  \node[circle,fill=ggteal,inner sep=1.7pt,label={[font=\scriptsize]above:$3942$}]  at (0.5,3.60){};
+  \node[circle,fill=ggteal,inner sep=1.7pt,label={[font=\scriptsize]above:$8046$}]  at (1.5,3.91){};
+  \node[circle,fill=ggamber,inner sep=2.1pt,label={[font=\scriptsize]below:$54$}]    at (2.5,1.73){};
+  \node[circle,fill=ggteal,inner sep=1.7pt,label={[font=\scriptsize]above:$32346$}] at (3.5,4.51){};
+  \node[font=\scriptsize] at (0.5,-0.45){$1/2$};
+  \node[font=\scriptsize] at (1.5,-0.45){$2/3$};
+  \node[font=\scriptsize] at (2.5,-0.45){$3/4$};
+  \node[font=\scriptsize] at (3.5,-0.45){$5/6$};
+  \node[font=\scriptsize,ggteal]  at (0.5,-0.85){$g=6$};
+  \node[font=\scriptsize,ggteal]  at (1.5,-0.85){$g=6$};
+  \node[font=\scriptsize,ggamber] at (2.5,-0.85){$g=4$};
+  \node[font=\scriptsize,ggteal]  at (3.5,-0.85){$g=6$};
+  \draw[ggteal!55,dashed] (0.5,3.60) -- (1.5,3.91) -- (3.5,4.51);
+  \node[ggamber,font=\scriptsize,align=center] at (2.5,2.5){el colapso\\del cuello a $4$};
+\end{tikzpicture}
+\caption{El paisaje de diseño de los cuatro códigos del IEEE 802.11n en $n = 648$. Las tres
+rates de cuello $6$ trazan un conteo creciente de hexágonos (discontinua); rate $3/4$ se sale
+de esa tendencia porque su cuello colapsa a $4$, donde el conteo es pequeño ($54$) pero los
+ciclos son del tipo corto y dañino para el decodificador. ``Pocos ciclos'' y ``ciclos
+largos'' son bienes distintos, y el censo los separa.}
+\label{fig:tradeoff}
+\end{figure}
+
+% ---------------------------------------------------------------
+\section{Qué compra el certificado}
+\label{sec:buys}
+
+Contar ciclos cortos está resuelto ---así que ¿qué hay de nuevo aquí? No el conteo, ni su
+coste. El método espectral de Blake y Lin y los de paso de mensajes de Karimi y Banihashemi
+cuentan más lejos (hasta $2g-2$ y más allá, con términos de corrección) y más rápido, y
+explotan la estructura de bloques cuasi-cíclica que esta \emph{pipeline}
+ignora~\cite{BlakeLin2018,KarimiBanihashemi2013,Dehghan2018}. Frente a ellos este censo es
+más lento y de menor alcance.
+
+Lo que lleva y ellos no es un \emph{certificado}: la identidad que produce el número es un
+teorema con una prueba que una máquina ha comprobado, no una derivación confiada a un papel.
+De ahí se siguen tres cosas que importan en la práctica. La anulación bajo el cuello es una
+\emph{comprobación de integridad gratuita} sobre una matriz de control de paridad ya leída:
+una sola entrada mal leída que cree un ciclo corto fantasma aparece como un $\tr B^k$ no nulo
+donde el teorema prohíbe uno. El acuerdo de las rutas non-backtracking y de matchings no es
+una coincidencia afortunada sino una igualdad \emph{predicha}, así que un desajuste localiza
+el fallo en una ruta. Y los momentos más pequeños del operador non-backtracking,
+$\tr B^g = 2g\,c_g$ y $\tr B^{g+1} = 2(g{+}1)c_{g+1}$, que gobiernan los umbrales de
+percolación y epidémicos en una red~\cite{KarrerNewman2014} y el límite de detectabilidad en
+detección de comunidades~\cite{Krzakala2013}, quedan ahora fijados exactamente desde
+cantidades computadas por código independiente y bien probado ---una prueba de regresión de
+nivel de entrada para cualquier implementación de $B$.
+
+% ---------------------------------------------------------------
+\section{Fronteras honestas}
+\label{sec:boundary}
+
+¿Dónde se detiene exactamente la garantía? En tres sitios, dichos sin rodeos.
+
+\emph{La ventana es $k \le g+1$.} La identidad certificada cuenta ciclos \emph{en} el cuello
+(y en $g+1$); las cantidades de ingeniería más allá ---multiplicidades hasta $2g-2$, los
+términos de corrección de~\cite{BlakeLin2018,Dehghan2018}--- no están cubiertas por el
+teorema y no se computan aquí.
+
+\emph{Las matrices son de terceros.} Los grafos de Tanner se construyen desde matrices de
+control de paridad derivadas del estándar IEEE 802.11n vía una herramienta pública, no
+re-derivadas del Anexo~F del estándar. Su estructura de bloques cuasi-cíclica ($z = 27$) y sus
+perfiles de grados se cruzaron, y el acuerdo a tres rutas es en sí mismo fuerte evidencia de
+que los grafos son los pretendidos, pero un censo de grado de estándar re-derivaría $H$ del
+documento normativo. El certificado cubre la \emph{identidad de conteo}, no la procedencia de
+la entrada.
+
+\emph{Sin novedad algorítmica.} Las rutas son de manual. La contribución es su
+\emph{composición bajo una identidad verificada a máquina}, que una búsqueda en la literatura
+del 2026-06-11 halló ausente: ningún trabajo en Lean, Coq u otro asistente de pruebas sobre
+conteo de ciclos para teoría de códigos. Como siempre, tal afirmación se hace solo según el
+mejor conocimiento de uno.
+
+% ---------------------------------------------------------------
+\section{Preguntas abiertas}
+\label{sec:questions}
+
+\begin{enumerate}
+\item \emph{El titular 5G.} La misma \emph{pipeline} se aplica a los códigos NR de 3GPP
+(TS 38.212, grafos base BG1 y BG2 con sus tamaños de lifting desplegados). Un censo
+certificado a lo largo de la familia rate-compatible de 5G es el siguiente objetivo natural
+---grafos mayores, el mismo teorema.
+\item \emph{La ventana corregida en Lean.} Los ingenieros cuentan hasta $2g-2$ con
+correcciones en forma cerrada; el artículo gemelo deja el primer término de corrección
+($k = g+2$, las caminatas piruleta) como formalización abierta. Un conteo certificado que
+alcance $2g-2$ igualaría el alcance de la literatura \emph{con} una prueba.
+\item \emph{Re-derivación desde el estándar.} Construir $H$ directamente del Anexo~F del
+IEEE 802.11n y de la TS 38.212 de 3GPP, dentro de la \emph{pipeline} certificada, cerraría la
+brecha de procedencia y haría el censo de grado de estándar de extremo a extremo.
+\item \emph{El certificado como instrumento de diseño.} El par $(\tr B^g, \tr B^{g+1})$ es un
+invariante certificado y barato de un grafo de Tanner. ¿Cuánto del perfil de ciclos cortos de
+un código ---y de su comportamiento de decodificación--- fija este par certificado, y dónde
+deja de distinguir códigos que decodifican distinto?
+\end{enumerate}
+
+\section*{Disponibilidad de datos y código}
+Los archivos alist de control de paridad, la \emph{pipeline} del censo
+(\lean{research/\allowbreak ldpc-gaplaw/\allowbreak census\_pilot2.py}) y la salida completa están en el repositorio
+público \url{https://github.com/karlesmarin/godsil-gutman-lean}, junto a las fuentes Lean del
+artículo gemelo~\cite{MarinGapWindow2026} que demuestran la identidad aquí aplicada.
+
+\begin{thebibliography}{99}\small
+
+\bibitem{Gallager1962} R.~G. Gallager,
+\emph{Low-density parity-check codes}, IRE Trans. Inform. Theory \textbf{8} (1962) 21--28.
+
+\bibitem{Tanner1981} R.~M. Tanner,
+\emph{A recursive approach to low complexity codes}, IEEE Trans. Inform. Theory \textbf{27}
+(1981) 533--547.
+
+\bibitem{MacKay1999} D.~J.~C. MacKay,
+\emph{Good error-correcting codes based on very sparse matrices}, IEEE Trans. Inform. Theory
+\textbf{45} (1999) 399--431.
+
+\bibitem{KarimiBanihashemi2013} M. Karimi, A.~H. Banihashemi,
+\emph{Message-passing algorithms for counting short cycles in a graph},
+IEEE Trans. Commun. \textbf{61} (2013) 485--495.
+
+\bibitem{BlakeLin2018} I.~F. Blake, S. Lin,
+\emph{On short cycle enumeration in biregular bipartite graphs},
+IEEE Trans. Inform. Theory \textbf{64} (2018) 6526--6535.
+
+\bibitem{Dehghan2018} A. Dehghan, A.~H. Banihashemi,
+\emph{On computing the multiplicity of cycles in bipartite graphs using the degree
+distribution and the spectrum of the graph}, IEEE Trans. Inform. Theory \textbf{65} (2019)
+3778--3789.
+
+\bibitem{KarrerNewman2014} B. Karrer, M.~E.~J. Newman, L. Zdeborov\'a,
+\emph{Percolation on sparse networks}, Phys. Rev. Lett. \textbf{113} (2014) 208702.
+
+\bibitem{Krzakala2013} F. Krzakala, C. Moore, E. Mossel, J. Neeman, A. Sly, L. Zdeborov\'a,
+P. Zhang, \emph{Spectral redemption in clustering sparse networks},
+Proc. Natl. Acad. Sci. \textbf{110} (2013) 20935--20940.
+
+\bibitem{Hashimoto1989} K. Hashimoto,
+\emph{Zeta functions of finite graphs and representations of $p$-adic groups},
+Adv. Stud. Pure Math. \textbf{15} (1989) 211--280.
+
+\bibitem{Mathlib2020} The mathlib community,
+\emph{The Lean mathematical library}, en: CPP 2020, ACM, 2020, 367--381.
+
+\bibitem{MarinGapWindow2026} C. Mar\'in,
+\emph{The walks that remember the cycles: a machine-checked sharp gap law between the
+matching polynomial and the non-backtracking spectrum in Lean~4} (Parte VI de la serie
+godsil--gutman--lean), Zenodo, 2026.
+
+\end{thebibliography}
+
+\end{document}
