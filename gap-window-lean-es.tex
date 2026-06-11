@@ -140,7 +140,7 @@ inmediatamente~\cite{Ihara1966}. Lo que era análisis sobre una superficie se vo
 lineal sobre un objeto finito: Hashimoto codificó la condición non-backtracking como una
 matriz $0/1$ sobre las aristas dirigidas~\cite{Hashimoto1989}, y Bass demostró que su
 polinomio característico factoriza a través de la matriz de adyacencia~\cite{Bass1992}: la
-identidad de Selberg en versión grafo, formalizada en la Parte~III de esta
+identidad de Selberg en versión grafo, formalizada en el companion Ihara--Bass de esta
 serie~\cite{MarinBass2026}.
 
 Una fórmula de traza necesita un segundo lado. En una superficie es el término de
@@ -148,9 +148,9 @@ Plancherel, la contribución del recubridor universal; en un grafo el recubridor
 un árbol, y el objeto que oye al árbol es el \emph{polinomio de matchings}: Godsil demostró
 en 1981 que las sumas de potencias de sus raíces cuentan las caminatas cerradas que se
 elevan al \emph{árbol de caminos}, las caminatas ``tree-like''~\cite{Godsil1981}, teorema
-que esta serie formalizó en la Parte~IV~\cite{MarinMoment2026}, apoyada en el carácter real
-de las raíces de Heilmann y Lieb~\cite{HeilmannLieb1972} formalizada en la
-Parte~II~\cite{MarinHL2026}.
+que esta serie formalizó en la Parte~IV~\cite{MarinMoment2026}, apoyándose en la biyección
+del árbol de caminos de la Parte~III~\cite{MarinPTW2026} y en el carácter real de las raíces
+de Heilmann y Lieb~\cite{HeilmannLieb1972}, formalizado en la Parte~II~\cite{MarinHL2026}.
 
 Así que, llegada la Parte~V, la serie había construido por separado los dos lados de una
 fórmula de traza: el lado árbol ($p_k$, polinomio de matchings, árbol de caminos) y el lado
@@ -169,9 +169,9 @@ lo recuerdan de los ciclos. La ventana es exacta. Un paso más allá, en $k = g+
 primera caminata que envuelve un ciclo y luego deambula, y los dos lados se separan en todos
 los grafos comprobados (Figura~\ref{fig:window}). La recompensa del collar es que este es el
 primer teorema de la serie que \emph{consume las dos hebras a la vez}: su prueba Lean
-importa la maquinaria del árbol de caminos de la Parte~IV y el operador de Hashimoto de la
-Parte~III en el mismo archivo, y ninguno de los dos lados podría enunciarse sin el
-vocabulario del otro.
+importa la maquinaria de árbol de caminos y momentos de las Partes~III--IV y el operador de
+Hashimoto del companion Ihara--Bass en el mismo archivo, y ninguno de los dos lados podría
+enunciarse sin el vocabulario del otro.
 
 % ---------------------------------------------------------------
 \section{La afirmación: la ley y sus términos}
@@ -225,7 +225,7 @@ Tres observaciones antes de la prueba. Primera: la resta tiene sentido gracias a
 Parte~IV: $p_k$ \emph{es} un conteo de caminatas (las tree-like), de modo que el lado
 izquierdo es la diferencia de dos censos de la misma población. Segunda: el lado derecho
 también es un censo: $\tr B^k$ cuenta las caminatas cerradas non-backtracking de dardos de
-longitud $k$ (\lean{trace\_hashimoto\_pow}, cartografiado en el artículo
+longitud $k$ (\lean{trace\_hashimoto\_pow}, cartografiado en el companion
 Jacobi--Newton~\cite{MarinJN2026}). El teorema es, por tanto, una \emph{biyección de
 censos}, y así es como se demuestra. Tercera: la ventana importa: para $k \ge g+2$ la ley no
 es que esté sin demostrar: es \emph{falsa}, y visiblemente
@@ -308,7 +308,7 @@ dardos de longitud $k$ presenta $k+1$ dardos cuyo último repite el primero, lue
 $k$ aristas distintas; el ciclo extraído necesita al menos $g$ de ellas; así que $k \ge g$
 (\lean{relWalks\_nbRel\_closed\_eq\_empty},
 \lean{trace\_hashimoto\_pow\_eq\_zero\_of\_lt\_egirth}). El $0$ del lado izquierdo es el
-teorema bajo-el-cuello de la Parte~IV (toda caminata cerrada corta se eleva al árbol de
+teorema bajo-el-cuello de la Parte~III (toda caminata cerrada corta se eleva al árbol de
 caminos). La ley del gap bajo el cuello es entonces una resta de ceros, pero cada cero es un
 teorema.
 
@@ -393,7 +393,7 @@ de cierre la raíz está en la pila pero no es su penúltima entrada, así que l
 (\lean{Walk.not\_isTreeLike\_of\_isCycle}). La otra dirección necesitaba, sobre el papel, un
 segundo muro, y se disolvió en piezas ya probadas: si una caminata de la ventana no se
 eleva, su soporte de aristas contiene un ciclo (el contrapositivo del
-\lean{isTreeLike\_of\_acyclic} de la Parte~IV); llevar ese ciclo a $G$ aterriza exactamente
+\lean{isTreeLike\_of\_acyclic} de la Parte~III); llevar ese ciclo a $G$ aterriza exactamente
 en los dos casos de la Sección~\ref{sec:wall}, cuyas conclusiones ahora se leen ``la
 caminata es ese ciclo'' o ``falso''
 (\lean{Walk.isCycle\_or\_isTreeLike\_window}).
@@ -601,8 +601,8 @@ como se enuncia es \emph{falsa} más allá de la ventana.
 conecte el polinomio de matchings con el operador non-backtracking, en ningún asistente de
 pruebas. La afirmación de prioridad descansa menos en una búsqueda negativa que en un hecho
 estructural: el operador non-backtracking $B$ no está, que yo sepa, formalizado en ningún
-asistente ($B$ entra en Lean solo en la Parte~III de esta serie), de modo que un puente que
-lo consuma no puede ser anterior. Las búsquedas del 2026-06-11/12 sobre Mathlib, los
+asistente ($B$ entra en Lean solo en el companion Ihara--Bass de esta serie), de modo que un
+puente que lo consuma no puede ser anterior. Las búsquedas del 2026-06-11/12 sobre Mathlib, los
 repositorios de la comunidad Lean, el AFP de Isabelle, Coq y HOL~Light no encontraron ni la
 ley ni sus ingredientes. Tal afirmación solo puede hacerse según el mejor conocimiento de
 uno.
@@ -651,7 +651,8 @@ pruebas detectaría?
 
 \section*{Disponibilidad de datos y código}
 Las fuentes Lean (\lean{Ihara/NbVanishing.lean}, \lean{Ihara/GapWindow.lean}, con los
-archivos de las Partes~III--V que importan), las fijaciones numéricas y los scripts de las
+archivos de las Partes~III--V y el companion Ihara--Bass que importan), las fijaciones
+numéricas y los scripts de las
 figuras están en el repositorio público
 \url{https://github.com/karlesmarin/godsil-gutman-lean}. El artículo gemelo aplicado (el
 censo LDPC certificado) se referencia allí.
@@ -761,10 +762,14 @@ Springer, 2021, 625--635.
 \emph{Unfolding a graph into a tree: a machine-checked proof of the Heilmann--Lieb theorem
 in Lean~4} (Parte II), Zenodo, 2026. \texttt{doi:10.5281/zenodo.20561832}.
 
+\bibitem{MarinPTW2026} C. Mar\'in,
+\emph{Walks that forget the cycles: a machine-checked bijection between tree-like walks and
+Godsil's path tree in Lean~4} (Parte III), Zenodo, 2026. \texttt{doi:10.5281/zenodo.20600326}.
+
 \bibitem{MarinBass2026} C. Mar\'in,
 \emph{Folding edges into vertices: a machine-checked proof of Bass's determinant formula
-for the Ihara zeta function in Lean~4} (Parte III), Zenodo, 2026.
-\texttt{doi:10.5281/zenodo.20573120}.
+for the Ihara zeta function in Lean~4} (el companion Ihara--Bass de esta serie), Zenodo,
+2026. \texttt{doi:10.5281/zenodo.20573120}.
 
 \bibitem{MarinJN2026} C. Mar\'in,
 \emph{What a determinant's derivative knows: Jacobi's formula and Newton's identity for

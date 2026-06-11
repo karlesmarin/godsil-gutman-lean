@@ -135,7 +135,7 @@ closed walks that never immediately backtrack~\cite{Ihara1966}. What had been an
 surface became linear algebra on a finite object: Hashimoto encoded the non-backtracking
 condition as a $0/1$ matrix $B$ on directed edges~\cite{Hashimoto1989}, and Bass proved that
 its characteristic polynomial factors through the adjacency matrix~\cite{Bass1992}---the
-graph-theoretic Selberg identity, formalized in Part~III of this
+graph-theoretic Selberg identity, formalized in the Ihara--Bass companion of this
 series~\cite{MarinBass2026}.
 
 A trace formula needs a second side. On a surface it is the Plancherel term, the contribution
@@ -143,7 +143,8 @@ of the universal cover; on a graph the universal cover is a tree, and the object
 the tree is the \emph{matching polynomial}: Godsil proved in 1981 that the power sums of its
 roots count the closed walks that lift to the \emph{path tree}---the ``tree-like''
 walks~\cite{Godsil1981}, a theorem this series formalized in Part~IV~\cite{MarinMoment2026},
-resting on the real-rootedness of Heilmann and Lieb~\cite{HeilmannLieb1972} formalized in
+building on the path-tree bijection of Part~III~\cite{MarinPTW2026} and resting on the
+real-rootedness of Heilmann and Lieb~\cite{HeilmannLieb1972} formalized in
 Part~II~\cite{MarinHL2026}.
 
 So by Part~V the series had built, separately, the two sides of a trace formula: the
@@ -162,8 +163,8 @@ cycles. The window is exact. One step past it, at $k = g+2$, the first walk appe
 wraps a cycle and then wanders---and the two sides come apart, on every graph we tested
 (Figure~\ref{fig:window}). The payoff of the necklace is that this is the first theorem of
 the series that \emph{consumes both strands at once}: its Lean proof imports the path-tree
-machinery of Part~IV and the Hashimoto operator of Part~III in the same file, and neither
-side could be stated without the other's vocabulary.
+and moment machinery of Parts~III--IV and the Hashimoto operator of the Ihara--Bass companion
+in the same file, and neither side could be stated without the other's vocabulary.
 
 % ---------------------------------------------------------------
 \section{The claim: the law and its terms}
@@ -215,8 +216,7 @@ Three remarks before the proof. First, the subtraction is meaningful because of 
 $p_k$ \emph{is} a count of walks (the tree-like ones), so the left side is a difference of
 two censuses of the same population. Second, the right side is also a census: $\tr B^k$
 counts the closed non-backtracking dart walks of length $k$
-(\lean{trace\_hashimoto\_pow}, Part~V of the series mapped this in the Jacobi--Newton
-paper~\cite{MarinJN2026}). The theorem is therefore a \emph{bijection of censuses}, and that
+(\lean{trace\_hashimoto\_pow}, mapped in the Jacobi--Newton companion~\cite{MarinJN2026}). The theorem is therefore a \emph{bijection of censuses}, and that
 is how it is proved. Third, the window matters: for $k \ge g+2$ the law is not merely
 unproved but \emph{false}, and visibly so (Figure~\ref{fig:window};
 Section~\ref{sec:verification})---a single exact counterexample (Petersen at $k = 7$, where
@@ -296,7 +296,7 @@ Stone~A follows by a pigeonhole: a closed non-backtracking dart walk of length $
 $k+1$ darts whose last repeats its first, hence at most $k$ distinct edges; the extracted
 cycle needs at least $g$ of them; so $k \ge g$
 (\lean{relWalks\_nbRel\_closed\_eq\_empty}, \lean{trace\_hashimoto\_pow\_eq\_zero\_of\_lt\_egirth}).
-The left side's $0$ is Part~IV's below-girth theorem (every short closed walk lifts to the
+The left side's $0$ is Part~III's below-girth theorem (every short closed walk lifts to the
 path tree). The gap law below the girth is then a subtraction of zeros---but each zero is a
 theorem.
 
@@ -378,7 +378,7 @@ lift itself: along a cycle the stack only ever extends, and at the closing step 
 in the stack but is not its penultimate entry, so the retreat fails
 (\lean{Walk.not\_isTreeLike\_of\_isCycle}). The other direction needed, on paper, a second
 wall---and dissolved instead into pieces already proved: if a window walk does not lift,
-its edge support contains a cycle (the contrapositive of Part~IV's
+its edge support contains a cycle (the contrapositive of Part~III's
 \lean{isTreeLike\_of\_acyclic}); mapping that cycle into $G$ lands exactly in the two cases
 of Section~\ref{sec:wall}, whose conclusions now read ``the walk is that cycle'' or
 ``false'' (\lean{Walk.isCycle\_or\_isTreeLike\_window}).
@@ -574,8 +574,8 @@ stated is \emph{false} beyond the window.
 the matching polynomial to the non-backtracking operator, in any proof assistant. The
 priority claim rests less on a negative search than on a structural fact: the
 non-backtracking operator $B$ is, to my knowledge, formalized in no proof assistant at all
-($B$ enters Lean only in Part~III of this series), so a bridge that consumes it cannot
-predate that. Searches on 2026-06-11/12 over Mathlib, the Lean community repositories,
+($B$ enters Lean only in the Ihara--Bass companion of this series), so a bridge that consumes
+it cannot predate that. Searches on 2026-06-11/12 over Mathlib, the Lean community repositories,
 Isabelle's AFP, Coq and HOL~Light found neither the law nor its ingredients. Such a claim
 can only ever be made to the best of one's knowledge.
 
@@ -621,7 +621,7 @@ rotation that only a proof assistant would expose?
 
 \section*{Data and code availability}
 The Lean sources (\lean{Ihara/NbVanishing.lean}, \lean{Ihara/GapWindow.lean}, with the
-Part~III--V files they import), the numerical locks and the figure scripts are in the public
+files of Parts~III--V and the Ihara--Bass companion they import), the numerical locks and the figure scripts are in the public
 repository \url{https://github.com/karlesmarin/godsil-gutman-lean}. The companion applied
 paper (the certified LDPC census) is referenced there.
 
@@ -730,10 +730,14 @@ Springer, 2021, 625--635.
 \emph{Unfolding a graph into a tree: a machine-checked proof of the Heilmann--Lieb theorem
 in Lean~4} (Part II), Zenodo, 2026. \texttt{doi:10.5281/zenodo.20561832}.
 
+\bibitem{MarinPTW2026} C. Mar\'in,
+\emph{Walks that forget the cycles: a machine-checked bijection between tree-like walks and
+Godsil's path tree in Lean~4} (Part III), Zenodo, 2026. \texttt{doi:10.5281/zenodo.20600326}.
+
 \bibitem{MarinBass2026} C. Mar\'in,
 \emph{Folding edges into vertices: a machine-checked proof of Bass's determinant formula
-for the Ihara zeta function in Lean~4} (Part III), Zenodo, 2026.
-\texttt{doi:10.5281/zenodo.20573120}.
+for the Ihara zeta function in Lean~4} (the Ihara--Bass companion of this series), Zenodo,
+2026. \texttt{doi:10.5281/zenodo.20573120}.
 
 \bibitem{MarinJN2026} C. Mar\'in,
 \emph{What a determinant's derivative knows: Jacobi's formula and Newton's identity for

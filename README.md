@@ -39,6 +39,18 @@ papers:
   (parent edges + a distance key make the minor triangular) instead of leaf-deletion induction.
   To the best of our knowledge the **first machine-checked matrix-tree theorem in any proof
   assistant**. DOI [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746). EN + ES.
+- **Paper VI — *The Walks That Remember the Cycles*** ([`gap-window-lean.pdf`](gap-window-lean.pdf)):
+  the **sharp trace-formula gap law** `tr(Aᵏ) − p_k = tr(Bᵏ)` on the window `1 ≤ k ≤ g+1`
+  (`trace_sub_matchingPowerSum_eq_trace_hashimoto`) — the first machine-checked **bridge** between
+  the matching polynomial and the non-backtracking spectrum, fusing the tree side (Parts III–IV)
+  and the Ihara/Bass companion in one file. Below the girth both sides vanish; at `k ∈ {g, g+1}`
+  both count the `k`-cycles `2k·c_k`; sharp at `k = g+2`. `sorry`-free, three standard axioms.
+  DOI [10.5281/zenodo.20648489](https://doi.org/10.5281/zenodo.20648489). EN + ES.
+- **Applied companion — *Certified Short-Cycle Counts for the IEEE 802.11n (WiFi) LDPC Codes***
+  ([`ldpc-census.pdf`](ldpc-census.pdf)): the gap law applied as a **certified census** of the
+  shortest cycles of the four deployed WiFi LDPC codes (`n = 648`), cross-checked by three
+  mutually independent routes (NB-trace, gap law, enumeration). EN + ES. *(Zenodo / TechRxiv
+  forthcoming.)*
 
 A companion strand formalizes the **Ihara side** of spectral graph theory:
 
@@ -52,6 +64,12 @@ A companion strand formalizes the **Ihara side** of spectral graph theory:
   (Weinstein–Aronszajn) step. This is the natural counterpart to the matching
   polynomial: matching poly = the "tree/Plancherel" side, Ihara–Bass = the
   "cycle/π₁" side of the graph trace formula.
+
+- **Jacobi's formula and Newton's identity** ([`Ihara/TraceFormula.lean`](Ihara/TraceFormula.lean)):
+  `(det M)′ = tr(adj M · M′)` and the matricial Newton identity (`charpolyRev` log-derivative) —
+  the resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
+  non-backtracking walk counts, used by Part VI. DOI
+  [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470).
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
@@ -234,6 +252,18 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20629746},
   note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026JacobiNewtonLean,
+  author = {Mar\'in, Carles},
+  title  = {What a Determinant's Derivative Knows: Jacobi's Formula and Newton's Identity for Matrix Traces in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20578470},
+  note   = {\url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026GapWindowLean,
+  author = {Mar\'in, Carles},
+  title  = {The Walks That Remember the Cycles: A Machine-Checked Sharp Gap Law between the Matching Polynomial and the Non-Backtracking Spectrum in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20648489},
+  note   = {Part VI. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
@@ -242,7 +272,9 @@ Part II [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832),
 Ihara/Bass [10.5281/zenodo.20573120](https://doi.org/10.5281/zenodo.20573120),
 Part III [10.5281/zenodo.20600326](https://doi.org/10.5281/zenodo.20600326),
 Part IV [10.5281/zenodo.20613247](https://doi.org/10.5281/zenodo.20613247),
-Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746).
+Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746),
+Jacobi–Newton [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470),
+Part VI [10.5281/zenodo.20648489](https://doi.org/10.5281/zenodo.20648489).
 
 ## Author and license
 
