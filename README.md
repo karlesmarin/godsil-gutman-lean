@@ -125,9 +125,50 @@ The combinatorial half of Godsil's **moment theorem** `p_k = Σ_i θ_i^k = treeL
 | `liftSeq_map_invariant` | the `liftSeq`↔path-tree-vertex invariant | `Ihara/MomentBridge.lean` |
 | `Walk.isTreeLike_of_acyclic` | acyclic edge-support ⇒ tree-like (path-tree definition) | `Ihara/PathTree.lean` |
 
-The **spectral half** (single-entry resolvent `[A(T)^k]_root = ` coeff of `μ(T−root)/μ(T)`,
-plus the univariate Newton step to `p_k`) is **mapped, not built**; the matrix-resolvent
-infrastructure (`resolventSeries`, `coeff_resolventSeries`) is already in `Ihara/TraceFormula.lean`.
+The **spectral half** is **built** in Paper IV (below); the matrix-resolvent infrastructure
+lives in `Ihara/TraceFormula.lean` and the Jacobi–Newton companion.
+
+### Paper IV — the moment theorem (spectral half)
+
+Closes Godsil's **moment theorem** `p_k = Σ_i θ_i^k = treeLikeWalkCount`.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `matchingPowerSum_eq_treeLikeWalkCount` | `p_k = Σ_i θ_i^k = treeLikeWalkCount` (the moment theorem) | `Ihara/MomentAssembly.lean` |
+| `mk_matchingPowerSum_mul_reverse_eq` | the power-sum generating function forced to `reflect_n(X·μ′)` | `Ihara/MomentAssembly.lean` |
+| `mk_treeLikeWalkCount_mul_reverse_eq` | the walk-count generating function forced to the same | `Ihara/MomentAssembly.lean` |
+| `resolventGenfun_pathTree_mul_reverse_matchingPoly` | each path tree's root resolvent folded through `godsil_identity` | `Ihara/MomentAssembly.lean` |
+| `matchingPowerSum_genfun` | generating function of the matching-root power sums | `Ihara/PowerSumGenfun.lean` |
+
+No univariate Newton step: a geometric-series / reversed-product cancellation replaces it.
+
+### Paper V — Kirchhoff's matrix-tree theorem
+
+| Lean name | Statement | File |
+|---|---|---|
+| `det_reducedLapMatrix_eq_card_spanningTrees` | `det L₀ = #spanning trees`, over any integral domain | `Ihara/Kirchhoff.lean` |
+| `det_mul_cauchyBinet` | the Cauchy–Binet formula (self-contained) | `Ihara/CauchyBinet.lean` |
+| `orientedIncMatrix_mul_transpose` | `N·Nᵀ = D − A` (oriented-incidence Gram factorization) | `Ihara/OrientedIncidence.lean` |
+| `reducedLapMatrix_eq_mul_transpose` | `L₀ = N₀ · N₀ᵀ` | `Ihara/MatrixTree.lean` |
+| `det_reducedLapMatrix_eq_sum_sq` | reduced sum-of-squared-minors expansion | `Ihara/MatrixTree.lean` |
+
+### Paper VI — the trace-formula gap law
+
+`tr Aᵏ − p_k = tr Bᵏ` on the sharp window `1 ≤ k ≤ g+1`; both sides count `2k·c_k` at
+`k ∈ {g, g+1}`; sharp at `k = g+2`. Fuses the tree side (Parts III–IV) and the Ihara/Bass
+companion in one file.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `trace_sub_matchingPowerSum_eq_trace_hashimoto` | `tr Aᵏ − p_k = tr Bᵏ` on the window (over `ℂ`) | `Ihara/GapWindow.lean` |
+| `treeLikeGap_eq_trace_hashimoto` | the capstone over `ℤ` (`treeLikeGap k = tr Bᵏ`) | `Ihara/GapWindow.lean` |
+| `isCycle_of_nbChain_window` | window rigidity: a closed NB walk on the window is a cycle | `Ihara/GapWindow.lean` |
+| `isCycle_or_isTreeLike_window` | the window dichotomy (cycle or tree-like) | `Ihara/GapWindow.lean` |
+| `sum_card_not_treeLike_eq_sum_card_relWalks` | the bijection of censuses | `Ihara/GapWindow.lean` |
+| `eq_of_darts_eq` | a walk is determined by its darts | `Ihara/GapWindow.lean` |
+| `even_countP_edges_iff'` | closed-walk incidence parity, no trail hypothesis | `Ihara/GapWindow.lean` |
+| `exists_isCycle_of_nbChain_of_not_nodup` | cycle extraction from a non-backtracking chain (Stone A) | `Ihara/NbVanishing.lean` |
+| `trace_hashimoto_pow_eq_zero_of_lt_egirth` | `tr Bᵏ = 0` for `k < g` | `Ihara/NbVanishing.lean` |
 
 ### The Ihara side — Bass's determinant formula
 
@@ -150,8 +191,21 @@ the no-edge / empty-graph cases. Full `CommRing` generality would follow by a
 universal-coefficient transfer, not pursued here.
 
 This is the **Ihara/π₁ side** complementing the matching polynomial (the
-tree/Plancherel side). With both endpoints now in Lean, a future Part II can
-formalize the **graph trace formula** that fuses them.
+tree/Plancherel side). With both endpoints in Lean, **Part VI** fuses them into the
+trace-formula gap law.
+
+### The Ihara side — Jacobi's formula and Newton's identity
+
+The resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
+non-backtracking walk counts (used by Part VI).
+
+| Lean name | Statement | File |
+|---|---|---|
+| `charpolyRev_logDeriv` | Newton's identity, matricial: the `charpolyRev` log-derivative as `Σ_k tr(Mᵏ) Xᵏ` | `Ihara/TraceFormula.lean` |
+| `smul_resolventSeries_eq_adjugate` | Jacobi's-formula resolvent: `X·(I−XM)⁻¹` equals the adjugate series | `Ihara/TraceFormula.lean` |
+| `trace_resolventSeries` | `tr((I−XM)⁻¹) = Σ_k tr(Mᵏ) Xᵏ` (trace generating function) | `Ihara/TraceFormula.lean` |
+| `coe_charpolyRev_eq_det` | `charpolyRev M = det(I − X·M)` | `Ihara/ResolventDiag.lean` |
+| `adjugate_diag_eq_det_submatrix_ne` | adjugate diagonal entry = principal minor | `Ihara/AdjugateDiagMinor.lean` |
 
 ## Repository layout
 
