@@ -52,6 +52,18 @@ papers:
   mutually independent routes (NB-trace, gap law, enumeration). EN + ES.
   DOI [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
 
+> **From theory to technology.** Papers I–VI are pure formalized mathematics: a
+> machine-checked trace-formula gap law, proved `sorry`-free in Lean 4. The **applied
+> companion is the technological payoff of that theory** — the point where the abstract
+> identity `tr Aᵏ − p_k = tr Bᵏ` becomes a concrete engineering tool. At `k = g` the law is a
+> formula for the number of shortest cycles, `c_g = (tr A^g − p_g)/2g = tr B^g/2g`; short
+> cycles in a Tanner graph are what degrade the belief-propagation decoder of an LDPC code.
+> So the same theorem that is a line of Lean becomes a **certified diagnostic of the LDPC
+> codes a WiFi chip actually runs** (IEEE 802.11n, n = 648): a short-cycle census whose
+> defining identity carries a machine-checked proof, cross-checked three independent ways.
+> The mathematics did not change on the way out; it acquired a use. The same pipeline targets
+> 5G NR and quantum LDPC codes next.
+
 A companion strand formalizes the **Ihara side** of spectral graph theory:
 
 - **Bass's determinant formula** ([`Ihara/Bass.lean`](Ihara/Bass.lean)): the
