@@ -44,6 +44,39 @@ namespace SimpleGraph
 
 variable {V : Type*} {G : SimpleGraph V}
 
+/-! ## W1: parity of edge incidences — for ARBITRARY walks
+
+Mathlib's `IsTrail.even_countP_edges_iff` carries an `IsTrail` hypothesis that its own proof
+only uses to feed the induction; the statement is true for every walk. We need the general
+form: in Stone B's case `|C| = g, k = g+1` the walk is NOT a trail (it may repeat an edge),
+and the parity of incidences at the extra edge's endpoint is exactly what kills the case. -/
+
+/-- **Parity of edge incidences, general form.** For any walk `u → v` and any vertex `x`, the
+number of edge slots incident to `x` is even iff `x` avoids the endpoints whenever they are
+distinct. (Mathlib's version assumes `IsTrail`; the hypothesis is not needed.) -/
+theorem Walk.even_countP_edges_iff' {u v : V} [DecidableEq V] (p : G.Walk u v) (x : V) :
+    Even (p.edges.countP fun e => x ∈ e) ↔ u ≠ v → x ≠ u ∧ x ≠ v := by
+  induction p with
+  | nil => simp
+  | cons huv p ih =>
+    simp only [List.countP_cons, Ne, edges_cons, Sym2.mem_iff]
+    split_ifs with h
+    · rw [decide_eq_true_eq] at h
+      obtain (rfl | rfl) := h
+      · rw [Nat.even_add_one, ih]
+        simp only [huv.ne, imp_false, Ne, not_false_iff, true_and, not_forall,
+          Classical.not_not, exists_prop, not_true, false_and,
+          and_iff_right_iff_imp]
+        rintro rfl rfl
+        exact G.loopless.irrefl _ huv
+      · have := huv.ne; grind
+    · grind
+
+/-- **Closed walks have even incidence everywhere.** The parity workhorse for Stone B. -/
+theorem Walk.even_countP_edges_of_closed {u : V} [DecidableEq V] (p : G.Walk u u) (x : V) :
+    Even (p.edges.countP fun e => x ∈ e) :=
+  (p.even_countP_edges_iff' x).mpr fun h => absurd rfl h
+
 /-- **Trails never backtrack.** Consecutive darts of a trail form a non-backtracking chain:
 a reversal `d_{i+1} = d_i.symm` would repeat the edge `d_i.edge` at two distinct positions,
 contradicting `edges_nodup`. This gives every cycle (in particular) its NB chain. -/
