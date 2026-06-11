@@ -5,6 +5,7 @@ Authors: Carles Marín
 -/
 import Ihara.NbVanishing
 import Ihara.PathTree
+import Ihara.MomentAssembly
 
 open Finset
 
@@ -745,5 +746,18 @@ theorem treeLikeGap_eq_trace_hashimoto [Fintype V] [DecidableEq V] [DecidableRel
     G.treeLikeGap k = ((G.hashimoto ℤ) ^ k).trace := by
   rw [treeLikeGap_eq_card_not_treeLike, trace_hashimoto_pow, ← Nat.cast_sum,
     sum_card_not_treeLike_eq_sum_card_relWalks hk hwin]
+
+/-- **The gap law in power-sum form.** Composing the capstone with Godsil's moment theorem
+(`matchingPowerSum_eq_treeLikeWalkCount`, Part IV): on the window `1 ≤ k ≤ girth + 1`,
+`tr(Aᵏ) − p_k = tr(Bᵏ)` over `ℂ`, with `p_k = Σᵢ θᵢᵏ` the power sums of the roots of the
+matching polynomial. The sharp trace-formula gap law. -/
+theorem trace_sub_matchingPowerSum_eq_trace_hashimoto [Fintype V] [DecidableEq V]
+    [DecidableRel G.Adj] {k : ℕ} (hk : 0 < k) (hwin : (k : ℕ∞) ≤ G.egirth + 1) :
+    ((G.adjMatrix ℕ ^ k).trace : ℂ) - G.matchingPowerSum k
+      = ((G.hashimoto ℂ) ^ k).trace := by
+  have h := G.treeLikeGap_eq_trace_hashimoto hk hwin
+  rw [treeLikeGap, trace_hashimoto_pow] at h
+  rw [matchingPowerSum_eq_treeLikeWalkCount, trace_hashimoto_pow]
+  exact_mod_cast h
 
 end SimpleGraph
