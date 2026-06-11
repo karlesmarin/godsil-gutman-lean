@@ -64,8 +64,9 @@ https://github.com/karlesmarin/godsil-gutman-lean
 
 ## Pre-submission checklist
 
-- [ ] Companion (Part VI) Zenodo DOI assigned, then fill it into the bibitem
-      `MarinGapWindow2026` in BOTH ldpc-census.tex and ldpc-census-es.tex.
+- [x] Companion (Part VI) Zenodo DOI = 10.5281/zenodo.20648489 (reserved on the draft;
+      becomes final when the Part VI draft is published). Filled into the bibitem
+      `MarinGapWindow2026` in both ldpc-census.tex and ldpc-census-es.tex.
 - [ ] Decide girth term: `cuello` vs `cintura` (ES, series-wide).
 - [ ] Final read of both PDFs by author.
 - [ ] (TechRxiv) account + ORCID linked.
