@@ -128,6 +128,163 @@ theorem Walk.countP_edges_of_isCycle [DecidableEq V] {u x : V} {c : G.Walk u u}
   · intro y hy
     exact Sym2.congr_right.mp (Sym2.other_spec' _)
 
+/-! ## W3: a closed trail on exactly a cycle's edges is that cycle
+
+If a closed walk's edge list is a permutation of a cycle's edge list, the walk is itself a
+cycle. The crux: a repeated support vertex `x` would, after rotating the walk to base `x`,
+sit at three pairwise-distinct edge slots `{0, m−1, m}`; the walk is a trail (its edges are
+the cycle's, nodup), so these are three DISTINCT edges incident to `x` — contradicting the
+exact incidence count 2 of W2. -/
+
+/-- Both endpoints of the `t`-th edge slot: `getVert t` and `getVert (t+1)` lie in
+`edges[t]`. -/
+theorem Walk.getVert_mem_edges_getElem {u v : V} {p : G.Walk u v} {t : ℕ} (ht : t < p.length) :
+    p.getVert t ∈ p.edges[t]'(by rw [Walk.length_edges]; exact ht)
+      ∧ p.getVert (t + 1) ∈ p.edges[t]'(by rw [Walk.length_edges]; exact ht) := by
+  have htd : t < p.darts.length := by rw [Walk.length_darts]; exact ht
+  have he : p.edges[t]'(by rw [Walk.length_edges]; exact ht) = (p.darts[t]'htd).edge := by
+    simp only [Walk.edges, List.getElem_map]
+  have hf : (p.darts[t]'htd).fst = p.getVert t := by
+    rw [Walk.fst_darts_getElem htd, List.getElem_dropLast,
+      Walk.support_getElem_eq_getVert]
+  have hs : (p.darts[t]'htd).snd = p.getVert (t + 1) := by
+    rw [Walk.snd_darts_getElem htd, List.getElem_tail,
+      Walk.support_getElem_eq_getVert]
+  rw [he]
+  have hde : (p.darts[t]'htd).edge = s((p.darts[t]'htd).fst, (p.darts[t]'htd).snd) := rfl
+  rw [hde, hf, hs]
+  exact ⟨Sym2.mem_mk_left _ _, Sym2.mem_mk_right _ _⟩
+
+/-- **W3.** A closed walk of positive length whose edge list is a permutation of a cycle's
+edge list is itself a cycle. -/
+theorem Walk.isCycle_of_edges_perm [DecidableEq V] {v a : V} {w : G.Walk v v}
+    {c : G.Walk a a} (hc : c.IsCycle) (hperm : w.edges.Perm c.edges)
+    (hpos : 0 < w.length) : w.IsCycle := by
+  have hwnd : w.edges.Nodup := hperm.nodup_iff.mpr hc.isCircuit.isTrail.edges_nodup
+  have hnenil : w ≠ Walk.nil := by
+    intro h
+    rw [h] at hpos
+    simp at hpos
+  refine ⟨⟨⟨hwnd⟩, hnenil⟩, ?_⟩
+  by_contra htail
+  -- a duplicated vertex x in the tail
+  obtain ⟨x, hx2⟩ : ∃ x, 2 ≤ w.support.tail.count x := by
+    by_contra hno
+    push_neg at hno
+    exact htail (List.nodup_iff_count_le_one.mpr fun y => by have := hno y; omega)
+  have hxtail : x ∈ w.support.tail := List.count_pos_iff.mp (by omega)
+  have hxsupp : x ∈ w.support := List.mem_of_mem_tail hxtail
+  -- rotate the walk to base x: trail and incidence counts survive
+  set w' := w.rotate x hxsupp with hw'
+  have hlen' : w'.length = w.length := by
+    rw [hw', Walk.length_rotate]
+  have hperm' : w'.edges.Perm w.edges := (w.rotate_edges x hxsupp).perm
+  have hwnd' : w'.edges.Nodup := hperm'.nodup_iff.mpr hwnd
+  have htperm : w'.support.tail.Perm w.support.tail := (w.support_rotate x hxsupp).perm
+  have hx2' : 2 ≤ w'.support.tail.count x := by rw [htperm.count_eq]; exact hx2
+  -- an interior occurrence: x = getVert m with 1 ≤ m ≤ length − 1
+  have htne : w'.support.tail ≠ [] := by
+    intro h0
+    rw [h0] at hx2'
+    simp at hx2'
+  have hxdl : x ∈ w'.support.tail.dropLast := by
+    by_contra hno
+    have hsplit := List.dropLast_concat_getLast htne
+    have : w'.support.tail.count x ≤ 1 := by
+      rw [← hsplit, List.count_append]
+      have h0 : w'.support.tail.dropLast.count x = 0 :=
+        List.count_eq_zero_of_not_mem hno
+      have h1 : [w'.support.tail.getLast htne].count x ≤ 1 := by
+        rcases em (w'.support.tail.getLast htne = x) with h | h <;> simp [h]
+      omega
+    omega
+  obtain ⟨i, hi, hix⟩ := List.mem_iff_getElem.mp hxdl
+  rw [List.getElem_dropLast] at hix
+  have hilt : i + 1 ≤ w'.length - 1 := by
+    have h1 : w'.support.tail.dropLast.length = w'.length - 1 := by
+      rw [List.length_dropLast, List.length_tail, Walk.length_support]
+      omega
+    omega
+  set m := i + 1 with hm
+  have hgm : w'.getVert m = x := by
+    have := List.getElem_tail (l := w'.support) (i := i)
+      (h := by rw [List.length_tail, Walk.length_support]; omega)
+    rw [this] at hix
+    rw [← Walk.support_getElem_eq_getVert]
+    exact hix
+  have hg0 : w'.getVert 0 = x := Walk.getVert_zero _
+  -- m = 1 is a loop; kill it
+  have hm2 : 2 ≤ m := by
+    rcases Nat.lt_or_ge m 2 with h | h
+    · exfalso
+      have hm1 : m = 1 := by omega
+      have hg1 : w'.getVert 1 = x := by rw [← hm1]; exact hgm
+      have hadj := w'.adj_getVert_succ (i := 0) (by omega)
+      rw [hg0, hg1] at hadj
+      exact G.irrefl hadj
+    · exact h
+  -- three distinct edges incident to x: slots 0, m−1, m
+  have hke : w'.edges.length = w'.length := Walk.length_edges _
+  have hb0 : 0 < w'.edges.length := by omega
+  have hbm1 : m - 1 < w'.edges.length := by omega
+  have hbm : m < w'.edges.length := by omega
+  have he0 : x ∈ w'.edges[0]'hb0 := by
+    have := (w'.getVert_mem_edges_getElem (t := 0) (by omega)).1
+    rwa [hg0] at this
+  have hem1 : x ∈ w'.edges[m - 1]'hbm1 := by
+    have := (w'.getVert_mem_edges_getElem (t := m - 1) (by omega)).2
+    rwa [show m - 1 + 1 = m by omega, hgm] at this
+  have hem : x ∈ w'.edges[m]'hbm := by
+    have := (w'.getVert_mem_edges_getElem (t := m) (by omega)).1
+    rwa [hgm] at this
+  have hinj := List.nodup_iff_injective_get.mp hwnd'
+  have hne1 : w'.edges[0]'hb0 ≠ w'.edges[m - 1]'hbm1 := fun h => by
+    have := hinj (a₁ := ⟨0, hb0⟩) (a₂ := ⟨m - 1, hbm1⟩)
+      (by simp only [List.get_eq_getElem, h])
+    simp only [Fin.mk.injEq] at this
+    omega
+  have hne2 : w'.edges[0]'hb0 ≠ w'.edges[m]'hbm := fun h => by
+    have := hinj (a₁ := ⟨0, hb0⟩) (a₂ := ⟨m, hbm⟩)
+      (by simp only [List.get_eq_getElem, h])
+    simp only [Fin.mk.injEq] at this
+    omega
+  have hne3 : w'.edges[m - 1]'hbm1 ≠ w'.edges[m]'hbm := fun h => by
+    have := hinj (a₁ := ⟨m - 1, hbm1⟩) (a₂ := ⟨m, hbm⟩)
+      (by simp only [List.get_eq_getElem, h])
+    simp only [Fin.mk.injEq] at this
+    omega
+  -- hence the incidence count at x is ≥ 3
+  have hcnt3 : 3 ≤ w'.edges.countP (fun e => x ∈ e) := by
+    have hndf : (w'.edges.filter (fun e => decide (x ∈ e))).Nodup := hwnd'.filter _
+    have hsubF : ({w'.edges[0]'hb0, w'.edges[m - 1]'hbm1, w'.edges[m]'hbm} : Finset _)
+        ⊆ (w'.edges.filter (fun e => decide (x ∈ e))).toFinset := by
+      intro e he
+      simp only [Finset.mem_insert, Finset.mem_singleton] at he
+      rw [List.mem_toFinset, List.mem_filter]
+      rcases he with rfl | rfl | rfl
+      · exact ⟨List.getElem_mem _, by simpa using he0⟩
+      · exact ⟨List.getElem_mem _, by simpa using hem1⟩
+      · exact ⟨List.getElem_mem _, by simpa using hem⟩
+    have hcard3 : ({w'.edges[0]'hb0, w'.edges[m - 1]'hbm1, w'.edges[m]'hbm}
+        : Finset _).card = 3 := by
+      rw [Finset.card_insert_of_notMem (by simp [hne1, hne2]),
+        Finset.card_insert_of_notMem (by simp [hne3]), Finset.card_singleton]
+    have hle := Finset.card_le_card hsubF
+    rw [hcard3] at hle
+    have htf : (w'.edges.filter (fun e => decide (x ∈ e))).toFinset.card
+        = w'.edges.countP (fun e => x ∈ e) := by
+      rw [List.card_toFinset, List.dedup_eq_self.mpr hndf, List.countP_eq_length_filter]
+    omega
+  -- but the count transfers to the cycle, where it is at most 2
+  have hctrans : w'.edges.countP (fun e => x ∈ e) = c.edges.countP (fun e => x ∈ e) :=
+    (hperm'.trans hperm).countP_eq _
+  have hcle2 : c.edges.countP (fun e => x ∈ e) ≤ 2 := by
+    by_cases hxc : x ∈ c.support
+    · rw [Walk.countP_edges_of_isCycle hc hxc]
+    · rw [Walk.countP_edges_eq_zero_of_notMem_support hxc]
+      omega
+  omega
+
 /-! ## W4: a closed walk is never "a cycle plus one extra edge slot"
 
 The Stone B case `|C| = g, k = g+1` dies here: if a closed walk's edge multiset were a
@@ -165,6 +322,37 @@ theorem Walk.not_closed_of_isCycle_edges_add_one [DecidableEq V] {v a : V} {w : 
     omega
   · rw [hcnt, Walk.countP_edges_eq_zero_of_notMem_support hxs, Nat.even_iff] at heven
     omega
+
+/-! ## W5 = STONE B-2: in the window, a closed non-backtracking walk IS a cycle
+
+The composition: the strengthened Stone A crux extracts a cycle `C` on the walk's edges with
+`g ≤ |C| ≤ k ≤ g+1`, so either `|C| = k` (W3: the walk is a permutation of the cycle, hence
+the cycle) or `|C| = k−1` (W4: parity kills it). -/
+
+/-- **Stone B-2.** A closed non-backtracking walk of positive length at most `girth + 1`
+is a cycle. -/
+theorem Walk.isCycle_of_nbChain_window [DecidableEq V] {v : V} {w : G.Walk v v}
+    (hnb : w.darts.IsChain G.nbRel) (hpos : 0 < w.length)
+    (hwin : (w.length : ℕ∞) ≤ G.egirth + 1) : w.IsCycle := by
+  have hdup : ¬ w.support.Nodup := fun hnod => by
+    have hnil := (Walk.isPath_iff_eq_nil w).mp (w.isPath_def.mpr hnod)
+    rw [hnil] at hpos
+    simp at hpos
+  obtain ⟨a, c, hcyc, hlen, hsub⟩ := w.exists_isCycle_of_nbChain_of_not_nodup hnb hdup
+  have hg := G.egirth_le_length hcyc
+  have hcw : w.length ≤ c.length + 1 := by
+    have h1 : (w.length : ℕ∞) ≤ (c.length : ℕ∞) + 1 :=
+      hwin.trans (add_le_add hg le_rfl)
+    exact_mod_cast h1
+  rcases Nat.lt_or_ge c.length w.length with hlt | hge
+  · exact (Walk.not_closed_of_isCycle_edges_add_one hcyc hsub (by omega)).elim
+  · have hsp : List.Subperm c.edges w.edges :=
+      hcyc.isCircuit.isTrail.edges_nodup.subperm hsub
+    have hperm : w.edges.Perm c.edges := by
+      refine (hsp.perm_of_length_le ?_).symm
+      rw [Walk.length_edges, Walk.length_edges]
+      omega
+    exact Walk.isCycle_of_edges_perm hcyc hperm hpos
 
 /-- **Trails never backtrack.** Consecutive darts of a trail form a non-backtracking chain:
 a reversal `d_{i+1} = d_i.symm` would repeat the edge `d_i.edge` at two distinct positions,
