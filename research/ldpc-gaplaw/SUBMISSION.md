@@ -3,16 +3,16 @@
 Source: `ldpc-census.tex` (EN), `ldpc-census-es.tex` (ES). Both self-contained single files
 (inline TikZ figure, no external graphics). Compile: `pdflatex` ×2. 0 overfull boxes.
 
-## Venue plan (no arXiv endorser available)
+## Venue plan (no arXiv endorser; TechRxiv closed)
 
-1. **TechRxiv** (preprints.techrxiv.org) — IEEE preprint, NO endorsement, audience =
-   comms/coding engineers. PRIMARY preprint home.
-2. **Zenodo** — DOI + archives the `.alist` data and `census_pilot2.py`; cross-link to the
-   theory paper's Zenodo record (relation: `references` / `isDerivedFrom` -> Part VI DOI).
-3. **IEEE Communications Letters** — optional peer-reviewed venue (short format fits; submit
-   the EN version). Manage expectations: the paper claims no algorithmic novelty; the hook is
-   the certification layer.
-4. **arXiv cs.IT** — LATER, only if an endorser is found. Self-contained .tex uploads as-is.
+- **TechRxiv** — UNAVAILABLE as of 2026-06: submissions temporarily closed during a platform
+  transition (existing DOIs still resolve). Revisit when it reopens.
+- **arXiv cs.IT** — blocked: first cs.IT submission needs an endorser (none available).
+1. **Zenodo** (PRIMARY, works now) — DOI + archives the `.alist` data and `census_pilot2.py`;
+   cross-link to the Part VI record (relation `references` -> concept DOI 10.5281/zenodo.20648488).
+2. **IEEE Communications Letters** (short format) or **IEEE Access** (fast, open-access, APC) —
+   optional peer-reviewed credit; submit the EN version. The hook is the certification layer
+   (the paper claims no algorithmic novelty).
 
 The series theory paper (Part VI, gap-window) stays on Zenodo like Parts I-V.
 
