@@ -6,6 +6,8 @@ Authors: Carles Marín
 import Ihara.NbVanishing
 import Ihara.PathTree
 
+open Finset
+
 /-!
 # Stone B of the trace-formula gap law: the window `k ∈ {g, g+1}`
 
@@ -539,5 +541,123 @@ theorem Walk.isChain_nbRel_darts_of_isTrail {u v : V} {w : G.Walk u v} (hw : w.I
     (by simp only [List.get_eq_getElem, hedge])
   simp only [Fin.mk.injEq] at this
   omega
+
+/-! ## B-4: the counting assembly — the Stone B capstone
+
+Both sides of the gap law count rooted cycle traversals in the window. The bijection sends a
+non-tree-like closed walk (= a cycle, by B-3) rooted at a vertex to its dart list closed by
+the repeat of its first dart (a `relWalks G.nbRel` member, by B-1a/b + the seam); conversely
+a member assembles to a cycle (B-2) which is not tree-like (B-1c). -/
+
+/-- **The closed non-backtracking chain of a cycle** (B-1a + the seam): appending the repeat
+of the first dart keeps the chain non-backtracking. -/
+theorem Walk.isChain_nbRel_concat_of_isCycle [DecidableEq V] {v : V} {w : G.Walk v v}
+    (hw : w.IsCycle) (hne : w.darts ≠ []) :
+    (w.darts ++ [w.darts.head hne]).IsChain G.nbRel := by
+  have hch := Walk.isChain_nbRel_darts_of_isTrail hw.isCircuit.isTrail
+  have h3 := hw.three_le_length
+  have hdl : w.darts.length = w.length := Walk.length_darts w
+  refine List.isChain_iff_getElem.mpr fun i hi => ?_
+  rw [List.length_append, List.length_singleton] at hi
+  rcases Nat.lt_or_ge (i + 1) w.darts.length with hlt | hge
+  · rw [List.getElem_append_left (by omega), List.getElem_append_left hlt]
+    exact hch.getElem i hlt
+  · -- the seam pair: (last dart, first dart)
+    have hieq : i + 1 = w.darts.length := by omega
+    have hilt : i < w.darts.length := by omega
+    rw [List.getElem_append_left hilt, List.getElem_append_right (by omega)]
+    have hival : w.darts[i]'hilt = w.darts.getLast hne := by
+      rw [List.getLast_eq_getElem]
+      congr 1
+      omega
+    have h2val : (i + 1 - w.darts.length : ℕ) = 0 := by omega
+    constructor
+    · -- snd of the last dart = v = fst of the first dart
+      rw [hival]
+      simp only [h2val, List.getElem_singleton]
+      rw [w.getLast_darts_snd hne, w.head_darts_fst hne]
+    · -- the first dart is not the reverse of the last: their edges differ (trail, 0 ≠ i)
+      simp only [h2val, List.getElem_singleton]
+      intro hsymm
+      have hi0 : 0 < i := by omega
+      have hedge : w.edges[0]'(by rw [Walk.length_edges]; omega)
+          = w.edges[i]'(by rw [Walk.length_edges]; omega) := by
+        simp only [Walk.edges, List.getElem_map]
+        rw [← List.head_eq_getElem hne, hsymm, hival, Dart.edge_symm]
+      have hinj := List.nodup_iff_injective_get.mp hw.isCircuit.isTrail.edges_nodup
+      have := hinj (a₁ := ⟨0, by rw [Walk.length_edges]; omega⟩)
+        (a₂ := ⟨i, by rw [Walk.length_edges]; omega⟩)
+        (by simp only [List.get_eq_getElem, hedge])
+      simp only [Fin.mk.injEq] at this
+      omega
+
+/-- **B-4, the count.** In the window, the non-tree-like closed walks and the closed
+non-backtracking dart walks are equinumerous: both are rooted cycle traversals. -/
+theorem sum_card_not_treeLike_eq_sum_card_relWalks [Fintype V] [DecidableEq V]
+    [DecidableRel G.Adj] {k : ℕ} (hk : 0 < k) (hwin : (k : ℕ∞) ≤ G.egirth + 1) :
+    ∑ v : V, #((G.finsetWalkLength k v v).filter fun w => ¬ w.IsTreeLike)
+      = ∑ e : G.Dart, (relWalks G.nbRel k e e).card := by
+  rw [← Finset.card_sigma, ← Finset.card_sigma]
+  -- membership unpacking for the A side
+  have hmemA : ∀ a : Σ v : V, G.Walk v v,
+      a ∈ (Finset.univ.sigma fun v => (G.finsetWalkLength k v v).filter
+        fun w => ¬ w.IsTreeLike) → a.2.length = k ∧ a.2.IsCycle := by
+    rintro ⟨v, w⟩ ha
+    rw [Finset.mem_sigma, Finset.mem_filter, SimpleGraph.mem_finsetWalkLength_iff] at ha
+    obtain ⟨-, hlen, hnt⟩ := ha
+    refine ⟨hlen, ?_⟩
+    rcases Walk.isCycle_or_isTreeLike_window (by rw [hlen]; exact hwin) with hc | ht
+    · exact hc
+    · exact absurd ht hnt
+  have hdneA : ∀ a : Σ v : V, G.Walk v v, a.2.length = k → a.2.darts ≠ [] := by
+    intro a hlen h0
+    have := congrArg List.length h0
+    rw [Walk.length_darts, hlen] at this
+    simp at this
+    omega
+  refine Finset.card_bij
+    (fun a ha => ⟨a.2.darts.head (hdneA a (hmemA a ha).1),
+      a.2.darts ++ [a.2.darts.head (hdneA a (hmemA a ha).1)]⟩) ?_ ?_ ?_
+  · -- maps into the B side
+    rintro ⟨v, w⟩ ha
+    obtain ⟨hlen, hcyc⟩ := hmemA _ ha
+    set hne := hdneA _ hlen
+    rw [Finset.mem_sigma]
+    refine ⟨Finset.mem_univ _, mem_relWalks_of ?_ ?_ ?_ ?_⟩
+    · rw [List.length_append, List.length_singleton, Walk.length_darts, hlen]
+    · -- WIP SORRY 0: (w.darts ++ [head]).head? = some head — cons-structure computation;
+      -- route: switch the map to `Walk.firstDart` (head_darts_eq_firstDart, fst = start rfl)
+      sorry
+    · rw [List.getLast?_append_of_ne_nil _ (by simp)]
+      rfl
+    · exact Walk.isChain_nbRel_concat_of_isCycle hcyc hne
+  · -- injective
+    rintro ⟨v, w⟩ ha ⟨v', w'⟩ ha' heq
+    simp only [Sigma.mk.injEq] at heq
+    obtain ⟨hhead, hlist⟩ := heq
+    have hdarts : w.darts = w'.darts := by
+      have := congrArg (fun l => l.dropLast) (heq_iff_eq.mp hlist)
+      simpa using this
+    have hv : v = v' := by
+      have h1 := w.head_darts_fst (hdneA ⟨v, w⟩ (hmemA _ ha).1)
+      have h2 := w'.head_darts_fst (hdneA ⟨v', w'⟩ (hmemA _ ha').1)
+      rw [← h1, ← h2, hhead]
+    subst hv
+    simp only [Sigma.mk.injEq, heq_eq_eq, true_and]
+    -- WIP SORRY 1: walks with the same darts and the same start coincide.
+    -- Route: ¬Nil both (darts ≠ []); Walk.ofDarts_darts gives
+    -- ofDarts w.darts _ _ = w.copy h h' and same for w'; hdarts rewrites one ofDarts into
+    -- the other; finish with copy-cancellation (copy_copy + copy_rfl_rfl simp set), or
+    -- extract a standalone lemma `Walk.eq_of_darts_eq` (cleanest, reusable).
+    sorry
+  · -- surjective: assemble the walk from a member
+    rintro ⟨e, L⟩ hb
+    -- WIP SORRY 2: existence. W := (Walk.ofDarts L.dropLast hne hchD).copy rfl hseam exactly
+    -- as in NbVanishing's assembly (head/seam from the anatomy lemmas; chain prefix via
+    -- IsChain.getElem + getElem_dropLast). Then: W.length = k, W.IsCycle by
+    -- isCycle_of_nbChain_window (window from hwin), ¬IsTreeLike by not_isTreeLike_of_isCycle,
+    -- membership in the A-sigma; image check: W.darts = L.dropLast (darts_ofDarts), head =
+    -- L.head = e (anatomy), L.dropLast ++ [e] = L (dropLast_concat_getLast + getLast = e).
+    sorry
 
 end SimpleGraph
