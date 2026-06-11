@@ -60,8 +60,8 @@ $1 \le k \le g+1$,
 where $A$ is the adjacency matrix, $B$ the Hashimoto non-backtracking operator, and
 $p_k = \sum_i \theta_i^k$ the power sums of the roots of the matching polynomial. Below the
 girth both sides vanish; at $k \in \{g, g+1\}$ both sides count the rooted traversals of the
-shortest cycles, $2k\,c_k$; and the window is sharp---the law fails at $k = g+2$ on every
-graph we tested, including all $12\,064$ connected cyclic graphs on at most $8$ vertices.
+$k$-cycles, $2k\,c_k$; and the window is sharp---the law fails at $k = g+2$ on every
+graph we tested, including all $12\,064$ connected cyclic graphs on $4$ to $8$ vertices.
 The proof is assembled from pieces of independent use: a cycle-extraction lemma for
 non-backtracking chains; a parity lemma for edge incidences of \emph{arbitrary} closed walks
 (Mathlib's version carries a trail hypothesis its own proof does not use); an exact
@@ -118,8 +118,8 @@ and what remains.}
 \section{Introduction: a trace formula comes down a ladder}
 \label{sec:intro}
 
-Begin with the anomaly. Take the Petersen graph and run two censuses that have no obvious
-business agreeing: count all closed walks of length $k$ and subtract those that lift to
+Why should two censuses with no shared definition ever agree? Begin with the anomaly. Take
+the Petersen graph and run two censuses that have no obvious business agreeing: count all closed walks of length $k$ and subtract those that lift to
 Godsil's path tree ($\tr A^k - p_k$); separately, count the closed walks that never
 immediately backtrack ($\tr B^k$). At $k = 5$ both give $120$. At $k = 6$, both give $120$
 again. At $k = 7$ the first census jumps to $1680$---and the second collapses to $0$,
@@ -166,11 +166,11 @@ machinery of Part~IV and the Hashimoto operator of Part~III in the same file, an
 side could be stated without the other's vocabulary.
 
 % ---------------------------------------------------------------
-\section{The claim: what exactly is being subtracted?}
+\section{The claim: the law and its terms}
 \label{sec:claim}
 
-Throughout, $G$ is a finite simple graph on vertex set $V$, $A$ its adjacency matrix, and
-$g$ its girth (the length of a shortest cycle; $g \ge 3$). The matching polynomial is
+What, exactly, is being subtracted on the left side of the law? Throughout, $G$ is a finite
+simple graph on vertex set $V$, $A$ its adjacency matrix, and $g$ its girth (the length of a shortest cycle; $g \ge 3$). The matching polynomial is
 \[
 \mu_G(x) \;=\; \sum_{j \ge 0} (-1)^j\, m_j\, x^{\,n-2j},
 \]
@@ -219,7 +219,10 @@ counts the closed non-backtracking dart walks of length $k$
 paper~\cite{MarinJN2026}). The theorem is therefore a \emph{bijection of censuses}, and that
 is how it is proved. Third, the window matters: for $k \ge g+2$ the law is not merely
 unproved but \emph{false}, and visibly so (Figure~\ref{fig:window};
-Section~\ref{sec:verification}).
+Section~\ref{sec:verification})---a single exact counterexample (Petersen at $k = 7$, where
+$\tr A^7 - p_7 = 1680$ while $\tr B^7 = 0$) shows the window cannot be widened. That the
+failure is \emph{universal} beyond $g+2$ is tested across $12\,064$ graphs, not formalized:
+the theorem is the window equality, and ``sharp'' means the window cannot be extended.
 
 \begin{figure}[t]
 \centering
@@ -231,7 +234,7 @@ window $k \le 6$ the two censuses agree---both are $0$ below the girth and $120 
 $1680$ while the right side is $0$---the Petersen graph famously has no $7$-cycles, so there
 are no closed non-backtracking walks of length $7$ at all, while $1680$ closed walks of
 length $7$ already fail to be tree-like (a pentagon plus a dangling edge). Sharpness is not
-an artifact of one graph: it holds on all $12\,064$ connected cyclic graphs on $\le 8$
+an artifact of one graph: it holds on all $12\,064$ connected cyclic graphs on $4$ to $8$
 vertices (Section~\ref{sec:verification}).}
 \label{fig:window}
 \end{figure}
@@ -262,15 +265,16 @@ window (bold) and the first two failures (amber). Every entry is exact.}
 \end{table}
 
 % ---------------------------------------------------------------
-\section{Stone A: why is there nothing below the girth?}
+\section{Stone A: nothing below the girth}
 \label{sec:stoneA}
 
-Serre's \emph{Trees} taught a generation the slogan: below its girth, a graph cannot tell
-itself apart from its universal cover~\cite{Serre1980}. A formal proof cannot wave at a
+Below the girth the law reads $0 = 0$---so why is neither zero free? Serre's \emph{Trees}
+taught a generation the slogan: below its girth, a graph cannot tell itself apart from its
+universal cover~\cite{Serre1980}. A formal proof cannot wave at a
 cover; it needs the slogan as a finite witness.
 
-Below the girth the law says $0 = 0$, but neither $0$ is free. The right side asks: why is
-there no closed non-backtracking walk shorter than the shortest cycle? Classically one waves
+Take the right side first: why is there no closed non-backtracking walk shorter than the
+shortest cycle? Classically one waves
 at the universal cover; the formal proof wants a finite witness, and the witness is a
 \emph{cycle extracted from the walk itself}.
 
@@ -297,11 +301,11 @@ path tree). The gap law below the girth is then a subtraction of zeros---but eac
 theorem.
 
 % ---------------------------------------------------------------
-\section{The wall: why is a window walk forced to be a cycle?}
+\section{The wall: window walks are cycles}
 \label{sec:wall}
 
-The oldest blade in the book is Euler's, K\"onigsberg, 1736: every entrance needs an
-exit~\cite{Euler1736}. Three centuries later the same parity argument decides the case that
+Why is a closed non-backtracking walk in the window forced to be a cycle? The oldest blade
+in the book is Euler's, K\"onigsberg, 1736: every entrance needs an exit~\cite{Euler1736}. Three centuries later the same parity argument decides the case that
 modern hypotheses cannot reach.
 
 The content of the law lives at $k \in \{g, g+1\}$, and it is a \emph{structure} theorem:
@@ -362,8 +366,10 @@ no law.}
 \section{The other side, and the count that closes the bridge}
 \label{sec:count}
 
-Counting by bijection is combinatorics' oldest trust protocol: Pr\"ufer certified Cayley's
-$n^{n-2}$ by exhibiting the correspondence, one tree at a time~\cite{Prufer1918}. The gap
+When does a closed walk refuse to lift to the path tree---and why is that the very thing
+that makes it a cycle? Counting by bijection is combinatorics' oldest trust protocol:
+Pr\"ufer certified Cayley's $n^{n-2}$ by exhibiting the correspondence, one tree at a
+time~\cite{Prufer1918}. The gap
 law closes the same way, one walk at a time.
 
 The left census needs the mirror statement: in the window, a closed walk fails to lift to the
@@ -421,6 +427,7 @@ the capstone: \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} only.}
 \section{Made sure: twelve thousand graphs and three axioms}
 \label{sec:verification}
 
+If a formal proof is already certain, what work is left for twelve thousand graphs?
 Numerical evidence is a compass, not a deed: Mertens' conjecture agreed with every computer
 ever pointed at it and fell anyway~\cite{OdlyzkoTeRiele1985}. The two instruments here divide
 the labor in the opposite direction---the numerics choose the statement, the proof assistant
@@ -480,6 +487,7 @@ echo 'import Ihara.GapWindow
 \section{Where it applies: from a trace identity to a WiFi chip}
 \label{sec:applications}
 
+What does a machine-checked trace identity buy an engineer that a faster algorithm does not?
 Gallager invented LDPC codes in 1962 and the world shelved them for thirty
 years~\cite{Gallager1962}; when they returned (to WiFi, to 5G, to deep space), the girth of
 a graph had become an engineering quantity. That is where a trace identity meets a chip.
@@ -547,6 +555,8 @@ identity---are now both machine-checked, in the same repository.
 \section{The honest boundary}
 \label{sec:boundary}
 
+If the mathematics is classical, where exactly does the new contribution live?
+
 \emph{The mathematics is classical.} The trace-formula reading of the matching polynomial
 versus the Ihara zeta is implicit in the literature around
 Godsil~\cite{Godsil1981,GodsilBook}, Bass~\cite{Bass1992}, Stark--Terras~\cite{StarkTerras1996}
@@ -561,10 +571,13 @@ terms~\cite{BlakeLin2018,Dehghan2018}; none of that is formalized here, and the 
 stated is \emph{false} beyond the window.
 
 \emph{Prior formalizations.} I was unable to locate any machine-checked statement connecting
-the matching polynomial to the non-backtracking operator, in any proof assistant; searches
-on 2026-06-11/12 over Mathlib, the Lean community repositories, Isabelle's AFP and Coq
-packages found neither the law nor its ingredients ($B$ itself enters Lean in Part~III of
-this series). Such a claim can only ever be made to the best of one's knowledge.
+the matching polynomial to the non-backtracking operator, in any proof assistant. The
+priority claim rests less on a negative search than on a structural fact: the
+non-backtracking operator $B$ is, to my knowledge, formalized in no proof assistant at all
+($B$ enters Lean only in Part~III of this series), so a bridge that consumes it cannot
+predate that. Searches on 2026-06-11/12 over Mathlib, the Lean community repositories,
+Isabelle's AFP, Coq and HOL~Light found neither the law nor its ingredients. Such a claim
+can only ever be made to the best of one's knowledge.
 
 \emph{Methodology.} The formalization was carried out with AI assistance (Claude,
 Anthropic) under the discipline used throughout this series: every statement locked by exact
@@ -598,6 +611,12 @@ count its own shortest cycles by forgetting its trees. The tree side ($p_k$) is 
 universal cover speaking; the cycle side ($\tr B^k$) is the fundamental group answering. At
 what $k$---in general, not just past $g+1$---does a finite graph stop being explainable by
 its own universal cover?
+\item \emph{What the formalization saw that paper did not.} Three times in this proof the
+formal discipline forced a sharper statement than the informal one: the seam obstruction that
+forbids rotating a non-backtracking chain, the trail hypothesis that Mathlib's parity lemma
+carries but never uses, and the single point where the window hypothesis enters. Which other
+classical arguments in this circle of graph-zeta ideas hide an unused hypothesis or a silent
+rotation that only a proof assistant would expose?
 \end{enumerate}
 
 \section*{Data and code availability}

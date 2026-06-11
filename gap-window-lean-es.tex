@@ -38,7 +38,7 @@
 \newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
 
 \title{\bf Las caminatas que recuerdan los ciclos\\[4pt]
-  \large\normalfont Una ley del gap \emph{sharp} verificada a máquina entre el polinomio
+  \large\normalfont Una ley del gap exacta verificada a máquina entre el polinomio
   de matchings\\ y el espectro non-backtracking en Lean~4}
 \author{Carles Mar\'in\thanks{Formalizado con asistencia de IA (Claude, Anthropic); la
 matemática y todas las afirmaciones son responsabilidad del autor. La metodología se discute
@@ -59,15 +59,15 @@ simple finito de cuello (girth) $g$: para todo $1 \le k \le g+1$,
 \]
 donde $A$ es la matriz de adyacencia, $B$ el operador non-backtracking de Hashimoto y
 $p_k = \sum_i \theta_i^k$ las sumas de potencias de las raíces del polinomio de matchings.
-Por debajo del cuello ambos lados se anulan; en $k \in \{g, g+1\}$ ambos cuentan las
-traversales con punto base de los ciclos más cortos, $2k\,c_k$; y la ventana es exacta: la
+Por debajo del cuello ambos lados se anulan; en $k \in \{g, g+1\}$ ambos cuentan los
+recorridos con punto base de los $k$-ciclos, $2k\,c_k$; y la ventana es exacta: la
 ley falla en $k = g+2$ en todos los grafos comprobados, incluidos los $12\,064$ grafos
-conexos con ciclos de a lo sumo $8$ vértices. La prueba se ensambla con piezas de uso
+conexos con ciclos, de $4$ a $8$ vértices. La prueba se ensambla con piezas de uso
 independiente: un lema de extracción de ciclos para cadenas non-backtracking; un lema de
 paridad de incidencias para caminatas cerradas \emph{arbitrarias} (la versión de Mathlib
 lleva una hipótesis de trail que su propia prueba no usa); un recuento exacto de incidencias
 para ciclos; y un teorema de estructura: en la ventana, las caminatas cerradas
-non-backtracking, las traversales de ciclos con punto base y las caminatas cerradas que no
+non-backtracking, los recorridos de ciclos con punto base y las caminatas cerradas que no
 se elevan al árbol de caminos de Godsil son la \emph{misma} familia, contada de tres
 maneras. El teorema principal depende solo de los tres axiomas estándar. Soy exacto con la
 frontera: la matemática es clásica (Ihara, Hashimoto, Bass, Godsil; la ley es
@@ -120,8 +120,9 @@ comprobaciones, los usos y lo que queda.}
 \section{Introducción: una fórmula de traza baja por una escalera}
 \label{sec:intro}
 
-Empecemos por la anomalía. Tómese el grafo de Petersen y háganse dos censos que no tienen
-ningún motivo evidente para coincidir: cuéntense todas las caminatas cerradas de longitud
+¿Por qué habrían de coincidir dos censos que no comparten ninguna definición? Empecemos por
+la anomalía. Tómese el grafo de Petersen y háganse dos censos que no tienen ningún motivo
+evidente para coincidir: cuéntense todas las caminatas cerradas de longitud
 $k$ y réstense las que se elevan al árbol de caminos de Godsil ($\tr A^k - p_k$); por
 separado, cuéntense las caminatas cerradas que nunca retroceden inmediatamente
 ($\tr B^k$). En $k = 5$ ambos dan $120$. En $k = 6$, ambos dan $120$ de nuevo. En $k = 7$
@@ -147,8 +148,8 @@ Plancherel, la contribución del recubridor universal; en un grafo el recubridor
 un árbol, y el objeto que oye al árbol es el \emph{polinomio de matchings}: Godsil demostró
 en 1981 que las sumas de potencias de sus raíces cuentan las caminatas cerradas que se
 elevan al \emph{árbol de caminos}, las caminatas ``tree-like''~\cite{Godsil1981}, teorema
-que esta serie formalizó en la Parte~IV~\cite{MarinMoment2026}, apoyada en la realidad de
-las raíces de Heilmann y Lieb~\cite{HeilmannLieb1972} formalizada en la
+que esta serie formalizó en la Parte~IV~\cite{MarinMoment2026}, apoyada en el carácter real
+de las raíces de Heilmann y Lieb~\cite{HeilmannLieb1972} formalizada en la
 Parte~II~\cite{MarinHL2026}.
 
 Así que, llegada la Parte~V, la serie había construido por separado los dos lados de una
@@ -173,11 +174,11 @@ Parte~III en el mismo archivo, y ninguno de los dos lados podría enunciarse sin
 vocabulario del otro.
 
 % ---------------------------------------------------------------
-\section{La afirmación: ¿qué se está restando, exactamente?}
+\section{La afirmación: la ley y sus términos}
 \label{sec:claim}
 
-En todo el artículo, $G$ es un grafo simple finito con vértices $V$, $A$ su matriz de
-adyacencia y $g$ su cuello (la longitud de un ciclo más corto; $g \ge 3$). El polinomio de
+¿Qué se está restando, exactamente, en el lado izquierdo de la ley? En todo el artículo,
+$G$ es un grafo simple finito con vértices $V$, $A$ su matriz de adyacencia y $g$ su cuello (la longitud de un ciclo más corto; $g \ge 3$). El polinomio de
 matchings es
 \[
 \mu_G(x) \;=\; \sum_{j \ge 0} (-1)^j\, m_j\, x^{\,n-2j},
@@ -228,7 +229,11 @@ longitud $k$ (\lean{trace\_hashimoto\_pow}, cartografiado en el artículo
 Jacobi--Newton~\cite{MarinJN2026}). El teorema es, por tanto, una \emph{biyección de
 censos}, y así es como se demuestra. Tercera: la ventana importa: para $k \ge g+2$ la ley no
 es que esté sin demostrar: es \emph{falsa}, y visiblemente
-(Figura~\ref{fig:window}; Sección~\ref{sec:verification}).
+(Figura~\ref{fig:window}; Sección~\ref{sec:verification}); un único contraejemplo exacto
+(Petersen en $k = 7$, donde $\tr A^7 - p_7 = 1680$ mientras $\tr B^7 = 0$) muestra que la
+ventana no puede ensancharse. Que el fallo sea \emph{universal} más allá de $g+2$ está
+comprobado en $12\,064$ grafos, no formalizado: el teorema es la igualdad en la ventana, y
+``exacta'' (\emph{sharp}) significa que la ventana no puede extenderse.
 
 \begin{figure}[t]
 \centering
@@ -241,7 +246,7 @@ la violencia posible: el lado izquierdo salta a $1680$ mientras el derecho es $0
 grafo de Petersen, famosamente, no tiene $7$-ciclos, así que no existe ninguna caminata
 cerrada non-backtracking de longitud $7$, mientras que $1680$ caminatas cerradas de longitud
 $7$ ya no son tree-like (un pentágono más una arista colgante). La exactitud no es un
-artefacto de un grafo: vale en los $12\,064$ grafos conexos con ciclos de $\le 8$ vértices
+artefacto de un grafo: vale en los $12\,064$ grafos conexos con ciclos, de $4$ a $8$ vértices
 (Sección~\ref{sec:verification}).}
 \label{fig:window}
 \end{figure}
@@ -272,16 +277,16 @@ ventana (negrita) y los dos primeros fallos (ámbar). Cada entrada es exacta.}
 \end{table}
 
 % ---------------------------------------------------------------
-\section{Piedra A: ¿por qué no hay nada bajo el cuello?}
+\section{Piedra A: nada bajo el cuello}
 \label{sec:stoneA}
 
-Los \emph{Árboles} de Serre enseñaron a una generación el lema: por debajo de su cuello, un
+Bajo el cuello la ley dice $0 = 0$; ¿por qué no es gratis ninguno de los dos ceros? Los
+\emph{Árboles} de Serre enseñaron a una generación la consigna: por debajo de su cuello, un
 grafo no puede distinguirse de su recubridor universal~\cite{Serre1980}. Una prueba formal
-no puede señalar a un recubridor; necesita el lema como testigo finito.
+no puede señalar a un recubridor; necesita la consigna como testigo finito.
 
-Bajo el cuello la ley dice $0 = 0$, pero ninguno de los dos ceros es gratis. El lado derecho
-pregunta: ¿por qué no existe ninguna caminata cerrada non-backtracking más corta que el
-ciclo más corto? Clásicamente uno señala al recubridor universal; la prueba formal quiere un
+Tomemos primero el lado derecho: ¿por qué no existe ninguna caminata cerrada non-backtracking
+más corta que el ciclo más corto? Clásicamente uno señala al recubridor universal; la prueba formal quiere un
 testigo finito, y el testigo es un \emph{ciclo extraído de la propia caminata}.
 
 \begin{lemma}[extracción de ciclos; \lean{Walk.exists\_isCycle\_of\_nbChain\_of\_not\_nodup}]
@@ -298,7 +303,7 @@ Si no, el vértice de cabeza $u$ reentra en la cola; el prefijo hasta esa reentr
 camino (\lean{IsPath.takeUntil}), y la arista de cierre o bien evita el camino ---entonces
 \lean{cons\_isCycle\_iff} nos entrega el ciclo--- o bien yace sobre él, lo que obliga al
 camino a ser el único dardo invertido de la arista de entrada y contradice la cadena en su
-primer eslabón. La Piedra~A sale por palomar: una caminata cerrada non-backtracking de
+primer eslabón. La Piedra~A se sigue por el principio del palomar: una caminata cerrada non-backtracking de
 dardos de longitud $k$ presenta $k+1$ dardos cuyo último repite el primero, luego a lo sumo
 $k$ aristas distintas; el ciclo extraído necesita al menos $g$ de ellas; así que $k \ge g$
 (\lean{relWalks\_nbRel\_closed\_eq\_empty},
@@ -308,9 +313,10 @@ caminos). La ley del gap bajo el cuello es entonces una resta de ceros, pero cad
 teorema.
 
 % ---------------------------------------------------------------
-\section{El muro: ¿por qué una caminata de la ventana está obligada a ser un ciclo?}
+\section{El muro: en la ventana, toda caminata es un ciclo}
 \label{sec:wall}
 
+¿Por qué una caminata cerrada non-backtracking de la ventana está obligada a ser un ciclo?
 La cuchilla más vieja del libro es la de Euler, K\"onigsberg, 1736: toda entrada necesita
 una salida~\cite{Euler1736}. Tres siglos después, el mismo argumento de paridad decide el
 caso al que las hipótesis modernas no llegan.
@@ -363,7 +369,7 @@ rompe (Figuras~\ref{fig:window} y~\ref{fig:families}).
 \centering
 \includegraphics[width=0.92\textwidth]{gw_fig2_families}
 \caption{El teorema de estructura en una imagen. Izquierda: dentro de la ventana, la única
-caminata cerrada que el árbol de caminos no puede explicar es la traversal de un ciclo, y un
+caminata cerrada que el árbol de caminos no puede explicar es el recorrido de un ciclo, y un
 ciclo nunca retrocede: los dos censos cuentan el mismo objeto. Derecha: en $k = g+2$ aparece
 la primera \emph{piruleta}: envuelve el pentágono (no se eleva; el censo de matchings la
 cuenta) pero su cola se da la vuelta sobre sí misma (el censo non-backtracking la rechaza).
@@ -375,13 +381,14 @@ Una caminata, un solo censo, ninguna ley.}
 \section{El otro lado, y el conteo que cierra el puente}
 \label{sec:count}
 
-Contar por biyección es el protocolo de confianza más antiguo de la combinatoria: Pr\"ufer
-certificó el $n^{n-2}$ de Cayley exhibiendo la correspondencia, árbol a
-árbol~\cite{Prufer1918}. La ley del gap cierra igual, caminata a caminata.
+¿Cuándo se niega una caminata cerrada a elevarse al árbol de caminos, y por qué es eso
+justamente lo que la hace un ciclo? Contar por biyección es el protocolo de confianza más
+antiguo de la combinatoria: Pr\"ufer certificó el $n^{n-2}$ de Cayley exhibiendo la
+correspondencia, árbol a árbol~\cite{Prufer1918}. La ley del gap cierra igual, caminata a caminata.
 
 El censo izquierdo necesita el enunciado espejo: en la ventana, una caminata cerrada no se
 eleva al árbol de caminos \emph{exactamente cuando} es un ciclo. Una dirección es un cálculo
-agradable en la propia elevación: a lo largo de un ciclo la pila solo extiende, y en el paso
+agradable en la propia elevación: a lo largo de un ciclo la pila solo se extiende, y en el paso
 de cierre la raíz está en la pila pero no es su penúltima entrada, así que la retirada falla
 (\lean{Walk.not\_isTreeLike\_of\_isCycle}). La otra dirección necesitaba, sobre el papel, un
 segundo muro, y se disolvió en piezas ya probadas: si una caminata de la ventana no se
@@ -392,8 +399,10 @@ caminata es ese ciclo'' o ``falso''
 (\lean{Walk.isCycle\_or\_isTreeLike\_window}).
 
 Así que en la ventana coinciden tres familias:
-\keyeq{\{\text{caminatas NB cerradas de dardos}\} \;=\; \{\text{traversales de ciclos con
-punto base}\} \;=\; \{\text{caminatas cerradas que no se elevan}\},}
+\keyeq{\begin{aligned}
+\{\text{caminatas NB cerradas de dardos}\} \;&=\; \{\text{recorridos de ciclos con punto base}\}\\
+&=\; \{\text{caminatas cerradas que no se elevan}\},
+\end{aligned}}
 y la ley del gap es la afirmación de que la primera y la tercera tienen el mismo cardinal.
 La biyección final (\lean{sum\_card\_not\_treeLike\_eq\_sum\_card\_relWalks}) envía una
 caminata que no se eleva ---ya sabemos que es un ciclo--- a su lista de dardos cerrada con
@@ -406,6 +415,7 @@ como $p_k$: el Teorema~\ref{thm:gaplaw}.
 
 \begin{table}[t]
 \centering\small
+\resizebox{\textwidth}{!}{%
 \rowcolors{2}{ggband!35}{white}
 \begin{tabular}{@{}lll@{}}
 \toprule
@@ -425,7 +435,7 @@ como $p_k$: el Teorema~\ref{thm:gaplaw}.
 \lean{eq\_of\_darts\_eq} & una caminata está determinada por sus dardos & \S\ref{sec:count} \\
 \lean{sum\_card\_not\_treeLike\_eq\_sum\_card\_relWalks} & la biyección de censos & \S\ref{sec:count} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{Los resultados que soportan carga, todos libres de \lean{sorry} en
 \lean{Ihara/NbVanishing.lean} y \lean{Ihara/GapWindow.lean} del repositorio. Axiomas del
 teorema principal: solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.}
@@ -436,8 +446,9 @@ teorema principal: solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.soun
 \section{Asegurado: doce mil grafos y tres axiomas}
 \label{sec:verification}
 
-La evidencia numérica es una brújula, no una escritura: la conjetura de Mertens estuvo de
-acuerdo con todos los ordenadores que la miraron y cayó igualmente~\cite{OdlyzkoTeRiele1985}.
+Si una prueba formal ya es cierta, ¿qué trabajo les queda a doce mil grafos? La evidencia
+numérica es una brújula, no una escritura: la conjetura de Mertens estuvo de acuerdo con
+todos los ordenadores que la miraron y cayó igualmente~\cite{OdlyzkoTeRiele1985}.
 Los dos instrumentos se reparten aquí el trabajo en la dirección opuesta: la numérica elige
 el enunciado; el asistente de pruebas lo posee.
 
@@ -496,7 +507,8 @@ echo 'import Ihara.GapWindow
 \section{Dónde se aplica: de una identidad de trazas a un chip de WiFi}
 \label{sec:applications}
 
-Gallager inventó los códigos LDPC en 1962 y el mundo los archivó treinta
+¿Qué le da a un ingeniero una identidad de trazas verificada a máquina que un algoritmo más
+rápido no? Gallager inventó los códigos LDPC en 1962 y el mundo los archivó treinta
 años~\cite{Gallager1962}; cuando volvieron (al WiFi, al 5G, al espacio profundo), el cuello
 de un grafo se había convertido en una cantidad de ingeniería. Ahí es donde una identidad de
 trazas toca un chip.
@@ -569,6 +581,8 @@ mismo repositorio.
 \section{La frontera honesta}
 \label{sec:boundary}
 
+Si la matemática es clásica, ¿dónde vive exactamente la contribución nueva?
+
 \emph{La matemática es clásica.} La lectura como fórmula de traza del polinomio de matchings
 frente a la zeta de Ihara está implícita en la literatura en torno a
 Godsil~\cite{Godsil1981,GodsilBook}, Bass~\cite{Bass1992},
@@ -585,10 +599,13 @@ como se enuncia es \emph{falsa} más allá de la ventana.
 
 \emph{Formalizaciones previas.} No pude localizar ningún enunciado verificado a máquina que
 conecte el polinomio de matchings con el operador non-backtracking, en ningún asistente de
-pruebas; las búsquedas del 2026-06-11/12 sobre Mathlib, los repositorios de la comunidad
-Lean, el AFP de Isabelle y los paquetes de Coq no encontraron ni la ley ni sus ingredientes
-($B$ entra en Lean en la Parte~III de esta serie). Tal afirmación solo puede hacerse según
-el mejor conocimiento de uno.
+pruebas. La afirmación de prioridad descansa menos en una búsqueda negativa que en un hecho
+estructural: el operador non-backtracking $B$ no está, que yo sepa, formalizado en ningún
+asistente ($B$ entra en Lean solo en la Parte~III de esta serie), de modo que un puente que
+lo consuma no puede ser anterior. Las búsquedas del 2026-06-11/12 sobre Mathlib, los
+repositorios de la comunidad Lean, el AFP de Isabelle, Coq y HOL~Light no encontraron ni la
+ley ni sus ingredientes. Tal afirmación solo puede hacerse según el mejor conocimiento de
+uno.
 
 \emph{Metodología.} La formalización se llevó a cabo con asistencia de IA (Claude,
 Anthropic) bajo la disciplina usada en toda la serie: cada enunciado fijado por numérica
@@ -623,6 +640,13 @@ puede contar sus propios ciclos más cortos olvidando sus árboles. El lado árb
 el recubridor universal hablando; el lado ciclo ($\tr B^k$) es el grupo fundamental
 respondiendo. ¿En qué $k$ ---en general, no solo pasado $g+1$--- deja un grafo finito de ser
 explicable por su propio recubridor universal?
+\item \emph{Lo que la formalización vio y el papel no.} Tres veces en esta prueba la
+disciplina formal forzó un enunciado más afilado que el informal: la obstrucción del
+\emph{seam} que prohíbe rotar una cadena non-backtracking, la hipótesis de \emph{trail} que
+el lema de paridad de Mathlib arrastra pero nunca usa, y el punto único donde entra la
+hipótesis de ventana. ¿Qué otros argumentos clásicos de este círculo de ideas de zetas de
+grafos esconden una hipótesis no usada o una rotación silenciosa que solo un asistente de
+pruebas detectaría?
 \end{enumerate}
 
 \section*{Disponibilidad de datos y código}
