@@ -210,30 +210,59 @@ non-backtracking walk counts (used by Part VI).
 ## Repository layout
 
 ```
-RealStable.lean             RealRooted / BoundedBy predicates + closure algebra
-MatchingPoly.lean           matching polynomial μ_G, matching number, deletion recurrence
-RamanujanBound.lean         the band edge 2√(k−1) (bruhatTitsBound) and its algebra
-MSS/Basic.lean              signed adjacency matrix
-MSS/ExpectedCharpoly.lean   the average (expected) characteristic polynomial
-MSS/GodsilGutman.lean       the Godsil–Gutman identity + the ℤ/2 engine
-MSS/TwoLift.lean            Bilu–Linial 2-lift spectral decomposition
-MSS/MatchingSum.lean        matching-sum / permutation-expansion machinery
-MSS/PathTree.lean           Godsil's path tree + acyclicity
-MSS/Divisibility.lean       μ_G ∣ μ_{T(G,u)} (the divisibility brick)
-MSS/ForestComponents.lean   connected divisibility + component decomposition
-MSS/ForestRealRooted.lean   forest identity, T5/T6 real-rootedness
-MSS/HeilmannLieb.lean       interlacing/geometric real-stability engine
-MSS/HeilmannLiebBound.lean  the Ramanujan bound (Collatz–Wielandt + tree facts)
-Ihara/Bass.lean             Bass's determinant formula for the Ihara zeta (Ihara side)
-Ihara/PathTree.lean         path-tree-faithful tree-like predicate (liftSeq) + acyclic ⇒ tree-like
-Ihara/TreeLikeWalks.lean    treeLikeWalkCount, the trace-formula gap, matchingPowerSum
-Ihara/MomentBridge.lean     Paper III: the bijection tree-like walks ↔ path-tree walks
+# core
+RealStable.lean              RealRooted / BoundedBy predicates + closure algebra
+MatchingPoly.lean            matching polynomial μ_G, matching number, deletion recurrence
+RamanujanBound.lean          the band edge 2√(k−1) (bruhatTitsBound) and its algebra
 
-godsil-gutman-lean{,-es}.{tex,pdf}   Paper I (EN / ES)
-heilmann-lieb-lean{,-es}.{tex,pdf}   Paper II (EN / ES)
-path-tree-walks-lean{,-es}.{tex,pdf} Paper III (EN / ES)
-references.bib                        bibliography
-figures/                              figure scripts + PDFs + tables.tex (per paper)
+# MSS/ — Papers I–II
+MSS/Basic.lean               signed adjacency matrix
+MSS/ExpectedCharpoly.lean    the average (expected) characteristic polynomial
+MSS/GodsilGutman.lean        the Godsil–Gutman identity + the ℤ/2 engine            (Paper I)
+MSS/TwoLift.lean             Bilu–Linial 2-lift spectral decomposition             (Paper I)
+MSS/MatchingSum.lean         matching-sum / permutation-expansion machinery
+MSS/PathTree.lean            Godsil's path tree + acyclicity                       (Paper II)
+MSS/Divisibility.lean        μ_G ∣ μ_{T(G,u)} (the divisibility brick)             (Paper II)
+MSS/ForestComponents.lean    connected divisibility + component decomposition      (Paper II)
+MSS/ForestRealRooted.lean    forest identity, T5/T6 real-rootedness                (Paper II)
+MSS/HeilmannLieb.lean        interlacing/geometric real-stability engine           (Paper II)
+MSS/HeilmannLiebBound.lean   the Ramanujan bound (Collatz–Wielandt + tree facts)   (Paper II)
+
+# Ihara/ — Papers III–VI and the Ihara companions
+Ihara/PathTree.lean          path-tree-faithful tree-like predicate (liftSeq)      (Paper III)
+Ihara/MomentBridge.lean      the bijection tree-like walks ↔ path-tree walks       (Paper III)
+Ihara/TreeLikeWalks.lean     treeLikeWalkCount, below-girth lifting, matchingPowerSum (III–VI)
+Ihara/GodsilMoment.lean      matching-number deletion + derivative identities      (Paper IV)
+Ihara/MomentAssembly.lean    the moment theorem p_k = treeLikeWalkCount            (Paper IV)
+Ihara/PowerSumGenfun.lean    power-sum generating function of the matching roots   (Paper IV)
+Ihara/ResolventGenfun.lean   resolvent generating function over R⟦X⟧              (Papers IV, JN)
+Ihara/CauchyBinet.lean       the Cauchy–Binet formula                              (Paper V)
+Ihara/OrientedIncidence.lean oriented incidence matrix, N·Nᵀ = D − A              (Paper V)
+Ihara/MatrixTree.lean        reduced Laplacian = N₀·N₀ᵀ, sum-of-squared-minors     (Paper V)
+Ihara/SpanningTreeMinor.lean spanning-tree minor dichotomy (sort, not leaf-delete) (Paper V)
+Ihara/Kirchhoff.lean         det L₀ = #spanning trees (Kirchhoff)                  (Paper V)
+Ihara/NbVanishing.lean       Stone A: tr Bᵏ = 0 below the girth                    (Paper VI)
+Ihara/GapWindow.lean         the sharp gap law tr Aᵏ − p_k = tr Bᵏ (capstone)      (Paper VI)
+Ihara/NbWalkCount.lean       tr(Bᵏ) counts closed non-backtracking dart walks
+Ihara/Bass.lean              Bass's determinant formula for the Ihara zeta         (Ihara–Bass companion)
+Ihara/TraceFormula.lean      resolvent series, Jacobi adjugate, charpolyRev_logDeriv (Jacobi–Newton companion)
+Ihara/PowerSumLogDeriv.lean  Newton log-derivative (geom-series / reversed product)  (Jacobi–Newton companion)
+Ihara/ResolventDiag.lean     diagonal resolvent, charpolyRev = det(I − X·M)          (Jacobi–Newton companion)
+Ihara/AdjugateDiagMinor.lean adjugate diagonal entry = principal minor              (Jacobi–Newton companion)
+
+# papers — each with an -es Spanish edition and a compiled .pdf
+godsil-gutman-lean.tex       Paper I    — Random Signs into Matchings
+heilmann-lieb-lean.tex       Paper II   — Unfolding a Graph into a Tree
+path-tree-walks-lean.tex     Paper III  — Walks that Forget the Cycles
+moment-theorem-lean.tex      Paper IV   — When Walks Become a Spectrum
+matrix-tree-lean.tex         Paper V    — Counting Trees Without Listing Them
+gap-window-lean.tex          Paper VI   — The Walks That Remember the Cycles
+ihara-bass-lean.tex          companion  — Folding Edges into Vertices (Bass)
+jacobi-newton-lean.tex       companion  — What a Determinant's Derivative Knows
+ldpc-census.tex              applied    — Certified Short-Cycle Counts for IEEE 802.11n LDPC
+references.bib               bibliography
+figures/                     figure scripts + PDFs + per-paper tables.tex
+research/                    numerical locks, sweeps, the LDPC census pipeline
 ```
 
 ## Building
@@ -244,7 +273,8 @@ Requires [`elan`](https://github.com/leanprover/elan). The toolchain is pinned i
 
 ```bash
 lake exe cache get      # prebuilt Mathlib oleans (recommended)
-lake build              # RealStable, MatchingPoly, RamanujanBound, MSS/*
+lake build              # core, MSS/* (Papers I–II)
+lake build Ihara        # Ihara/* (Papers III–VI and the companions)
 ```
 
 Axiom footprint of the headline theorems:
