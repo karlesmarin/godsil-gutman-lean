@@ -219,7 +219,7 @@ theorem Walk.not_isTreeLike_of_isCycle [DecidableEq V] {v : V} {c : G.Walk v v}
     have h1 : c.support.getLast? = some v := by
       rw [List.getLast?_eq_getLast_of_ne_nil (by simp), Walk.getLast_support]
     have h2 : c.support.getLast? = c.support.tail.getLast? := by
-      conv_lhs => rw [Walk.support_eq_cons, ← List.singleton_append]
+      conv_lhs => rw [← Walk.cons_tail_support, ← List.singleton_append]
       exact List.getLast?_append_of_ne_nil _ htne
     rw [h2, List.getLast?_eq_getLast_of_ne_nil htne, Option.some.injEq] at h1
     exact h1
@@ -303,7 +303,7 @@ theorem Walk.isCycle_of_edges_perm [DecidableEq V] {v a : V} {w : G.Walk v v}
   -- a duplicated vertex x in the tail
   obtain ⟨x, hx2⟩ : ∃ x, 2 ≤ w.support.tail.count x := by
     by_contra hno
-    push_neg at hno
+    push Not at hno
     exact htail (List.nodup_iff_count_le_one.mpr fun y => by have := hno y; omega)
   have hxtail : x ∈ w.support.tail := List.count_pos_iff.mp (by omega)
   have hxsupp : x ∈ w.support := List.mem_of_mem_tail hxtail
@@ -549,6 +549,18 @@ non-tree-like closed walk (= a cycle, by B-3) rooted at a vertex to its dart lis
 the repeat of its first dart (a `relWalks G.nbRel` member, by B-1a/b + the seam); conversely
 a member assembles to a cycle (B-2) which is not tree-like (B-1c). -/
 
+/-- A walk is determined by its dart list (same endpoints): structural induction, the middle
+vertex is recovered from the first dart. -/
+theorem Walk.eq_of_darts_eq : ∀ {u v : V} (p q : G.Walk u v), p.darts = q.darts → p = q
+  | _, _, .nil, .nil, _ => rfl
+  | _, _, .nil, .cons _ _, h => by simp at h
+  | _, _, .cons _ _, .nil, h => by simp at h
+  | _, _, .cons hp p', .cons hq q', h => by
+    rw [Walk.darts_cons, Walk.darts_cons] at h
+    injection h with h1 h2
+    obtain rfl : _ = _ := congrArg (fun d : G.Dart => d.toProd.2) h1
+    rw [Walk.eq_of_darts_eq p' q' h2]
+
 /-- **The closed non-backtracking chain of a cycle** (B-1a + the seam): appending the repeat
 of the first dart keeps the chain non-backtracking. -/
 theorem Walk.isChain_nbRel_concat_of_isCycle [DecidableEq V] {v : V} {w : G.Walk v v}
@@ -575,7 +587,7 @@ theorem Walk.isChain_nbRel_concat_of_isCycle [DecidableEq V] {v : V} {w : G.Walk
     · -- snd of the last dart = v = fst of the first dart
       rw [hival]
       simp only [h2val, List.getElem_singleton]
-      rw [w.getLast_darts_snd hne, w.head_darts_fst hne]
+      simp
     · -- the first dart is not the reverse of the last: their edges differ (trail, 0 ≠ i)
       simp only [h2val, List.getElem_singleton]
       intro hsymm
@@ -625,9 +637,7 @@ theorem sum_card_not_treeLike_eq_sum_card_relWalks [Fintype V] [DecidableEq V]
     rw [Finset.mem_sigma]
     refine ⟨Finset.mem_univ _, mem_relWalks_of ?_ ?_ ?_ ?_⟩
     · rw [List.length_append, List.length_singleton, Walk.length_darts, hlen]
-    · -- WIP SORRY 0: (w.darts ++ [head]).head? = some head — cons-structure computation;
-      -- route: switch the map to `Walk.firstDart` (head_darts_eq_firstDart, fst = start rfl)
-      sorry
+    · rw [List.head?_eq_some_head (by simp), List.head_append_of_ne_nil hne]
     · rw [List.getLast?_append_of_ne_nil _ (by simp)]
       rfl
     · exact Walk.isChain_nbRel_concat_of_isCycle hcyc hne
@@ -639,25 +649,101 @@ theorem sum_card_not_treeLike_eq_sum_card_relWalks [Fintype V] [DecidableEq V]
       have := congrArg (fun l => l.dropLast) (heq_iff_eq.mp hlist)
       simpa using this
     have hv : v = v' := by
-      have h1 := w.head_darts_fst (hdneA ⟨v, w⟩ (hmemA _ ha).1)
-      have h2 := w'.head_darts_fst (hdneA ⟨v', w'⟩ (hmemA _ ha').1)
+      have h1 : (w.darts.head (hdneA ⟨v, w⟩ (hmemA _ ha).1)).fst = v := by simp
+      have h2 : (w'.darts.head (hdneA ⟨v', w'⟩ (hmemA _ ha').1)).fst = v' := by simp
       rw [← h1, ← h2, hhead]
     subst hv
     simp only [Sigma.mk.injEq, heq_eq_eq, true_and]
-    -- WIP SORRY 1: walks with the same darts and the same start coincide.
-    -- Route: ¬Nil both (darts ≠ []); Walk.ofDarts_darts gives
-    -- ofDarts w.darts _ _ = w.copy h h' and same for w'; hdarts rewrites one ofDarts into
-    -- the other; finish with copy-cancellation (copy_copy + copy_rfl_rfl simp set), or
-    -- extract a standalone lemma `Walk.eq_of_darts_eq` (cleanest, reusable).
-    sorry
+    exact Walk.eq_of_darts_eq w w' hdarts
   · -- surjective: assemble the walk from a member
     rintro ⟨e, L⟩ hb
-    -- WIP SORRY 2: existence. W := (Walk.ofDarts L.dropLast hne hchD).copy rfl hseam exactly
-    -- as in NbVanishing's assembly (head/seam from the anatomy lemmas; chain prefix via
-    -- IsChain.getElem + getElem_dropLast). Then: W.length = k, W.IsCycle by
-    -- isCycle_of_nbChain_window (window from hwin), ¬IsTreeLike by not_isTreeLike_of_isCycle,
-    -- membership in the A-sigma; image check: W.darts = L.dropLast (darts_ofDarts), head =
-    -- L.head = e (anatomy), L.dropLast ++ [e] = L (dropLast_concat_getLast + getLast = e).
-    sorry
+    rw [Finset.mem_sigma] at hb
+    obtain ⟨-, hL⟩ := hb
+    have hch := isChain_of_mem_relWalks hL
+    have hlen := length_of_mem_relWalks hL
+    have hhead := head?_of_mem_relWalks hL
+    have hlast := getLast?_of_mem_relWalks hL
+    cases L with
+    | nil => simp at hhead
+    | cons d l =>
+      simp only [List.head?_cons, Option.some.injEq] at hhead
+      subst hhead
+      have hlf : (d :: l).length = k + 1 := hlen
+      have hlne : l ≠ [] := by
+        intro h0
+        rw [h0] at hlf
+        simp at hlf
+        omega
+      have hne : (d :: l).dropLast ≠ [] := by
+        rw [List.dropLast_cons_of_ne_nil hlne]
+        exact List.cons_ne_nil _ _
+      have hchD : ((d :: l).dropLast).IsChain G.DartAdj := by
+        refine List.isChain_iff_getElem.mpr fun i hi => ?_
+        simp only [List.getElem_dropLast]
+        exact (hch.getElem i (by simp only [List.length_dropLast] at hi; omega)).1
+      have hhead2 : ((d :: l).dropLast).head hne = d := by
+        have h1 : ((d :: l).dropLast).head? = some d := by
+          rw [List.dropLast_cons_of_ne_nil hlne]
+          rfl
+        rw [List.head?_eq_some_head hne, Option.some.injEq] at h1
+        exact h1
+      have hgl : (d :: l).getLast (by simp) = d := by
+        rw [List.getLast?_eq_getLast_of_ne_nil (by simp), Option.some.injEq] at hlast
+        exact hlast
+      -- the dart at the closing position repeats `d`
+      have hdk : (d :: l)[k]'(by rw [hlf]; omega) = d := by
+        have hgi := List.getLast_eq_getElem (l := d :: l) (by simp)
+        rw [hgi] at hgl
+        simpa [hlf] using hgl
+      have hidx := hch.getElem (k - 1) (by rw [hlf]; omega)
+      have hki : k - 1 + 1 = k := by omega
+      have hidx' : G.nbRel ((d :: l)[k - 1]'(by rw [hlf]; omega)) d := by
+        simp only [hki, hdk] at hidx
+        exact hidx
+      have hgl2 : ((d :: l).dropLast).getLast hne = (d :: l)[k - 1]'(by rw [hlf]; omega) := by
+        rw [List.getLast_eq_getElem]
+        have h3 : (d :: l).dropLast.length - 1 = k - 1 := by
+          rw [List.length_dropLast, hlf]
+          omega
+        simp only [List.getElem_dropLast, h3]
+      have hseam : (((d :: l).dropLast).getLast hne).snd = d.fst := by
+        rw [hgl2]
+        exact hidx'.1
+      set W : G.Walk d.fst d.fst :=
+        (Walk.ofDarts _ hne hchD).copy (by rw [hhead2]) hseam with hW
+      have hWdarts : W.darts = (d :: l).dropLast := by
+        rw [hW, Walk.darts_copy, Walk.darts_ofDarts]
+      have hWlen : W.length = k := by
+        rw [hW, Walk.length_copy, Walk.length_ofDarts, List.length_dropLast, hlf]
+        omega
+      have hWnb : W.darts.IsChain G.nbRel := by
+        rw [hWdarts]
+        refine List.isChain_iff_getElem.mpr fun i hi => ?_
+        simp only [List.getElem_dropLast]
+        exact hch.getElem i (by simp only [List.length_dropLast] at hi; omega)
+      have hWcyc : W.IsCycle :=
+        Walk.isCycle_of_nbChain_window hWnb (by omega) (by rw [hWlen]; exact hwin)
+      refine ⟨⟨d.fst, W⟩, ?_, ?_⟩
+      · rw [Finset.mem_sigma, Finset.mem_filter, SimpleGraph.mem_finsetWalkLength_iff]
+        exact ⟨Finset.mem_univ _, hWlen, Walk.not_isTreeLike_of_isCycle hWcyc⟩
+      · -- the image is the original member
+        have hfin : (d :: l).dropLast ++ [d] = d :: l := by
+          have h := List.dropLast_concat_getLast (l := d :: l) (by simp)
+          rwa [hgl] at h
+        refine Sigma.ext (by simp only [hWdarts, hhead2]) (heq_of_eq ?_)
+        simp only [hWdarts, hhead2]
+        exact hfin
+
+/-! ## The Stone B capstone: the gap law on the full window -/
+
+/-- **STONE B / Part III capstone.** On the whole window `1 ≤ k ≤ girth + 1` the
+trace-formula gap law holds: `tr(Aᵏ) − p_k`'s combinatorial form equals the Hashimoto trace,
+`treeLikeGap k = tr(Bᵏ)`. Below the girth both sides vanish (Stone A); at `k ∈ {g, g+1}`
+both count the rooted cycle traversals (`2k·c_k`). -/
+theorem treeLikeGap_eq_trace_hashimoto [Fintype V] [DecidableEq V] [DecidableRel G.Adj]
+    {k : ℕ} (hk : 0 < k) (hwin : (k : ℕ∞) ≤ G.egirth + 1) :
+    G.treeLikeGap k = ((G.hashimoto ℤ) ^ k).trace := by
+  rw [treeLikeGap_eq_card_not_treeLike, trace_hashimoto_pow, ← Nat.cast_sum,
+    sum_card_not_treeLike_eq_sum_card_relWalks hk hwin]
 
 end SimpleGraph

@@ -1,0 +1,5 @@
+import Ihara.GapWindow
+#print axioms SimpleGraph.treeLikeGap_eq_trace_hashimoto
+#print axioms SimpleGraph.sum_card_not_treeLike_eq_sum_card_relWalks
+#print axioms SimpleGraph.Walk.eq_of_darts_eq
+#print axioms SimpleGraph.Walk.isChain_nbRel_concat_of_isCycle
