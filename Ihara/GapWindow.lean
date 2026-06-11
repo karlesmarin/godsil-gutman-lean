@@ -128,6 +128,44 @@ theorem Walk.countP_edges_of_isCycle [DecidableEq V] {u x : V} {c : G.Walk u u}
   · intro y hy
     exact Sym2.congr_right.mp (Sym2.other_spec' _)
 
+/-! ## W4: a closed walk is never "a cycle plus one extra edge slot"
+
+The Stone B case `|C| = g, k = g+1` dies here: if a closed walk's edge multiset were a
+cycle's edges plus a single extra slot `f`, then any endpoint `x` of `f` would have odd
+incidence count (`2 + 1` if `x` lies on the cycle, `0 + 1` if not) — contradicting the
+parity lemma W1. Note: no trail or non-backtracking hypothesis is needed; parity alone
+kills the case. -/
+
+/-- **W4.** No closed walk has edge multiset = (edges of a cycle) + one extra slot. -/
+theorem Walk.not_closed_of_isCycle_edges_add_one [DecidableEq V] {v a : V} {w : G.Walk v v}
+    {c : G.Walk a a} (hc : c.IsCycle) (hsub : c.edges ⊆ w.edges)
+    (hlen : w.length = c.length + 1) : False := by
+  have hnd : c.edges.Nodup := hc.isCircuit.isTrail.edges_nodup
+  -- multiset surgery: w.edges = f ::ₘ c.edges for a single extra slot f
+  have hsp : (c.edges : Multiset (Sym2 V)) ≤ (w.edges : Multiset (Sym2 V)) :=
+    Multiset.coe_le.mpr (hnd.subperm hsub)
+  have hsac := Multiset.sub_add_cancel hsp
+  have hcards := congrArg Multiset.card hsac
+  rw [Multiset.card_add] at hcards
+  simp only [Multiset.coe_card, Walk.length_edges] at hcards
+  have hcard1 : ((w.edges : Multiset (Sym2 V)) - (c.edges : Multiset (Sym2 V))).card = 1 := by
+    omega
+  obtain ⟨f, hf⟩ := Multiset.card_eq_one.mp hcard1
+  have hw : (w.edges : Multiset (Sym2 V)) = f ::ₘ (c.edges : Multiset (Sym2 V)) := by
+    rw [← hsac, hf, Multiset.singleton_add]
+  obtain ⟨x, hxf⟩ : ∃ x, x ∈ f := Sym2.ind (fun y z => ⟨y, Sym2.mem_mk_left y z⟩) f
+  -- the incidence count at x is odd, contradicting W1
+  have heven := w.even_countP_edges_of_closed x
+  have hcnt : w.edges.countP (fun e => x ∈ e)
+      = c.edges.countP (fun e => x ∈ e) + 1 := by
+    have hmc := congrArg (Multiset.countP fun e => decide (x ∈ e)) hw
+    simpa [Multiset.countP_cons, hxf] using hmc
+  by_cases hxs : x ∈ c.support
+  · rw [hcnt, Walk.countP_edges_of_isCycle hc hxs, Nat.even_iff] at heven
+    omega
+  · rw [hcnt, Walk.countP_edges_eq_zero_of_notMem_support hxs, Nat.even_iff] at heven
+    omega
+
 /-- **Trails never backtrack.** Consecutive darts of a trail form a non-backtracking chain:
 a reversal `d_{i+1} = d_i.symm` would repeat the edge `d_i.edge` at two distinct positions,
 contradicting `edges_nodup`. This gives every cycle (in particular) its NB chain. -/
