@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Carles Marín
 -/
 import Ihara.NbVanishing
+import Ihara.PathTree
 
 /-!
 # Stone B of the trace-formula gap law: the window `k ∈ {g, g+1}`
@@ -39,6 +40,52 @@ Numerical locks: 12 064-graph exhaustive sweep + four deployed IEEE 802.11n Tann
 (`research/ldpc-gaplaw/`). Closing Stone B makes the LDPC short-cycle census theorem-backed
 end to end.
 -/
+
+/-! ## B-1b: the `relWalks` membership constructor (converse anatomy) -/
+
+section RelWalks
+
+variable {V : Type*} [Fintype V] [DecidableEq V] {r : V → V → Prop} [DecidableRel r]
+
+/-- Constructor for `relWalks` membership: a list of the right length, endpoints and chain
+is a member. Converse of the anatomy lemmas of `Ihara/NbVanishing.lean`. -/
+theorem mem_relWalks_of {k : ℕ} {i j : V} {w : List V} (hlen : w.length = k + 1)
+    (hhead : w.head? = some i) (hlast : w.getLast? = some j) (hch : w.IsChain r) :
+    w ∈ relWalks r k i j := by
+  induction k generalizing i w with
+  | zero =>
+    rw [relWalks]
+    cases w with
+    | nil => simp at hhead
+    | cons a as =>
+      simp only [List.head?_cons, Option.some.injEq] at hhead
+      subst hhead
+      have : as = [] := by
+        have := hlen
+        simp only [List.length_cons, Nat.add_left_inj] at this
+        exact List.length_eq_zero_iff.mp this
+      subst this
+      simp only [List.getLast?_singleton, Option.some.injEq] at hlast
+      subst hlast
+      simp
+  | succ k ih =>
+    cases w with
+    | nil => simp at hhead
+    | cons a as =>
+      simp only [List.head?_cons, Option.some.injEq] at hhead
+      subst hhead
+      cases as with
+      | nil => simp at hlen
+      | cons b bs =>
+        obtain ⟨hab, hch'⟩ := List.isChain_cons_cons.mp hch
+        rw [relWalks, Finset.mem_biUnion]
+        refine ⟨b, Finset.mem_univ b, ?_⟩
+        rw [if_pos hab, Finset.mem_map]
+        refine ⟨b :: bs, ih ?_ rfl ?_ hch', rfl⟩
+        · simpa using hlen
+        · simpa using hlast
+
+end RelWalks
 
 namespace SimpleGraph
 
@@ -127,6 +174,90 @@ theorem Walk.countP_edges_of_isCycle [DecidableEq V] {u x : V} {c : G.Walk u u}
     exact Sym2.other_spec' (hmem e he)
   · intro y hy
     exact Sym2.congr_right.mp (Sym2.other_spec' _)
+
+/-! ## B-1c: a cycle is not tree-like
+
+The lift of a cycle extends along its (distinct) support; at the closing step the root `v`
+is in the stack but is not the penultimate vertex, so the retreat fails. -/
+
+/-- Fresh vertices extend the lift stack monotonically: processing a block disjoint from the
+stack appends it. -/
+theorem liftSeq_append_of_nodup [DecidableEq V] (fresh rest stack : List V)
+    (hnd : (stack ++ fresh).Nodup) :
+    liftSeq (fresh ++ rest) stack = liftSeq rest (stack ++ fresh) := by
+  induction fresh generalizing stack with
+  | nil => simp
+  | cons c cs ih =>
+    have hcm : c ∉ stack := fun h =>
+      (List.disjoint_of_nodup_append hnd) h (List.mem_cons_self ..)
+    rw [List.cons_append, liftSeq_cons, if_neg hcm]
+    have hnd' : ((stack ++ [c]) ++ cs).Nodup := by
+      rw [List.append_assoc]
+      simpa using hnd
+    rw [ih (stack ++ [c]) hnd', List.append_assoc]
+    rfl
+
+/-- **B-1c.** A cycle is not tree-like. -/
+theorem Walk.not_isTreeLike_of_isCycle [DecidableEq V] {v : V} {c : G.Walk v v}
+    (hc : c.IsCycle) : ¬ c.IsTreeLike := by
+  intro ht
+  rw [Walk.IsTreeLike] at ht
+  have htnd : c.support.tail.Nodup := hc.support_nodup
+  have h3 := hc.three_le_length
+  have htlen : c.support.tail.length = c.length := by
+    rw [List.length_tail, Walk.length_support]
+    omega
+  have htne : c.support.tail ≠ [] := by
+    intro h0
+    rw [h0] at htlen
+    simp at htlen
+    omega
+  -- the tail splits as front ++ [v] with v ∉ front
+  have hlastv : c.support.tail.getLast htne = v := by
+    have h1 : c.support.getLast? = some v := by
+      rw [List.getLast?_eq_getLast_of_ne_nil (by simp), Walk.getLast_support]
+    have h2 : c.support.getLast? = c.support.tail.getLast? := by
+      conv_lhs => rw [Walk.support_eq_cons, ← List.singleton_append]
+      exact List.getLast?_append_of_ne_nil _ htne
+    rw [h2, List.getLast?_eq_getLast_of_ne_nil htne, Option.some.injEq] at h1
+    exact h1
+  have hsplit : c.support.tail.dropLast ++ [c.support.tail.getLast htne]
+      = c.support.tail := List.dropLast_concat_getLast htne
+  have hvf : v ∉ c.support.tail.dropLast := by
+    intro h
+    have hd := List.disjoint_of_nodup_append (hsplit ▸ htnd)
+    exact hd h (List.mem_singleton.mpr hlastv.symm)
+  have hfnd : c.support.tail.dropLast.Nodup := htnd.sublist (List.dropLast_sublist _)
+  -- run the lift: the fresh front extends the stack
+  have hndsf : ([v] ++ c.support.tail.dropLast).Nodup := by
+    rw [List.singleton_append, List.nodup_cons]
+    exact ⟨hvf, hfnd⟩
+  rw [← hsplit, hlastv, liftSeq_append_of_nodup _ _ _ hndsf, liftSeq_cons,
+    if_pos (by simp : v ∈ [v] ++ c.support.tail.dropLast)] at ht
+  -- the retreat condition fails: the penultimate of the stack is not the root
+  have hflen : c.support.tail.dropLast.length = c.length - 1 := by
+    rw [List.length_dropLast, htlen]
+  have hfne : c.support.tail.dropLast ≠ [] := by
+    intro h0
+    rw [h0] at hflen
+    simp at hflen
+    omega
+  have hfdl : c.support.tail.dropLast.dropLast ≠ [] := by
+    intro h0
+    have := congrArg List.length h0
+    rw [List.length_dropLast, hflen] at this
+    simp at this
+    omega
+  rw [List.dropLast_append_of_ne_nil hfne, List.getLast?_append_of_ne_nil _ hfdl] at ht
+  have hcond : c.support.tail.dropLast.dropLast.getLast? ≠ some v := by
+    rw [List.getLast?_eq_getLast_of_ne_nil hfdl]
+    intro hsome
+    rw [Option.some.injEq] at hsome
+    have hmem := List.getLast_mem hfdl
+    rw [hsome] at hmem
+    exact hvf ((List.dropLast_sublist _).subset hmem)
+  rw [if_neg hcond] at ht
+  simp at ht
 
 /-! ## W3: a closed trail on exactly a cycle's edges is that cycle
 
@@ -353,6 +484,43 @@ theorem Walk.isCycle_of_nbChain_window [DecidableEq V] {v : V} {w : G.Walk v v}
       rw [Walk.length_edges, Walk.length_edges]
       omega
     exact Walk.isCycle_of_edges_perm hcyc hperm hpos
+
+/-! ## B-3: in the window, every closed walk is a cycle or tree-like
+
+No `liftSeq` induction needed: if the walk is not tree-like its edge-support contains a
+cycle (`isTreeLike_of_acyclic`, contrapositive); mapping that cycle into `G`
+(`edges_map_hom_subset_edges`) puts us exactly in the W3/W4 dichotomy — `|C| = k` makes the
+walk that cycle, `|C| = k−1` is impossible by parity. -/
+
+/-- **B-3.** A closed walk of length at most `girth + 1` is a cycle or tree-like. -/
+theorem Walk.isCycle_or_isTreeLike_window [DecidableEq V] {v : V} {w : G.Walk v v}
+    (hwin : (w.length : ℕ∞) ≤ G.egirth + 1) :
+    w.IsCycle ∨ w.IsTreeLike := by
+  by_cases hnc : w.IsCycle
+  · exact Or.inl hnc
+  refine Or.inr (w.isTreeLike_of_acyclic ?_)
+  intro x C' hC'
+  have hCcyc : (C'.map w.toSubgraph.hom).IsCycle := hC'.map Subgraph.hom_injective
+  have hsub : (C'.map w.toSubgraph.hom).edges ⊆ w.edges :=
+    w.edges_map_hom_subset_edges C'
+  have hg := G.egirth_le_length hCcyc
+  have hnd : (C'.map w.toSubgraph.hom).edges.Nodup :=
+    hCcyc.isCircuit.isTrail.edges_nodup
+  have hClen : (C'.map w.toSubgraph.hom).length ≤ w.length := by
+    have h1 := (hnd.subperm hsub).length_le
+    rwa [Walk.length_edges, Walk.length_edges] at h1
+  have hcw : w.length ≤ (C'.map w.toSubgraph.hom).length + 1 := by
+    have h1 : (w.length : ℕ∞) ≤ ((C'.map w.toSubgraph.hom).length : ℕ∞) + 1 :=
+      hwin.trans (add_le_add hg le_rfl)
+    exact_mod_cast h1
+  rcases Nat.lt_or_ge (C'.map w.toSubgraph.hom).length w.length with hlt | hge
+  · exact Walk.not_closed_of_isCycle_edges_add_one hCcyc hsub (by omega)
+  · have hperm : w.edges.Perm (C'.map w.toSubgraph.hom).edges := by
+      refine ((hnd.subperm hsub).perm_of_length_le ?_).symm
+      rw [Walk.length_edges, Walk.length_edges]
+      omega
+    have h3 := hCcyc.three_le_length
+    exact hnc (Walk.isCycle_of_edges_perm hCcyc hperm (by omega))
 
 /-- **Trails never backtrack.** Consecutive darts of a trail form a non-backtracking chain:
 a reversal `d_{i+1} = d_i.symm` would repeat the edge `d_i.edge` at two distinct positions,
