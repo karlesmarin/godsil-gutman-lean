@@ -45,12 +45,12 @@ papers:
   the matching polynomial and the non-backtracking spectrum, fusing the tree side (Parts III–IV)
   and the Ihara/Bass companion in one file. Below the girth both sides vanish; at `k ∈ {g, g+1}`
   both count the `k`-cycles `2k·c_k`; sharp at `k = g+2`. `sorry`-free, three standard axioms.
-  DOI [10.5281/zenodo.20648489](https://doi.org/10.5281/zenodo.20648489). EN + ES.
+  DOI [10.5281/zenodo.20648488](https://doi.org/10.5281/zenodo.20648488) (concept, latest version). EN + ES.
 - **Applied companion — *Certified Short-Cycle Counts for the IEEE 802.11n (WiFi) LDPC Codes***
   ([`ldpc-census.pdf`](ldpc-census.pdf)): the gap law applied as a **certified census** of the
   shortest cycles of the four deployed WiFi LDPC codes (`n = 648`), cross-checked by three
-  mutually independent routes (NB-trace, gap law, enumeration). EN + ES. *(Zenodo / TechRxiv
-  forthcoming.)*
+  mutually independent routes (NB-trace, gap law, enumeration). EN + ES.
+  DOI [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
 
 A companion strand formalizes the **Ihara side** of spectral graph theory:
 
@@ -345,8 +345,14 @@ Paper II figures and SageMath cross-checks:
 @misc{Marin2026GapWindowLean,
   author = {Mar\'in, Carles},
   title  = {The Walks That Remember the Cycles: A Machine-Checked Sharp Gap Law between the Matching Polynomial and the Non-Backtracking Spectrum in Lean 4},
-  year   = {2026}, doi = {10.5281/zenodo.20648489},
-  note   = {Part VI. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+  year   = {2026}, doi = {10.5281/zenodo.20648488},
+  note   = {Part VI (concept DOI, latest version). \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026LDPCCensus,
+  author = {Mar\'in, Carles},
+  title  = {Certified Short-Cycle Counts for the IEEE 802.11n (WiFi) LDPC Codes},
+  year   = {2026}, doi = {10.5281/zenodo.20649056},
+  note   = {Applied companion. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
 
@@ -358,7 +364,8 @@ Part III [10.5281/zenodo.20600326](https://doi.org/10.5281/zenodo.20600326),
 Part IV [10.5281/zenodo.20613247](https://doi.org/10.5281/zenodo.20613247),
 Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746),
 Jacobi–Newton [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470),
-Part VI [10.5281/zenodo.20648489](https://doi.org/10.5281/zenodo.20648489).
+Part VI [10.5281/zenodo.20648488](https://doi.org/10.5281/zenodo.20648488),
+Applied census [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
 
 ## Author and license
 

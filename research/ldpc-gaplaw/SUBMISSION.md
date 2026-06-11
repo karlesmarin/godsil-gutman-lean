@@ -8,8 +8,9 @@ Source: `ldpc-census.tex` (EN), `ldpc-census-es.tex` (ES). Both self-contained s
 - **TechRxiv** — UNAVAILABLE as of 2026-06: submissions temporarily closed during a platform
   transition (existing DOIs still resolve). Revisit when it reopens.
 - **arXiv cs.IT** — blocked: first cs.IT submission needs an endorser (none available).
-1. **Zenodo** (PRIMARY, works now) — DOI + archives the `.alist` data and `census_pilot2.py`;
-   cross-link to the Part VI record (relation `references` -> concept DOI 10.5281/zenodo.20648488).
+1. **Zenodo** — ✅ **PUBLISHED 2026-06-11: DOI 10.5281/zenodo.20649056** (concept 20649055).
+   PDFs EN+ES + `ldpc-census-data.zip` (.alist + pipeline + outputs); `references` -> Part VI
+   concept DOI 10.5281/zenodo.20648488; `isSupplementedBy` -> GitHub.
 2. **IEEE Communications Letters** (short format) or **IEEE Access** (fast, open-access, APC) —
    optional peer-reviewed credit; submit the EN version. The hook is the certification layer
    (the paper claims no algorithmic novelty).
