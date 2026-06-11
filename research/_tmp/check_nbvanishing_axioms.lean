@@ -1,7 +1,6 @@
 import Ihara.NbVanishing
 
 #print axioms SimpleGraph.Walk.exists_isCycle_of_nbChain_of_not_nodup
-#print axioms SimpleGraph.exists_walk_of_dartChain
 #print axioms SimpleGraph.relWalks_nbRel_closed_eq_empty
 #print axioms SimpleGraph.trace_hashimoto_pow_eq_zero_of_lt_egirth
 #print axioms isChain_of_mem_relWalks

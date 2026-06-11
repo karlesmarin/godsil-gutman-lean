@@ -12,35 +12,38 @@ import Ihara.TreeLikeWalks
 Part III's final composition is the sharp gap law `tr(Aᵏ) − p_k = tr(Bᵏ)` for `1 ≤ k ≤ g+1`
 (`g` the girth). Numerically locked twice: on the six named graphs
 (`research/_tmp/traceformula_lock.py`) and exhaustively on ALL 12 064 connected cyclic graphs
-with 4–8 vertices (`research/_tmp/gaplaw_sweep.py`, Sage `nauty_geng` sweep: 0 violations in
-the window, 0 sharpness exceptions at `g+2`). This file lands **Stone A**, the below-girth
-third: for `1 ≤ k < g` both sides vanish — the matching side by
-`treeLikeGap_eq_zero_of_lt_egirth` (already proved), and the non-backtracking side because
-**a closed non-backtracking walk shorter than the girth cannot exist**.
+with 4–8 vertices (`research/_tmp/gaplaw_sweep.py`: 0 violations in the window, 0 sharpness
+exceptions at `g+2`); field-checked on the four deployed IEEE 802.11n LDPC Tanner graphs
+(`research/ldpc-gaplaw/`). This file lands **Stone A**, the below-girth third: for
+`1 ≤ k < g` both sides vanish — the matching side by `treeLikeGap_eq_zero_of_lt_egirth`
+(already proved), and the non-backtracking side because **a closed non-backtracking walk
+shorter than the girth cannot exist**.
 
 ## The crux (`Walk.exists_isCycle_of_nbChain_of_not_nodup`)
 
 A walk whose dart list is a `Chain' G.nbRel` (no two consecutive darts mutually reverse) and
-whose support repeats a vertex contains a genuine cycle of length `≤` its own length. The proof
-is structural induction on the walk, NOT the classical max-distance argument:
+whose support repeats a vertex contains a genuine cycle, of length `≤` the walk's length and
+with edges among the walk's edges. Structural induction, NOT the classical max-distance
+argument:
 
-* `w = cons h p` with `p.support.Nodup` failing → recurse into `p` (the chain restricts by
-  `tail`).
+* `w = cons h p` with `p.support.Nodup` failing → recurse into `p`.
 * `w = cons h p` with `p.support.Nodup` and `u ∈ p.support` → `c := p.takeUntil u` is a path
   (`IsPath.takeUntil`). Either the closing edge `s(u, u₁)` avoids `c.edges` — then `cons h c`
   is a cycle by `cons_isCycle_iff` — or `s(u, u₁) ∈ c.edges`, which by
   `IsPath.eq_penultimate_of_mem_edges` pins `c` to the single dart `(u₁, u) = (dart h).symm`
   and contradicts the non-backtracking chain at its first link.
 
-No rotation is used anywhere: rotating would break the *linear* `Chain'` at the seam, and the
-seam condition is never needed below `g + 2`.
+No rotation is used anywhere (it would break the *linear* chain at the seam), and the seam
+condition is never needed below `g + 2`.
 
 ## Assembly
 
-`relWalks G.nbRel k e e = ∅` for `1 ≤ k < g`: a member list assembles (via
-`exists_walk_of_dartChain`) into a closed `G.Walk` of length `k` with non-backtracking darts
-and a repeated support vertex; the crux extracts a cycle of length `≤ k < g`, contradicting
-`egirth_le_length`. The Hashimoto trace then vanishes by `trace_hashimoto_pow`.
+`relWalks G.nbRel k e e = ∅` for `1 ≤ k < g`: a member list (k+1 darts, last = first)
+assembles via Mathlib's `Walk.ofDarts` into a walk of length `k+1` whose support repeats a
+vertex and whose darts repeat the basepoint dart. The crux extracts a cycle whose edges sit
+among the walk's **at most `k` distinct** edges (pigeonhole through `dedup`), so its length
+is `≤ k < g` — contradicting `egirth_le_length`. The Hashimoto trace then vanishes by
+`trace_hashimoto_pow`.
 -/
 
 open Finset
@@ -136,12 +139,13 @@ theorem Walk.darts_eq_singleton_of_length_eq_one {x y : V} {q : G.Walk x y}
 
 /-- **The cycle-extraction crux.** A walk whose darts form a non-backtracking chain
 (`Chain' G.nbRel`) and whose support repeats a vertex contains a cycle of length at most the
-walk's length. Structural induction; the `takeUntil` prefix of a nodup support is a path, so
-the only obstruction to closing the cycle — the closing edge already lying on the path —
-forces an immediate backtrack, contradicting the chain. -/
+walk's length, supported on the walk's own edges. Structural induction; the `takeUntil`
+prefix of a nodup support is a path, so the only obstruction to closing the cycle — the
+closing edge already lying on the path — forces an immediate backtrack, contradicting the
+chain. -/
 theorem Walk.exists_isCycle_of_nbChain_of_not_nodup [DecidableEq V] {u v : V} (w : G.Walk u v)
     (hnb : w.darts.IsChain G.nbRel) (hdup : ¬ w.support.Nodup) :
-    ∃ (a : V) (c : G.Walk a a), c.IsCycle ∧ c.length ≤ w.length := by
+    ∃ (a : V) (c : G.Walk a a), c.IsCycle ∧ c.length ≤ w.length ∧ c.edges ⊆ w.edges := by
   induction w with
   | nil => simp at hdup
   | @cons u u₁ v h p ih =>
@@ -182,31 +186,22 @@ theorem Walk.exists_isCycle_of_nbChain_of_not_nodup [DecidableEq V] {u v : V} (w
         exact (List.isChain_cons_cons.mp hnb).1.2 (Dart.ext _ _ rfl)
       · -- the closing edge is fresh: `cons h (takeUntil)` is a genuine cycle
         refine ⟨u, Walk.cons h (p.takeUntil u hu),
-          ((p.takeUntil u hu).cons_isCycle_iff h).mpr ⟨hcPath, hedge⟩, ?_⟩
-        rw [Walk.length_cons, Walk.length_cons]
-        exact Nat.succ_le_succ (p.length_takeUntil_le hu)
+          ((p.takeUntil u hu).cons_isCycle_iff h).mpr ⟨hcPath, hedge⟩, ?_, ?_⟩
+        · rw [Walk.length_cons, Walk.length_cons]
+          exact Nat.succ_le_succ (p.length_takeUntil_le hu)
+        · rw [Walk.edges_cons, Walk.edges_cons]
+          exact List.cons_subset_cons _ (p.edges_takeUntil_subset hu)
     · -- the repeat is inside `p`: recurse
-      obtain ⟨a, c, hc, hlen⟩ := ih (List.isChain_of_isChain_cons hnb) hp
-      exact ⟨a, c, hc, hlen.trans (by rw [Walk.length_cons]; exact Nat.le_succ _)⟩
+      obtain ⟨a, c, hc, hlen, hsub⟩ := ih (List.isChain_of_isChain_cons hnb) hp
+      refine ⟨a, c, hc, hlen.trans (by rw [Walk.length_cons]; exact Nat.le_succ _), ?_⟩
+      rw [Walk.edges_cons]
+      exact hsub.trans (List.subset_cons_self _ _)
 
-/-! ## From dart lists to graph walks -/
+/-! ## Assembly: emptiness, vanishing trace, and the below-girth gap law
 
-/-- A nonempty chained dart list assembles into a graph walk using all but the last dart:
-the walk starts at the first dart's tail and ends at the last dart's tail. -/
-theorem exists_walk_of_dartChain (d : G.Dart) (l : List G.Dart)
-    (hch : (d :: l).IsChain fun a b => a.snd = b.fst) :
-    ∃ w : G.Walk d.fst ((d :: l).getLast (by simp)).fst,
-      w.darts = (d :: l).dropLast := by
-  induction l generalizing d with
-  | nil => exact ⟨Walk.nil, rfl⟩
-  | cons e rest ih =>
-    obtain ⟨hde, hch'⟩ := List.isChain_cons_cons.mp hch
-    obtain ⟨w', hw'⟩ := ih e hch'
-    refine ⟨Walk.cons d.adj (w'.copy hde.symm rfl), ?_⟩
-    rw [Walk.darts_cons, Walk.darts_copy, hw']
-    rfl
-
-/-! ## Assembly: emptiness, vanishing trace, and the below-girth gap law -/
+The dart-list → walk assembly is Mathlib's `Walk.ofDarts` on the FULL member list: the last
+dart repeats the first, so the walk's support repeats a vertex (crux applies) and its edge
+list has at most `k` distinct entries (pigeonhole bounds the extracted cycle below `g`). -/
 
 variable [Fintype V] [DecidableEq V] (G) [DecidableRel G.Adj]
 
@@ -224,37 +219,73 @@ theorem relWalks_nbRel_closed_eq_empty {k : ℕ} (hk : 0 < k) (hg : (k : ℕ∞)
   | cons d l =>
     simp only [List.head?_cons, Option.some.injEq] at hhead
     subst hhead
-    -- assemble the closed walk of length `k`
-    have hch2 : (d :: l).IsChain (fun a b => a.snd = b.fst) := hch.imp fun _ _ hab => hab.1
-    obtain ⟨w, hw⟩ := exists_walk_of_dartChain d l hch2
+    have hlf : (d :: l).length = k + 1 := hlen
     have hgl : (d :: l).getLast (by simp) = d := by
       rw [List.getLast?_eq_getLast_of_ne_nil (by simp), Option.some.injEq] at hlast
       exact hlast
-    set W : G.Walk d.fst d.fst := w.copy rfl (by rw [hgl]) with hW
-    have hWd : W.darts = (d :: l).dropLast := by rw [hW, Walk.darts_copy, hw]
-    have hWlen : W.length = k := by
-      have := congrArg List.length hWd
-      rw [Walk.length_darts, List.length_dropLast, hlen] at this
-      simpa using this
-    -- its support repeats the basepoint
+    -- the dart at the closing position repeats the basepoint dart
+    have hdk : (d :: l)[k]'(by omega) = d := by
+      have := List.getLast_eq_getElem (l := d :: l) (by simp)
+      rw [this] at hgl
+      simpa [hlf] using hgl
+    -- assemble the walk on ALL the darts
+    have hchD : ((d :: l)).IsChain G.DartAdj :=
+      hch.imp fun _ _ hab => hab.1
+    set W := Walk.ofDarts (d :: l) (by simp) hchD with hW
+    have hWd : W.darts = d :: l := by rw [hW, Walk.darts_ofDarts]
+    have hWlen : W.length = k + 1 := by rw [hW, Walk.length_ofDarts, hlf]
+    -- support repeats: positions 0 and k both carry `d.fst`
+    have hdartk : W.darts[k]'(by rw [hWd, hlf]; omega) = d := by
+      simp only [hWd]
+      exact hdk
     have hdup : ¬ W.support.Nodup := by
-      intro hnd
-      have hnil := (Walk.isPath_iff_eq_nil W).mp (W.isPath_def.mpr hnd)
-      rw [hnil] at hWlen
-      simp at hWlen
+      intro hnod
+      have h0 : W.support[0]'(by rw [Walk.length_support, hWlen]; omega) = d.fst := by
+        rw [Walk.support_getElem_eq_getVert, Walk.getVert_zero]
+        simp
+      have hk2 : W.support[k]'(by rw [Walk.length_support, hWlen]; omega) = d.fst := by
+        have h2 := Walk.fst_darts_getElem (p := W) (i := k)
+          (hi := by rw [Walk.length_darts, hWlen]; omega)
+        rw [hdartk, List.getElem_dropLast] at h2
+        exact h2.symm
+      have hinj := List.nodup_iff_injective_get.mp hnod
+      have := hinj (a₁ := ⟨0, by rw [Walk.length_support, hWlen]; omega⟩)
+        (a₂ := ⟨k, by rw [Walk.length_support, hWlen]; omega⟩)
+        (by simp only [List.get_eq_getElem, h0, hk2])
+      simp only [Fin.mk.injEq] at this
       omega
-    -- non-backtracking chain on the walk's darts
-    have hWnb : W.darts.IsChain G.nbRel := by
-      rw [hWd]
-      refine List.isChain_iff_getElem.mpr fun i hi => ?_
-      simp only [List.getElem_dropLast]
-      exact hch.getElem i (by simp only [List.length_dropLast] at hi; omega)
-    -- extract a cycle shorter than the girth: contradiction
-    obtain ⟨a, c, hcyc, hclen⟩ := W.exists_isCycle_of_nbChain_of_not_nodup hWnb hdup
+    -- extract a cycle on at most k distinct edges: contradiction with the girth
+    obtain ⟨a, c, hcyc, -, hsub⟩ := W.exists_isCycle_of_nbChain_of_not_nodup
+      (by rw [hWd]; exact hch) hdup
+    have hced : c.edges ⊆ W.edges.dedup := fun x hx =>
+      List.mem_dedup.mpr (hsub hx)
+    have hWed : ¬ W.edges.Nodup := by
+      intro hnod
+      have hinj := List.nodup_iff_injective_get.mp hnod
+      have hWe : W.edges = (d :: l).map Dart.edge := by
+        rw [hW, Walk.edges_ofDarts]
+      have h0e : W.edges[0]'(by rw [hWe]; simp) = d.edge := by
+        simp only [hWe, List.getElem_map, List.getElem_cons_zero]
+      have hke : W.edges[k]'(by rw [hWe, List.length_map, hlf]; omega) = d.edge := by
+        simp only [hWe, List.getElem_map, hdk]
+      have := hinj (a₁ := ⟨0, by rw [hWe]; simp⟩)
+        (a₂ := ⟨k, by rw [hWe, List.length_map, hlf]; omega⟩)
+        (by simp only [List.get_eq_getElem, h0e, hke])
+      simp only [Fin.mk.injEq] at this
+      omega
+    have hdlt : W.edges.dedup.length < W.edges.length := by
+      have hsl := W.edges.dedup_sublist
+      rcases hsl.length_le.lt_or_eq with hlt | heq
+      · exact hlt
+      · exact absurd (hsl.eq_of_length heq ▸ W.edges.nodup_dedup) hWed
+    have hclen : c.length ≤ k := by
+      have hnd : c.edges.Nodup := hcyc.isCircuit.isTrail.edges_nodup
+      have h1 : c.edges.length ≤ W.edges.dedup.length := (hnd.subperm hced).length_le
+      have h2 : W.edges.length = k + 1 := by rw [Walk.length_edges, hWlen]
+      rw [Walk.length_edges] at h1
+      omega
     have h1 : G.egirth ≤ (c.length : ℕ∞) := G.egirth_le_length hcyc
-    have h2 : (c.length : ℕ∞) ≤ (k : ℕ∞) := by
-      rw [hWlen] at hclen
-      exact_mod_cast hclen
+    have h2 : (c.length : ℕ∞) ≤ (k : ℕ∞) := by exact_mod_cast hclen
     exact absurd ((h1.trans h2).trans_lt hg) (lt_irrefl _)
 
 /-- **Stone A, non-backtracking side.** Below the girth the Hashimoto traces vanish:
