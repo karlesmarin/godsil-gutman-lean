@@ -267,4 +267,66 @@ theorem Cl₂_pos {θ : ℝ} (h0 : 0 < θ) (hπ : θ < π) : 0 < Cl₂ θ := by
     exact hpartial M
   linarith
 
+/-! ### The clock that never ticks
+
+The weight-2 zeta state — populations `∝ 1/n²` on equally spaced energy levels — has
+autocorrelation `S(θ) = (6/π²)·Li₂(e^{−iθ})`, with real part `zetaStateRe` (the Bernoulli
+parabola) and imaginary part `−Cl₂`. Despite infinite mean energy and infinite energy
+variance (so the Margolus–Levitin and Mandelstam–Tamm bounds say nothing), the state
+**never** reaches an orthogonal state: `S` has no zero on `(0, 2π)`. -/
+
+/-- Reflection at the full circle: `Cl₂(2π − θ) = −Cl₂(θ)`. -/
+theorem Cl₂_two_pi_sub (θ : ℝ) : Cl₂ (2 * π - θ) = -Cl₂ θ := by
+  simp only [Cl₂]
+  rw [← tsum_neg]
+  refine tsum_congr fun n => ?_
+  rw [show ((n : ℝ) + 1) * (2 * π - θ)
+      = ((n + 1 : ℕ) : ℝ) * (2 * π) - ((n : ℝ) + 1) * θ by push_cast; ring,
+    Real.sin_nat_mul_two_pi_sub, neg_div]
+
+/-- The real part of the weight-2 zeta-state autocorrelation, `∑ cos(nθ)/n²`
+(indexed like `Cl₂`). -/
+def zetaStateRe (θ : ℝ) : ℝ := ∑' n : ℕ, Real.cos (((n : ℝ) + 1) * θ) / ((n : ℝ) + 1) ^ 2
+
+/-- At the antipode `θ = π` the real part is `−π²/12 ≠ 0` (Bernoulli parabola). -/
+theorem zetaStateRe_pi : zetaStateRe π = -(π ^ 2) / 12 := by
+  have hπ := Real.pi_pos
+  have h := hasSum_cos_div_sq (θ := π) hπ.le (by linarith)
+  have hzero : ∑ i ∈ Finset.range 1, Real.cos ((i : ℝ) * π) / (i : ℝ) ^ 2 = 0 := by
+    simp
+  have h' : HasSum (fun n : ℕ => Real.cos ((n : ℝ) * π) / (n : ℝ) ^ 2)
+      ((π ^ 2 / 6 - π * π / 2 + π ^ 2 / 4)
+        + ∑ i ∈ Finset.range 1, Real.cos ((i : ℝ) * π) / (i : ℝ) ^ 2) := by
+    rw [hzero, add_zero]
+    exact h
+  have hsh := (hasSum_nat_add_iff
+    (f := fun n : ℕ => Real.cos ((n : ℝ) * π) / (n : ℝ) ^ 2) 1).mpr h'
+  have hval : zetaStateRe π = π ^ 2 / 6 - π * π / 2 + π ^ 2 / 4 := by
+    rw [zetaStateRe, ← hsh.tsum_eq]
+    refine tsum_congr fun n => ?_
+    push_cast
+    ring_nf
+  rw [hval]
+  ring
+
+/-- **The clock that never ticks**: the weight-2 zeta-state autocorrelation never
+vanishes on `(0, 2π)` — its real part (`zetaStateRe`) and imaginary part (`−Cl₂`) are
+never simultaneously zero. The quantum state with populations `∝ 1/n²` on equally
+spaced levels has infinite mean energy, yet never reaches an orthogonal state. -/
+theorem zetaState_never_orthogonal {θ : ℝ} (h0 : 0 < θ) (h2π : θ < 2 * π) :
+    ¬(zetaStateRe θ = 0 ∧ Cl₂ θ = 0) := by
+  rintro ⟨hre, him⟩
+  have hπ := Real.pi_pos
+  rcases lt_trichotomy θ π with h | h | h
+  · exact absurd him (ne_of_gt (Cl₂_pos h0 h))
+  · subst h
+    rw [zetaStateRe_pi] at hre
+    nlinarith
+  · have h1 : 0 < 2 * π - θ := by linarith
+    have h2 : 2 * π - θ < π := by linarith
+    have h3 := Cl₂_pos h1 h2
+    have h4 := Cl₂_two_pi_sub θ
+    rw [him, neg_zero] at h4
+    linarith
+
 end Dilog
