@@ -401,4 +401,181 @@ theorem Li₂_landen {x : ℝ} (hx : x ∈ Ioo (0 : ℝ) (1 / 2)) :
     simpa [hG] using hGx
   linarith
 
+/-- **Duplication (squaring) formula** `Li₂(x²) = 2(Li₂ x + Li₂(−x))` for `|x| ≤ 1` —
+pure series rearrangement: odd powers cancel, even powers double. No calculus needed. -/
+theorem Li₂_sq {x : ℝ} (hx : |x| ≤ 1) :
+    Li₂ (x ^ 2) = 2 * (Li₂ x + Li₂ (-x)) := by
+  have hx2 : |x ^ 2| ≤ 1 := by
+    rw [abs_pow]
+    exact pow_le_one₀ (abs_nonneg x) hx
+  have hsx := summable_Li₂ hx
+  have hsnx : Summable fun n : ℕ => (-x) ^ (n + 1) / ((n : ℝ) + 1) ^ 2 :=
+    summable_Li₂ (z := -x) (by rwa [abs_neg])
+  set f : ℕ → ℝ := fun n => x ^ (n + 1) / ((n : ℝ) + 1) ^ 2 + (-x) ^ (n + 1) / ((n : ℝ) + 1) ^ 2
+    with hf
+  have heven : ∀ k : ℕ, f (2 * k) = 0 := by
+    intro k
+    have hOdd : Odd (2 * k + 1) := ⟨k, by ring⟩
+    have h := hOdd.neg_pow x
+    simp only [hf]
+    rw [h]
+    ring
+  have hodd : ∀ k : ℕ, f (2 * k + 1) = (x ^ 2) ^ (k + 1) / ((k : ℝ) + 1) ^ 2 / 2 := by
+    intro k
+    have hEven : Even (2 * k + 1 + 1) := ⟨k + 1, by ring⟩
+    have h := hEven.neg_pow x
+    simp only [hf]
+    rw [h, show 2 * k + 1 + 1 = 2 * (k + 1) by ring, pow_mul]
+    have hc : ((2 * k + 1 : ℕ) : ℝ) + 1 = 2 * ((k : ℝ) + 1) := by push_cast; ring
+    rw [hc]
+    have hk : ((k : ℝ) + 1) ≠ 0 := by positivity
+    field_simp
+    ring
+  have hse : Summable fun k : ℕ => f (2 * k) := by
+    rw [funext heven]
+    exact summable_zero
+  have hso : Summable fun k : ℕ => f (2 * k + 1) := by
+    rw [funext hodd]
+    exact (summable_Li₂ hx2).div_const 2
+  have hsplit := tsum_even_add_odd hse hso
+  have h1 : ∑' k : ℕ, f (2 * k) = 0 := by
+    rw [funext heven]
+    exact tsum_zero
+  have h2 : ∑' k : ℕ, f (2 * k + 1) = Li₂ (x ^ 2) / 2 := by
+    rw [funext hodd, tsum_div_const, Li₂]
+  have hadd : Li₂ x + Li₂ (-x) = ∑' n : ℕ, f n := by
+    rw [Li₂, Li₂, ← hsx.tsum_add hsnx]
+  rw [hadd, ← hsplit, h1, h2]
+  ring
+
+/-!
+### Golden-ratio evaluations
+
+The classical special values `Li₂(1/φ²) = π²/15 − log²φ`, `Li₂(1/φ) = π²/10 − log²φ` and
+`Li₂(−1/φ) = log²φ/2 − π²/15` (attributed to Landen; Lewin §1.4). The key golden facts are
+`1/φ + 1/φ² = 1` (so `1/φ²` and `1/φ` are a reflection pair) and
+`(1/φ²)/((1/φ²)−1) = −1/φ` (so Landen's identity maps `1/φ²` to `−1/φ`); together with the
+duplication formula at `1/φ` this gives a linear system — no five-term relation is needed.
+-/
+section GoldenRatio
+
+open scoped goldenRatio
+
+private lemma inv_gold_pos : (0 : ℝ) < (φ : ℝ)⁻¹ := inv_pos.mpr Real.goldenRatio_pos
+
+private lemma gold_mul_inv : (φ : ℝ) * (φ : ℝ)⁻¹ = 1 :=
+  mul_inv_cancel₀ Real.goldenRatio_ne_zero
+
+private lemma inv_gold_lt_one : ((φ : ℝ)⁻¹ : ℝ) < 1 := by
+  nlinarith [gold_mul_inv, Real.one_lt_goldenRatio, inv_gold_pos]
+
+private lemma half_lt_inv_gold : (1 / 2 : ℝ) < (φ : ℝ)⁻¹ := by
+  nlinarith [gold_mul_inv, Real.goldenRatio_lt_two, inv_gold_pos]
+
+/-- `1/φ² = 1 − 1/φ`, i.e. `1/φ` and `1/φ²` form a reflection pair (from `φ² = φ + 1`). -/
+private lemma inv_gold_sq : ((φ : ℝ)⁻¹) ^ 2 = 1 - (φ : ℝ)⁻¹ := by
+  have hne := Real.goldenRatio_ne_zero
+  have h1 : (φ : ℝ)⁻¹ * (φ : ℝ) = 1 := inv_mul_cancel₀ hne
+  have h2 : ((φ : ℝ)⁻¹) ^ 2 * (φ : ℝ) ^ 2 = 1 := by
+    rw [← mul_pow, h1, one_pow]
+  have h3 : ((φ : ℝ)⁻¹) ^ 2 * (φ : ℝ) = (φ : ℝ)⁻¹ := by
+    rw [pow_two, mul_assoc, h1, mul_one]
+  have h4 : ((φ : ℝ)⁻¹) ^ 2 * ((φ : ℝ) + 1) = 1 := by
+    rw [← Real.goldenRatio_sq]
+    exact h2
+  linear_combination h4 - h3
+
+/-- Equation A — reflection at `x = 1/φ²`. -/
+private lemma goldenA :
+    Li₂ (((φ : ℝ)⁻¹) ^ 2) + Li₂ ((φ : ℝ)⁻¹) = π ^ 2 / 6 - 2 * Real.log φ ^ 2 := by
+  have hu2 := inv_gold_sq
+  have hupos := inv_gold_pos
+  have huhalf := half_lt_inv_gold
+  have h1mu : 1 - ((φ : ℝ)⁻¹) ^ 2 = (φ : ℝ)⁻¹ := by linarith
+  have hu2pos : (0 : ℝ) < ((φ : ℝ)⁻¹) ^ 2 := by positivity
+  have hlogu : Real.log ((φ : ℝ)⁻¹) = -Real.log φ := Real.log_inv _
+  have hA := Li₂_add_Li₂_one_sub (x := ((φ : ℝ)⁻¹) ^ 2) ⟨hu2pos, by linarith⟩
+  rw [h1mu] at hA
+  have hlogu2 : Real.log (((φ : ℝ)⁻¹) ^ 2) = 2 * Real.log ((φ : ℝ)⁻¹) := by
+    rw [Real.log_pow]
+    push_cast
+    ring
+  rw [hlogu2, hlogu,
+    show 2 * -Real.log (φ : ℝ) * -Real.log (φ : ℝ) = 2 * Real.log (φ : ℝ) ^ 2 by ring] at hA
+  exact hA
+
+/-- Equation B — Landen at `x = 1/φ²` (whose Landen image is `−1/φ`). -/
+private lemma goldenB :
+    Li₂ (((φ : ℝ)⁻¹) ^ 2) + Li₂ (-(φ : ℝ)⁻¹) = -(Real.log φ ^ 2) / 2 := by
+  have hu2 := inv_gold_sq
+  have hupos := inv_gold_pos
+  have huhalf := half_lt_inv_gold
+  have hune : ((φ : ℝ)⁻¹ : ℝ) ≠ 0 := ne_of_gt hupos
+  have h1mu : 1 - ((φ : ℝ)⁻¹) ^ 2 = (φ : ℝ)⁻¹ := by linarith
+  have hu2pos : (0 : ℝ) < ((φ : ℝ)⁻¹) ^ 2 := by positivity
+  have hlogu : Real.log ((φ : ℝ)⁻¹) = -Real.log φ := Real.log_inv _
+  have hB := Li₂_landen (x := ((φ : ℝ)⁻¹) ^ 2) ⟨hu2pos, by linarith⟩
+  have harg : (((φ : ℝ)⁻¹) ^ 2) / (((φ : ℝ)⁻¹) ^ 2 - 1) = -((φ : ℝ)⁻¹) := by
+    have hden : ((φ : ℝ)⁻¹) ^ 2 - 1 = -((φ : ℝ)⁻¹) := by linarith
+    rw [hden, div_neg, pow_two, mul_div_assoc, div_self hune, mul_one]
+  rw [harg, h1mu, hlogu,
+    show -(-Real.log (φ : ℝ)) ^ 2 / 2 = -(Real.log (φ : ℝ) ^ 2) / 2 by ring] at hB
+  exact hB
+
+/-- Equation C — duplication at `x = 1/φ`. -/
+private lemma goldenC :
+    Li₂ (((φ : ℝ)⁻¹) ^ 2) = 2 * (Li₂ ((φ : ℝ)⁻¹) + Li₂ (-(φ : ℝ)⁻¹)) :=
+  Li₂_sq (by rw [abs_of_pos inv_gold_pos]; exact inv_gold_lt_one.le)
+
+/-- **`Li₂(1/φ²) = π²/15 − log²φ`** (classical; Landen, cf. Lewin §1.4). -/
+theorem Li₂_inv_goldenRatio_sq :
+    Li₂ (((φ : ℝ)⁻¹) ^ 2) = π ^ 2 / 15 - Real.log φ ^ 2 := by
+  linarith [goldenA, goldenB, goldenC]
+
+/-- **`Li₂(1/φ) = π²/10 − log²φ`** (classical; Landen, cf. Lewin §1.4). -/
+theorem Li₂_inv_goldenRatio :
+    Li₂ ((φ : ℝ)⁻¹) = π ^ 2 / 10 - Real.log φ ^ 2 := by
+  linarith [goldenA, goldenB, goldenC]
+
+/-- **`Li₂(−1/φ) = log²φ/2 − π²/15`** (classical; Lewin §1.4). -/
+theorem Li₂_neg_inv_goldenRatio :
+    Li₂ (-(φ : ℝ)⁻¹) = Real.log φ ^ 2 / 2 - π ^ 2 / 15 := by
+  linarith [goldenA, goldenB, goldenC]
+
+/-- The **Rogers dilogarithm** `L(x) = Li₂(x) + ½·log x · log(1−x)` (the natural
+normalisation for `0 < x < 1`; the log-product term removes the `log²` defects, so the
+golden-ratio values become pure rational multiples of `π²`). -/
+noncomputable def rogersL (x : ℝ) : ℝ := Li₂ x + Real.log x * Real.log (1 - x) / 2
+
+/-- **`L(1/φ²) = π²/15`** — in physics terms: the effective central charge of the
+Lee-Yang thermodynamic-Bethe-ansatz system is `c_eff = L(1/φ²)/L(1) = (π²/15)/(π²/6) = 2/5`,
+the simplest TBA dilogarithm identity. -/
+theorem rogersL_inv_goldenRatio_sq : rogersL (((φ : ℝ)⁻¹) ^ 2) = π ^ 2 / 15 := by
+  rw [rogersL, Li₂_inv_goldenRatio_sq]
+  have h1mu : 1 - ((φ : ℝ)⁻¹) ^ 2 = (φ : ℝ)⁻¹ := by linarith [inv_gold_sq]
+  rw [h1mu,
+    show Real.log (((φ : ℝ)⁻¹) ^ 2) = 2 * Real.log ((φ : ℝ)⁻¹) by
+      rw [Real.log_pow]; push_cast; ring,
+    Real.log_inv]
+  ring
+
+/-- **`L(1/φ) = π²/10`** (Landen). -/
+theorem rogersL_inv_goldenRatio : rogersL ((φ : ℝ)⁻¹) = π ^ 2 / 10 := by
+  rw [rogersL, Li₂_inv_goldenRatio]
+  have h1mu : 1 - (φ : ℝ)⁻¹ = ((φ : ℝ)⁻¹) ^ 2 := by linarith [inv_gold_sq]
+  rw [h1mu,
+    show Real.log (((φ : ℝ)⁻¹) ^ 2) = 2 * Real.log ((φ : ℝ)⁻¹) by
+      rw [Real.log_pow]; push_cast; ring,
+    Real.log_inv]
+  ring
+
+/-- **Rogers' two-term golden identity** `L(1/φ) + L(1/φ²) = L(1) = π²/6` — the weight-2
+"sum rule" behind the golden-ratio ladder (Rogers 1907). -/
+theorem rogersL_gold_sum :
+    rogersL ((φ : ℝ)⁻¹) + rogersL (((φ : ℝ)⁻¹) ^ 2) = π ^ 2 / 6 := by
+  rw [rogersL_inv_goldenRatio, rogersL_inv_goldenRatio_sq]
+  ring
+
+end GoldenRatio
+
 end Dilog
