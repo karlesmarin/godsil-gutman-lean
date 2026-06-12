@@ -83,7 +83,50 @@ theorem Li₂_one : Li₂ 1 = π ^ 2 / 6 := by
 `Li₂'(x) = -log(1 - x)/x` (note `∑_{n≥1} xⁿ⁻¹ = 1/(1-x)` and `∑ xⁿ/n = -log(1-x)`). -/
 theorem hasDerivAt_Li₂ {x : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1) :
     HasDerivAt Li₂ (-Real.log (1 - x) / x) x := by
-  sorry
+  obtain ⟨hx0, hx1⟩ := hx
+  set r : ℝ := (x + 1) / 2 with hr
+  have hxr : x < r := by rw [hr]; linarith
+  have hr1 : r < 1 := by rw [hr]; linarith
+  have hr0 : 0 < r := by rw [hr]; linarith
+  -- the open neighbourhood `t = (-r, r) ⊂ (-1,1)` on which the derivative series is dominated by `rⁿ`
+  set t : Set ℝ := Ioo (-r) r with ht_def
+  have hxt : x ∈ t := ⟨by linarith, hxr⟩
+  set g : ℕ → ℝ → ℝ := fun n z => z ^ (n + 1) / ((n : ℝ) + 1) ^ 2 with hg_def
+  set g' : ℕ → ℝ → ℝ := fun n z => z ^ n / ((n : ℝ) + 1) with hg'_def
+  have hne : ∀ n : ℕ, ((n : ℝ) + 1) ≠ 0 := fun n => by positivity
+  -- term derivatives
+  have hg : ∀ n y, y ∈ t → HasDerivAt (g n) (g' n y) y := by
+    intro n y _
+    have h1 : HasDerivAt (fun z : ℝ => z ^ (n + 1)) (((n : ℝ) + 1) * y ^ n) y := by
+      simpa [Nat.cast_add, Nat.cast_one] using hasDerivAt_pow (n + 1) y
+    have h2 := h1.div_const (((n : ℝ) + 1) ^ 2)
+    convert h2 using 1
+    rw [hg'_def]; field_simp
+  -- uniform geometric bound `‖g' n y‖ ≤ rⁿ` on `t`
+  have hg' : ∀ n y, y ∈ t → ‖g' n y‖ ≤ r ^ n := by
+    intro n y hy
+    have hyr : |y| ≤ r := abs_le.mpr ⟨hy.1.le, hy.2.le⟩
+    rw [hg'_def, Real.norm_eq_abs, abs_div, abs_pow, abs_of_pos (by positivity : (0:ℝ) < (n:ℝ)+1)]
+    calc |y| ^ n / ((n : ℝ) + 1) ≤ |y| ^ n :=
+          div_le_self (by positivity) (by linarith [Nat.cast_nonneg (α := ℝ) n])
+      _ ≤ r ^ n := pow_le_pow_left₀ (abs_nonneg y) hyr n
+  have hu : Summable fun n : ℕ => r ^ n := summable_geometric_of_lt_one hr0.le hr1
+  have hg0 : Summable fun n => g n x := summable_Li₂ (by rw [abs_of_pos hx0]; exact hx1.le)
+  -- term-by-term differentiation
+  have key : HasDerivAt (fun z => ∑' n, g n z) (∑' n, g' n x) x :=
+    hasDerivAt_tsum_of_isPreconnected hu isOpen_Ioo isPreconnected_Ioo hg hg' hxt hg0 hxt
+  -- identify the derivative series with `-log(1-x)/x` (Mercator series)
+  have habs : |x| < 1 := by rw [abs_of_pos hx0]; exact hx1
+  have hlog : ∑' n : ℕ, x ^ (n + 1) / ((n : ℝ) + 1) = -Real.log (1 - x) := by
+    have := (Real.hasSum_pow_div_log_of_abs_lt_one habs).tsum_eq
+    simpa using this
+  have hfactor : ∑' n : ℕ, x ^ (n + 1) / ((n : ℝ) + 1) = x * ∑' n : ℕ, x ^ n / ((n : ℝ) + 1) := by
+    rw [← tsum_mul_left]; congr 1; ext n; rw [pow_succ]; ring
+  have hsum : ∑' n : ℕ, g' n x = -Real.log (1 - x) / x := by
+    rw [hg'_def]
+    rw [eq_div_iff (ne_of_gt hx0), mul_comm, ← hfactor, hlog]
+  rw [hsum] at key
+  exact key
 
 /-- **Euler's reflection identity** for the dilogarithm on `(0,1)`:
 `Li₂ x + Li₂ (1 - x) = π²/6 - log x · log (1 - x)`.
