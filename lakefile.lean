@@ -47,6 +47,13 @@ lean_lib «Dilog» where
   globs := #[.submodules `Dilog]
 
 @[default_target]
+lean_lib «QSL» where
+  -- Quantum speed limits: the Margolus–Levitin cosine inequality and theorem
+  -- (τ⊥ ≥ π/(2⟨E⟩), ℏ=1). Literature-checked 2026-06: no QSL in any ITP; Mathlib has
+  -- zero `quantum` declarations. Roadmap: Mandelstam–Tamm; arbitrary-fidelity ML (2023).
+  globs := #[.submodules `QSL]
+
+@[default_target]
 lean_lib «MSS» where
   -- Paper I: signed adjacency (Basic), expected characteristic polynomial
   -- (ExpectedCharpoly), the Godsil–Gutman identity (GodsilGutman), the 2-lift (TwoLift).
