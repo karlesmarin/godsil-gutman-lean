@@ -52,7 +52,19 @@ noncomputable def Li₂ (z : ℝ) : ℝ := ∑' n : ℕ, z ^ (n + 1) / ((n : ℝ
 (majorised termwise by the convergent `∑ 1/(n+1)²`). -/
 theorem summable_Li₂ {z : ℝ} (hz : |z| ≤ 1) :
     Summable fun n : ℕ => z ^ (n + 1) / ((n : ℝ) + 1) ^ 2 := by
-  sorry
+  -- Absolute comparison with the convergent `∑ 1/(n+1)²`.
+  rw [← summable_abs_iff]
+  -- the dominating series `∑ 1/(n+1)²` is summable (shift of the `p = 2` series).
+  have hdom : Summable fun n : ℕ => 1 / ((n : ℝ) + 1) ^ 2 := by
+    have h2 : Summable fun n : ℕ => 1 / (n : ℝ) ^ 2 :=
+      Real.summable_one_div_nat_pow.mpr (by norm_num)
+    have hs := (summable_nat_add_iff (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) 1).mpr h2
+    simpa [Nat.cast_add, Nat.cast_one] using hs
+  refine Summable.of_nonneg_of_le (fun n => abs_nonneg _) (fun n => ?_) hdom
+  have hden : (0 : ℝ) < ((n : ℝ) + 1) ^ 2 := by positivity
+  rw [abs_div, abs_of_pos hden, abs_pow]
+  gcongr
+  exact pow_le_one₀ (abs_nonneg z) hz
 
 @[simp] theorem Li₂_zero : Li₂ 0 = 0 := by
   -- every term `0^(n+1)/(n+1)² = 0`
