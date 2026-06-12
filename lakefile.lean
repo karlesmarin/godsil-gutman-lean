@@ -41,6 +41,12 @@ lean_lib «MathlibPR» where
   globs := #[.submodules `MathlibPR]
 
 @[default_target]
+lean_lib «Dilog» where
+  -- The dilogarithm Li₂ + Euler's reflection identity (first ITP of the dilogarithm; catalog +
+  -- literature checked clean 2026-06). Roadmap: Landen/inversion → Abel's five-term relation.
+  globs := #[.submodules `Dilog]
+
+@[default_target]
 lean_lib «MSS» where
   -- Paper I: signed adjacency (Basic), expected characteristic polynomial
   -- (ExpectedCharpoly), the Godsil–Gutman identity (GodsilGutman), the 2-lift (TwoLift).
