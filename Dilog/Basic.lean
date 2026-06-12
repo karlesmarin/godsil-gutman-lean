@@ -68,12 +68,16 @@ theorem summable_Li₂ {z : ℝ} (hz : |z| ≤ 1) :
 
 @[simp] theorem Li₂_zero : Li₂ 0 = 0 := by
   -- every term `0^(n+1)/(n+1)² = 0`
-  sorry
+  simp [Li₂]
 
 /-- `Li₂ 1 = π² / 6` — the Basel problem. Reindex `∑_{n≥0} 1/(n+1)²` to `hasSum_zeta_two`
 (`∑_{n : ℕ} 1/n² = π²/6`, whose `n = 0` term is `0`). -/
 theorem Li₂_one : Li₂ 1 = π ^ 2 / 6 := by
-  sorry
+  simp only [Li₂, one_pow]
+  -- goal: `∑' n, 1/((n:ℝ)+1)² = π²/6`; shift `hasSum_zeta_two` past its (zero) `n = 0` term.
+  have h := (hasSum_nat_add_iff (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) 1).mpr
+    (by simpa using hasSum_zeta_two)
+  simpa [Nat.cast_add, Nat.cast_one] using h.tsum_eq
 
 /-- Termwise differentiation of the dilogarithm series gives, on `(0,1)`,
 `Li₂'(x) = -log(1 - x)/x` (note `∑_{n≥1} xⁿ⁻¹ = 1/(1-x)` and `∑ xⁿ/n = -log(1-x)`). -/
