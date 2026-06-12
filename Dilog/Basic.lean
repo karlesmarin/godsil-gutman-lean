@@ -267,6 +267,14 @@ theorem Li₂_add_Li₂_one_sub {x : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1) :
     simpa [hF] using hFx
   linarith
 
+/-- **Euler's special value** `Li₂(1/2) = π²/12 - log²2/2` — the reflection identity at its
+fixed point `x = 1/2`. -/
+theorem Li₂_one_half : Li₂ (1 / 2) = π ^ 2 / 12 - Real.log 2 ^ 2 / 2 := by
+  have h := Li₂_add_Li₂_one_sub (x := 1 / 2) ⟨by norm_num, by norm_num⟩
+  rw [show (1 : ℝ) - 1 / 2 = 1 / 2 by norm_num,
+    show Real.log (1 / 2) = -Real.log 2 by rw [one_div, Real.log_inv]] at h
+  nlinarith [h]
+
 /-- **Landen's identity** for the dilogarithm on `(0, 1/2)`:
 `Li₂ x + Li₂ (x/(x-1)) = -log²(1-x) / 2`.
 
