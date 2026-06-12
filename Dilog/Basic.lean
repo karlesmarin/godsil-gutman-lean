@@ -25,6 +25,7 @@ Coq. So this appears to be the first machine-checked development of the dilogari
 * `Dilog.Li₂_zero` : `Li₂ 0 = 0`.
 * `Dilog.Li₂_one`  : `Li₂ 1 = π² / 6`  (Basel; via `hasSum_zeta_two`).
 * `Dilog.hasDerivAt_Li₂` : `Li₂'(x) = -log(1 - x) / x` on `(0,1)`.
+* `Dilog.continuousOn_Li₂` : `Li₂` is continuous on `[-1, 1]` (Weierstrass M-test).
 * `Dilog.Li₂_add_Li₂_one_sub` : **Euler's reflection identity**
     `Li₂ x + Li₂ (1 - x) = π²/6 - log x · log (1 - x)` on `(0,1)`.
 
@@ -40,13 +41,20 @@ Coq. So this appears to be the first machine-checked development of the dilogari
 -/
 
 noncomputable section
-open scoped Real BigOperators
-open Set
+open scoped Real BigOperators Topology
+open Set Filter
 
 namespace Dilog
 
 /-- The real **dilogarithm** `Li₂ z = ∑_{n ≥ 1} zⁿ / n² = ∑_{n ≥ 0} z^{n+1} / (n+1)²`. -/
 noncomputable def Li₂ (z : ℝ) : ℝ := ∑' n : ℕ, z ^ (n + 1) / ((n : ℝ) + 1) ^ 2
+
+/-- The dominating series `∑ 1/(n+1)²` converges (shift of the `p = 2` series). -/
+theorem summable_one_div_add_one_sq : Summable fun n : ℕ => 1 / ((n : ℝ) + 1) ^ 2 := by
+  have h2 : Summable fun n : ℕ => 1 / (n : ℝ) ^ 2 :=
+    Real.summable_one_div_nat_pow.mpr (by norm_num)
+  have hs := (summable_nat_add_iff (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) 1).mpr h2
+  simpa [Nat.cast_add, Nat.cast_one] using hs
 
 /-- The defining series of `Li₂` is summable on the closed unit interval `|z| ≤ 1`
 (majorised termwise by the convergent `∑ 1/(n+1)²`). -/
@@ -54,13 +62,8 @@ theorem summable_Li₂ {z : ℝ} (hz : |z| ≤ 1) :
     Summable fun n : ℕ => z ^ (n + 1) / ((n : ℝ) + 1) ^ 2 := by
   -- Absolute comparison with the convergent `∑ 1/(n+1)²`.
   rw [← summable_abs_iff]
-  -- the dominating series `∑ 1/(n+1)²` is summable (shift of the `p = 2` series).
-  have hdom : Summable fun n : ℕ => 1 / ((n : ℝ) + 1) ^ 2 := by
-    have h2 : Summable fun n : ℕ => 1 / (n : ℝ) ^ 2 :=
-      Real.summable_one_div_nat_pow.mpr (by norm_num)
-    have hs := (summable_nat_add_iff (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) 1).mpr h2
-    simpa [Nat.cast_add, Nat.cast_one] using hs
-  refine Summable.of_nonneg_of_le (fun n => abs_nonneg _) (fun n => ?_) hdom
+  refine Summable.of_nonneg_of_le (fun n => abs_nonneg _) (fun n => ?_)
+    summable_one_div_add_one_sq
   have hden : (0 : ℝ) < ((n : ℝ) + 1) ^ 2 := by positivity
   rw [abs_div, abs_of_pos hden, abs_pow]
   gcongr
@@ -128,15 +131,138 @@ theorem hasDerivAt_Li₂ {x : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1) :
   rw [hsum] at key
   exact key
 
+/-- `Li₂` is continuous on `[-1, 1]` (Weierstrass M-test: the series is dominated by
+`∑ 1/(n+1)²` uniformly on the closed interval). -/
+theorem continuousOn_Li₂ : ContinuousOn Li₂ (Icc (-1 : ℝ) 1) := by
+  have : ContinuousOn (fun z : ℝ => ∑' n : ℕ, z ^ (n + 1) / ((n : ℝ) + 1) ^ 2)
+      (Icc (-1 : ℝ) 1) := by
+    refine continuousOn_tsum (fun i => ((continuous_pow (i + 1)).div_const _).continuousOn)
+      summable_one_div_add_one_sq (fun n z hz => ?_)
+    have hz1 : |z| ≤ 1 := abs_le.mpr ⟨hz.1, hz.2⟩
+    have hden : (0 : ℝ) < ((n : ℝ) + 1) ^ 2 := by positivity
+    rw [Real.norm_eq_abs, abs_div, abs_pow, abs_of_pos hden]
+    gcongr
+    exact pow_le_one₀ (abs_nonneg z) hz1
+  exact this
+
 /-- **Euler's reflection identity** for the dilogarithm on `(0,1)`:
 `Li₂ x + Li₂ (1 - x) = π²/6 - log x · log (1 - x)`.
 
-Proof skeleton: let `f x := Li₂ x + Li₂ (1 - x) + log x · log (1 - x)`. Using `hasDerivAt_Li₂`
-(and `Li₂'(1-x) = -log x/(1-x)` by the chain rule), `f' = 0` on `(0,1)`, so `f` is constant on the
-connected set `(0,1)`; its limit as `x → 1⁻` is `Li₂ 1 + Li₂ 0 + 0 = π²/6` by `Li₂_one`, `Li₂_zero`
-and `log x · log(1-x) → 0`. -/
+Proof: let `F y := Li₂ y + Li₂ (1 - y) + log y · log (1 - y)`. Using `hasDerivAt_Li₂`
+(and `(Li₂ (1-·))' = log y/(1-y)` by the chain rule), `F' = 0` on `(0,1)`, so `F` is constant
+there (`constant_of_has_deriv_right_zero` on subintervals). Its limit as `y → 0⁺` is
+`Li₂ 0 + Li₂ 1 + 0 = π²/6` by continuity of `Li₂` on `[-1,1]` and
+`log y · log(1-y) = (log(1-y)/y)·(y·log y) → (-1)·0 = 0`. -/
 theorem Li₂_add_Li₂_one_sub {x : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1) :
     Li₂ x + Li₂ (1 - x) = π ^ 2 / 6 - Real.log x * Real.log (1 - x) := by
-  sorry
+  set F : ℝ → ℝ := fun y => Li₂ y + Li₂ (1 - y) + Real.log y * Real.log (1 - y) with hF
+  -- Step 1: `F' = 0` on `(0,1)`.
+  have hF' : ∀ y ∈ Ioo (0 : ℝ) 1, HasDerivAt F 0 y := by
+    intro y hy
+    obtain ⟨hy0, hy1⟩ := hy
+    have hy1' : (0 : ℝ) < 1 - y := by linarith
+    have hinner : HasDerivAt (fun z : ℝ => 1 - z) (-1) y := by
+      simpa using (hasDerivAt_id y).const_sub 1
+    -- `Li₂ y`
+    have h1 : HasDerivAt Li₂ (-Real.log (1 - y) / y) y := hasDerivAt_Li₂ ⟨hy0, hy1⟩
+    -- `Li₂ (1 - y)` via the chain rule
+    have h2base : HasDerivAt Li₂ (-Real.log (1 - (1 - y)) / (1 - y)) (1 - y) :=
+      hasDerivAt_Li₂ ⟨by linarith, by linarith⟩
+    rw [show (1 : ℝ) - (1 - y) = y by ring] at h2base
+    have h2 : HasDerivAt (fun z : ℝ => Li₂ (1 - z)) (Real.log y / (1 - y)) y := by
+      have h := h2base.comp y hinner
+      convert h using 1
+      ring
+    -- `log y · log (1 - y)` via the product + chain rules
+    have h3a : HasDerivAt Real.log y⁻¹ y := Real.hasDerivAt_log (ne_of_gt hy0)
+    have h3b : HasDerivAt (fun z : ℝ => Real.log (1 - z)) ((1 - y)⁻¹ * -1) y :=
+      (Real.hasDerivAt_log (ne_of_gt hy1')).comp y hinner
+    have h3 := h3a.mul h3b
+    -- assemble and simplify the total derivative to `0`
+    have htot := (h1.add h2).add h3
+    rw [hF]
+    convert htot using 1
+    field_simp
+    ring
+  -- Step 2: `F` is constant on `(0,1)` (zero right-derivative on every subinterval).
+  have hconst : ∀ y ∈ Ioo (0 : ℝ) 1, ∀ z ∈ Ioo (0 : ℝ) 1, y ≤ z → F z = F y := by
+    intro y hy z hz hyz
+    have hsub : Icc y z ⊆ Ioo (0 : ℝ) 1 :=
+      fun t ht => ⟨lt_of_lt_of_le hy.1 ht.1, lt_of_le_of_lt ht.2 hz.2⟩
+    have hcont : ContinuousOn F (Icc y z) :=
+      fun t ht => ((hF' t (hsub ht)).continuousAt).continuousWithinAt
+    have hderiv : ∀ t ∈ Ico y z, HasDerivWithinAt F 0 (Ici t) t :=
+      fun t ht => (hF' t (hsub ⟨ht.1, ht.2.le⟩)).hasDerivWithinAt
+    exact constant_of_has_deriv_right_zero hcont hderiv z ⟨hyz, le_refl z⟩
+  -- Step 3: boundary limit — `F → π²/6` along `𝓝[>] 0`.
+  have hIoo : Ioo (0 : ℝ) 1 ∈ 𝓝[>] (0 : ℝ) := by
+    rw [← nhdsWithin_Ioo_eq_nhdsGT zero_lt_one]
+    exact self_mem_nhdsWithin
+  have hev : ∀ᶠ y in 𝓝[>] (0 : ℝ), y ∈ Ioo (0 : ℝ) 1 := hIoo
+  have hsub01 : Ioo (0 : ℝ) 1 ⊆ Icc (-1 : ℝ) 1 :=
+    fun t ht => ⟨by linarith [ht.1], ht.2.le⟩
+  -- (a) `Li₂ y → Li₂ 0 = 0`
+  have hLi2a : Tendsto Li₂ (𝓝[>] (0 : ℝ)) (𝓝 0) := by
+    have hle : 𝓝[>] (0 : ℝ) ≤ 𝓝[Icc (-1 : ℝ) 1] 0 := by
+      rw [← nhdsWithin_Ioo_eq_nhdsGT zero_lt_one]
+      exact nhdsWithin_mono 0 hsub01
+    have h := (continuousOn_Li₂.continuousWithinAt (by norm_num)).mono_left hle
+    simpa using h
+  -- (b) `Li₂ (1 - y) → Li₂ 1`
+  have hLi2b : Tendsto (fun y : ℝ => Li₂ (1 - y)) (𝓝[>] (0 : ℝ)) (𝓝 (Li₂ 1)) := by
+    have hcw1 : ContinuousWithinAt Li₂ (Icc (-1 : ℝ) 1) 1 :=
+      continuousOn_Li₂.continuousWithinAt (by norm_num)
+    have hmap : Tendsto (fun y : ℝ => 1 - y) (𝓝[>] (0 : ℝ)) (𝓝[Icc (-1 : ℝ) 1] 1) := by
+      apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
+      · have h : Tendsto (fun y : ℝ => 1 - y) (𝓝 0) (𝓝 (1 - 0)) :=
+          (continuous_const.sub continuous_id).tendsto 0
+        simpa using h.mono_left nhdsWithin_le_nhds
+      · filter_upwards [hev] with y hy
+        exact ⟨by linarith [hy.2], by linarith [hy.1]⟩
+    exact hcw1.tendsto.comp hmap
+  -- (c) `log y · log (1 - y) → 0`, written as `(log(1-y)/y) · (y·log y)`
+  have hT1 : Tendsto (fun y : ℝ => Real.log (1 - y) / y) (𝓝[>] (0 : ℝ)) (𝓝 (-1)) := by
+    have hinner0 : HasDerivAt (fun y : ℝ => 1 - y) (-1) 0 := by
+      simpa using (hasDerivAt_id (0 : ℝ)).const_sub 1
+    have houter : HasDerivAt Real.log ((1 : ℝ))⁻¹ (1 - (0 : ℝ)) := by
+      rw [show (1 : ℝ) - 0 = 1 by norm_num]
+      exact Real.hasDerivAt_log one_ne_zero
+    have hd : HasDerivAt (fun y : ℝ => Real.log (1 - y)) (-1) 0 := by
+      have h := houter.comp (0 : ℝ) hinner0
+      simpa using h
+    have hslope := hasDerivAt_iff_tendsto_slope.mp hd
+    have hmono : 𝓝[>] (0 : ℝ) ≤ 𝓝[≠] (0 : ℝ) :=
+      nhdsWithin_mono 0 (fun y hy => ne_of_gt hy)
+    refine (hslope.mono_left hmono).congr' ?_
+    filter_upwards [self_mem_nhdsWithin] with y _
+    rw [slope_def_field]
+    norm_num
+  have hT2 : Tendsto (fun y : ℝ => y * Real.log y) (𝓝[>] (0 : ℝ)) (𝓝 0) := by
+    have h := tendsto_log_mul_rpow_nhdsGT_zero (r := (1 : ℝ)) one_pos
+    simp only [Real.rpow_one] at h
+    exact h.congr fun y => mul_comm _ _
+  have hT3 : Tendsto (fun y : ℝ => Real.log y * Real.log (1 - y)) (𝓝[>] (0 : ℝ)) (𝓝 0) := by
+    have h := hT1.mul hT2
+    rw [show (-1 : ℝ) * 0 = 0 by ring] at h
+    refine h.congr' ?_
+    filter_upwards [self_mem_nhdsWithin] with y hy
+    have hy0 : y ≠ 0 := ne_of_gt hy
+    field_simp
+  have hlim : Tendsto F (𝓝[>] (0 : ℝ)) (𝓝 (π ^ 2 / 6)) := by
+    rw [hF]
+    have h := (hLi2a.add hLi2b).add hT3
+    simpa [Li₂_one] using h
+  -- Step 4: combine — `F` is eventually the constant `F x`, so `F x = π²/6`.
+  have hFeq : ∀ᶠ y in 𝓝[>] (0 : ℝ), F y = F x := by
+    filter_upwards [hev] with y hy
+    rcases le_total y x with h | h
+    · exact (hconst y hy x hx h).symm
+    · exact hconst x hx y hy h
+  have hclim : Tendsto F (𝓝[>] (0 : ℝ)) (𝓝 (F x)) :=
+    Tendsto.congr' (by filter_upwards [hFeq] with y h; exact h.symm) tendsto_const_nhds
+  have hFx : F x = π ^ 2 / 6 := tendsto_nhds_unique hclim hlim
+  have hFx' : Li₂ x + Li₂ (1 - x) + Real.log x * Real.log (1 - x) = π ^ 2 / 6 := by
+    simpa [hF] using hFx
+  linarith
 
 end Dilog
