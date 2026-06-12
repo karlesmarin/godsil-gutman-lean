@@ -39,7 +39,7 @@ certified census of the four deployed LDPC codes of the IEEE~802.11n (WiFi) stan
 length $n=648$, and, to our knowledge the first such diagnostic on a \emph{quantum} LDPC code, of the IBM
 ``gross code'' $[[144,12,12]]$ bivariate-bicycle (BB) code, finding girth~6 and $c_6=144$
 shortest cycles. We then give a covering-tower factorization: a BB code whose Tanner graph is a
-double cover of a smaller code's inherits its short-cycle profile through the classical
+double cover of a smaller code's Tanner graph inherits its short-cycle profile through the classical
 Artin--Ihara / $2$-lift identity $\tr B^k(\widehat G)=\tr B^k(G)+\tr B_s^k(G)$, verified
 exactly on the gross/$[[72,12,6]]$ pair ($c_6$ doubles, $144=2\cdot72$). The contribution is
 the theorem-backed, cross-validated, reproducible methodology and its transfer from classical
@@ -154,8 +154,9 @@ reproducible.
 Nothing in the methodology is classical-channel specific; it takes any Tanner graph. We feed
 it the IBM gross code $[[144,12,12]]$, a bivariate-bicycle (BB) code~\cite{Bravyi} with
 $\ell=12$, $m=6$, $x=S_\ell\!\otimes\!I_m$, $y=I_\ell\!\otimes\!S_m$,
-$A=x^3+y+y^2$, $B=y^3+x+x^2$, and $H_X=[A\mid B]$ (the $H_X$ and $H_Z$ Tanner graphs are
-isomorphic). The census (Table~\ref{tab:quantum}) finds girth~6 and $c_6=144$ shortest cycles,
+$A=x^3+y+y^2$, $B=y^3+x+x^2$, and $H_X=[A\mid B]$ (here $A,B$ denote the BB defining
+polynomials, not the adjacency and non-backtracking operators of Section~\ref{sec:method}; the
+$H_X$ and $H_Z$ Tanner graphs are isomorphic). The census (Table~\ref{tab:quantum}) finds girth~6 and $c_6=144$ shortest cycles,
 with all three routes agreeing and the Lean-certified below-girth vanishing holding on the
 quantum code.
 
