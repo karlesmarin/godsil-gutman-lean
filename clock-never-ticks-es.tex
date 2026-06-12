@@ -62,13 +62,13 @@ El c\'odigo fuente de Mathlib contiene un comentario que se refiere al dilogarit
 $\Li$ --- una funci\'on que la biblioteca no tiene. Llenamos ese hueco y seguimos las
 preguntas hasta donde llevan. El resultado es un desarrollo en Lean~4 sin \lean{sorry}
 ($\sim$1\,500 l\'ineas sobre Mathlib) que contiene, hasta donde sabemos, varias primicias
-en cualquier asistente de pruebas: el dilogaritmo real con la identidad de reflexi\'on
+en cualquier asistente de demostraci\'on: el dilogaritmo real con la identidad de reflexi\'on
 de Euler, la transformaci\'on de Landen, la f\'ormula de duplicaci\'on y la escalera
 \'aurea $\Li(1/\varphi^2)=\pi^2/15-\ln^2\varphi$, $\Li(1/\varphi)=\pi^2/10-\ln^2\varphi$
 (derivada de un sistema lineal $3\times 3$ --- sin relaci\'on de cinco t\'erminos); el
 valor de Rogers $\Lrog(1/\varphi^2)=\pi^2/15$, equivalentemente la carga central
-efectiva de Lee--Yang $c_{\mathrm{ef}}=2/5$, la identidad dilogar\'itmica m\'as simple
-del ansatz de Bethe termodin\'amico; la funci\'on de Clausen $\Cl$ y la \emph{constante
+efectiva de Lee--Yang $c_{\mathrm{eff}}=2/5$, la identidad dilogar\'itmica m\'as simple
+del ansatz termodin\'amico de Bethe; la funci\'on de Clausen $\Cl$ y la \emph{constante
 de Catalan} $G=\Cl(\pi/2)$; la \emph{desigualdad de Fej\'er--Jackson}
 $\sum_{k=1}^{M}\sin(k\theta)/k>0$ en $(0,\pi)$; la positividad
 $\Cl(\theta)\ge\sin(\theta)/2$ por una sumaci\'on de Abel sin asint\'otica; y los
@@ -88,35 +88,44 @@ axiomas est\'andar.
 
 \medskip
 \noindent\emph{C\'omo leer este art\'iculo.} Est\'a escrito como la historia de seis
-preguntas, en el orden en que realmente surgieron; cada secci\'on abre con su pregunta y
-termina entregando al lector la siguiente. La Figura~\ref{fig:map} es el mapa. Si solo
-va a leer una cosa, lea el Teorema~\ref{thm:clock} y la Figura~\ref{fig:clock}; el
-inventario Lean es la Tabla~\ref{tab:inventory}, y reproducirlo todo son tres \'ordenes
+preguntas. Cinco forman una cadena --- cada secci\'on abre con su pregunta y cierra
+entregando al lector la siguiente. La sexta (\emph{¿c\'omo de r\'apido puede
+evolucionar un estado cu\'antico?}) \emph{no} naci\'o de la cadena: naci\'o por su
+cuenta, de preguntar qu\'e parte de la met\'afora «el universo es una computadora» es un
+teorema de verdad, y se \emph{cruz\'o} con la cadena al final. La
+Figura~\ref{fig:map} es el mapa honesto, cruce incluido. Si solo va a leer una cosa,
+lea el Teorema~\ref{thm:clock} y la Figura~\ref{fig:clock}; el inventario Lean es la
+Tabla~\ref{tab:inventory}, y reproducirlo todo son tres \'ordenes
 (Ap\'endice~\ref{app:repro}).
 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  node distance=4mm and 8mm,
   obj/.style={draw=ggteal, thick, rounded corners=2pt, fill=ggband!40,
     align=center, font=\small, inner sep=5pt},
   q/.style={font=\scriptsize\itshape, text=ggamber!80!black, align=center},
   arr/.style={-{Stealth[length=2.4mm]}, thick, ggteal}]
 \node[obj] (hole) {un hueco en\\la biblioteca};
-\node[obj, right=14mm of hole] (li2) {$\Li$ y sus ecuaciones\\funcionales};
-\node[obj, right=14mm of li2] (gold) {la escalera\\\'aurea};
-\node[obj, below=9mm of gold] (circle) {el c\'irculo:\\par\'abola $+$ $\Cl$};
-\node[obj, left=14mm of circle] (pos) {Fej\'er--Jackson:\\$\Cl>0$};
-\node[obj, left=14mm of pos, fill=ggamber!25, draw=ggamber] (clock)
+\node[obj, right=31mm of hole] (li2) {$\Li$ y sus ecuaciones\\funcionales};
+\node[obj, right=31mm of li2] (gold) {la escalera\\\'aurea};
+\node[obj, below=16mm of gold] (circle) {el c\'irculo:\\par\'abola $+$ $\Cl$};
+\node[obj, left=31mm of circle] (pos) {Fej\'er--Jackson:\\$\Cl>0$};
+\node[obj, left=31mm of pos, fill=ggamber!25, draw=ggamber] (clock)
   {\textbf{el reloj que}\\\textbf{nunca suena}};
-\draw[arr] (hole) -- node[q, above=0.5mm] {P1: ¿qu\'e sabe\\la serie?} (li2);
-\draw[arr] (li2) -- node[q, above=0.5mm] {P2: ¿escalera\\sin Abel?} (gold);
-\draw[arr] (gold) -- node[q, right=1mm] {P3: ¿qu\'e pasa\\en el c\'irculo?} (circle);
-\draw[arr] (circle) -- node[q, above=0.5mm] {P4: ¿por qu\'e es positiva\\la mitad salvaje?} (pos);
-\draw[arr] (pos) -- node[q, above=0.5mm] {P5: ¿qu\'e cosa f\'isica\\late con esto?} (clock);
+\node[obj, below=18mm of pos] (qsl) {l\'imites de velocidad:\\Margolus--Levitin,\\Mandelstam--Tamm};
+\node[q, below=1mm of qsl] {nacida aparte: «¿qu\'e parte de\\`el universo es una
+  computadora' es un teorema?»};
+\draw[arr] (hole) -- node[q, above=1.2mm] {P1: ¿qu\'e sabe\\la serie?} (li2);
+\draw[arr] (li2) -- node[q, above=1.2mm] {P2: ¿escalera\\sin Abel?} (gold);
+\draw[arr] (gold) -- node[q, right=1.5mm] {P3: ¿qu\'e pasa\\en el c\'irculo?} (circle);
+\draw[arr] (circle) -- node[q, above=1.2mm] {P4: ¿por qu\'e es positiva\\la mitad salvaje?} (pos);
+\draw[arr] (pos) -- node[q, above=1.2mm] {P5: ¿qu\'e cosa f\'isica\\late con esto?} (clock);
+\draw[arr] (qsl) -| node[q, left=1mm, pos=0.85] {los hilos\\se cruzan} (clock);
 \end{tikzpicture}
-\caption{El viaje, pregunta a pregunta. Cada nodo es un bloque de Lean sin
-\lean{sorry}; cada flecha es la pregunta que produjo el bloque siguiente.}
+\caption{El mapa honesto. El hilo del dilogaritmo recorre la fila de arriba y vuelve;
+el hilo cu\'antico (abajo) naci\'o por su cuenta y se \emph{cruz\'o} con \'el al final
+--- el cruce, no la cadena, es donde vive el teorema del t\'itulo. Cada nodo es un
+bloque de Lean sin \lean{sorry}.}
 \label{fig:map}
 \end{figure}
 
@@ -124,7 +133,7 @@ inventario Lean es la Tabla~\ref{tab:inventory}, y reproducirlo todo son tres \'
 tiene?}\label{sec:intro}
 
 El archivo \lean{Mathlib/Analysis/SpecialFunctions/Integrals/LogTrigonometric.lean} de
-Mathlib --- la biblioteca matem\'atica del asistente de pruebas Lean~4, sobre la que se
+Mathlib --- la biblioteca matem\'atica del asistente de demostraci\'on Lean~4, sobre la que se
 construye buena parte de la matem\'atica formalizada contempor\'anea --- describe una de
 sus integrales refiri\'endose al dilogaritmo
 \[
@@ -133,7 +142,7 @@ sus integrales refiri\'endose al dilogaritmo
 La funci\'on en s\'i no est\'a. Y no solo en Mathlib: hasta donde pudimos determinar, el
 dilogaritmo, la funci\'on de Clausen, la constante de Catalan, la desigualdad de
 Fej\'er--Jackson y todos los l\'imites de velocidad cu\'anticos est\'an ausentes de
-\emph{todos} los asistentes de pruebas (Lean, Rocq/Coq, Isabelle); las bibliotecas
+\emph{todos} los asistentes de demostraci\'on (Lean, Rocq/Coq, Isabelle); las bibliotecas
 cu\'anticas existentes (CoqQ, SQIR, Isabelle Marries Dirac) formalizan circuitos, no
 cotas din\'amicas.\footnote{Comprobaciones de junio de 2026: Loogle y \lean{grep} sobre
 Mathlib (cero declaraciones \lean{quantum}; nada de
@@ -154,7 +163,7 @@ problema de mec\'anica cu\'antica. Este art\'iculo es el cuaderno de viaje.
 
 \section{P1: ¿qu\'e sabe la serie de su propia derivada?}\label{sec:dilog}
 
-\emph{Cuenta hist\'orica.} La funci\'on es de Euler (1768); la identidad de reflexi\'on
+\emph{Apunte hist\'orico.} La funci\'on es de Euler (1768); la identidad de reflexi\'on
 es suya. La transformaci\'on de Landen es de 1780. Todo lo de esta secci\'on es
 cl\'asico (Lewin~\cite{lewin}, Zagier~\cite{zagier}); el Lean es
 \lean{Dilog/Basic.lean}.
@@ -209,9 +218,9 @@ hemos formalizado. ¿Estamos atascados?
 \section{P2: ¿se puede subir la escalera \'aurea sin la relaci\'on de Abel?}
 \label{sec:golden}
 
-\emph{Cuenta hist\'orica.} Los valores son de Landen (1780); la suma de dos t\'erminos
+\emph{Apunte hist\'orico.} Los valores son de Landen (1780); la suma de dos t\'erminos
 es de la memoria de Rogers de 1907~\cite{rogers}. Su papel como carga central pertenece
-al ansatz de Bethe termodin\'amico de los a\~nos
+al ansatz termodin\'amico de Bethe de los a\~nos
 noventa~\cite{zamolodchikov,nahm,kirillov}.
 
 La respuesta es s\'i, y la llave son dos accidentes aritm\'eticos de la raz\'on \'aurea
@@ -243,7 +252,7 @@ $\Lrog(x)=\Li(x)+\tfrac12\ln x\ln(1-x)$ los defectos $\ln^2$ se cancelan
 =\frac{\pi^2}{6}=\Lrog(1),
 \]
 y el primero, normalizado, es la carga central efectiva del ansatz de Bethe
-termodin\'amico de Lee--Yang, $c_{\mathrm{ef}}=\Lrog(1/\varphi^2)/\Lrog(1)=2/5$ ---
+termodin\'amico de Lee--Yang, $c_{\mathrm{eff}}=\Lrog(1/\varphi^2)/\Lrog(1)=2/5$ ---
 hasta donde sabemos, la primera identidad dilogar\'itmica TBA verificada en un asistente
 de pruebas. La Figura~\ref{fig:golden} muestra la curva con sus valores certificados.
 
@@ -262,7 +271,7 @@ serie en el c\'irculo unidad?
 
 \section{P3: ¿qu\'e pasa en el c\'irculo?}\label{sec:circle}
 
-\emph{Cuenta hist\'orica.} Clausen introdujo su funci\'on en 1832~\cite{clausen}; la
+\emph{Apunte hist\'orico.} Clausen introdujo su funci\'on en 1832~\cite{clausen}; la
 constante de Catalan es de su memoria de 1865, y su irracionalidad sigue, famosamente,
 abierta. La serie del coseno de abajo es el desarrollo de Fourier del polinomio de
 Bernoulli $B_2$, que Mathlib ya posee (\lean{hasSum\_one\_div\_nat\_pow\_mul\_cos}); el
@@ -285,7 +294,7 @@ celebridad:
 G \;=\; \Cl\!\Big(\frac{\pi}{2}\Big) \;=\; \sum_{k\ge0}\frac{(-1)^k}{(2k+1)^2}
 \;=\;0{,}9159\ldots,
 \]
-la \textbf{constante de Catalan}, ausente de todos los asistentes de pruebas hasta ahora
+la \textbf{constante de Catalan}, ausente de todos los asistentes de demostraci\'on hasta ahora
 (\lean{catalanConst}, \lean{Cl₂\_pi\_div\_two}; la prueba es el mismo reordenamiento
 par/impar que la duplicaci\'on --- los senos de \'indice par se anulan, los impares dan
 la serie alternada). Las simetr\'ias b\'asicas salen gratis: $\Cl(0)=\Cl(\pi)=0$, $\Cl$
@@ -298,7 +307,7 @@ que parece: es la de Fej\'er, de 1910.
 
 \section{P4: ¿por qu\'e es positiva la mitad salvaje?}\label{sec:fejer}
 
-\emph{Cuenta hist\'orica.} Fej\'er plante\'o y prob\'o parcialmente la positividad de
+\emph{Apunte hist\'orico.} Fej\'er plante\'o y prob\'o parcialmente la positividad de
 las sumas parciales del seno en 1910; la prueba de Jackson es de
 1911~\cite{fejer,jackson}. Es el abuelo de la teor\'ia de sumas trigonom\'etricas
 positivas (Vietoris, Askey). El Lean es \lean{Dilog/FejerJackson.lean}.
@@ -309,8 +318,8 @@ $\displaystyle\sum_{k=1}^{M}\frac{\sin k\theta}{k}>0$.
 \end{theorem}
 
 \emph{Caso comprobable a mano.} $M=2$:
-$\sin\theta+\tfrac12\sin2\theta=\sin\theta\,(1+\cos\theta)>0$ en $(0,\pi)$. La gracia de
-la formalizaci\'on es que esa misma certeza cubre ahora todo $M$.
+$\sin\theta+\tfrac12\sin2\theta=\sin\theta\,(1+\cos\theta)>0$ en $(0,\pi)$. El valor de
+la formalizaci\'on est\'a en que esa misma certeza cubre ahora todo $M$.
 
 La prueba es la inducci\'on cl\'asica por m\'inimo interior, con dos toques que merece
 la pena registrar. Primero, el n\'ucleo de Dirichlet se maneja
@@ -358,19 +367,24 @@ d\'igitos.}
 \label{fig:clausen}
 \end{figure}
 
-\emph{El giro --- el grande.} Demos un paso atr\'as y miremos lo que tenemos en las
-manos. Una suma $\sum p_n e^{-in\theta}$ con pesos positivos $p_n\propto 1/n^2$, cuya
-parte imaginaria acabamos de probar que nunca se anula en $(0,\pi)$. Un f\'isico lee esa
-expresi\'on al instante: es la \emph{autocorrelaci\'on de un estado cu\'antico} --- el
-producto interno entre un estado y su propia evoluci\'on temporal, para poblaciones
-$p_n$ sobre niveles de energ\'ia equiespaciados. El c\'irculo llevaba todo el tiempo
-midiendo \emph{tiempo}, y nuestro teorema de positividad es una afirmaci\'on sobre un
-sistema cu\'antico que no puede alcanzar un estado ortogonal. ¿C\'omo de r\'apido
-\emph{puede} alcanzarlo cualquier sistema cu\'antico?
+\emph{El giro --- el grande, y el honesto.} Demos un paso atr\'as y miremos lo que
+tenemos en las manos: una suma $\sum p_n e^{-in\theta}$ con pesos positivos
+$p_n\propto 1/n^2$, cuya parte imaginaria nunca se anula en $(0,\pi)$. Un f\'isico lee
+esa expresi\'on al instante --- es la \emph{autocorrelaci\'on de un estado cu\'antico},
+el producto interno entre un estado y su propia evoluci\'on temporal, para poblaciones
+$p_n$ sobre niveles de energ\'ia equiespaciados. Debemos ser honestos sobre c\'omo
+entr\'o esta lectura en el proyecto, porque \emph{no} naci\'o de la cadena de
+preguntas: un hilo paralelo --- nacido de preguntar qu\'e parte de la vieja met\'afora
+«el universo es una computadora» es un teorema de verdad --- ya hab\'ia formalizado las
+dos cotas cl\'asicas sobre la velocidad de evoluci\'on de cualquier estado cu\'antico.
+En este punto los dos hilos se cruzaron: el c\'irculo llevaba todo el tiempo midiendo
+\emph{tiempo}, y el teorema de positividad que acab\'abamos de probar era una
+afirmaci\'on sobre un sistema cu\'antico que no puede alcanzar un estado ortogonal.
+¿Qu\'e dicen sobre \'el los l\'imites de velocidad?
 
 \section{P5: ¿qu\'e cosa f\'isica late con esta funci\'on?}\label{sec:clock}
 
-\emph{Cuenta hist\'orica.} Mandelstam y Tamm acotaron el tiempo de ortogonalizaci\'on
+\emph{Apunte hist\'orico.} Mandelstam y Tamm acotaron el tiempo de ortogonalizaci\'on
 por la \emph{dispersi\'on} de energ\'ia en 1945~\cite{mandelstam}; Margolus y Levitin lo
 acotaron por la energ\'ia media en 1998~\cite{margolus}. Juntos son los ``l\'imites de
 velocidad cu\'anticos'' de los libros de texto: cu\'antos estados distinguibles puede
@@ -381,7 +395,7 @@ Un estado $\lvert\psi_0\rangle=\sum_n c_n\lvert E_n\rangle$ evoluciona con
 autocorrelaci\'on $S(t)=\sum_n p_n e^{-iE_nt}$, $p_n=\lvert c_n\rvert^2$, y alcanza un
 estado ortogonal en el tiempo $\tau$ si y solo si $S(\tau)=0$. Esto es una afirmaci\'on
 sobre una funci\'on escalar de una medida espectral discreta no negativa, y as\'i lo
-formalizamos --- el espacio de Hilbert es contabilidad. La ortogonalidad entra como dos
+formalizamos --- el espacio de Hilbert es pura contabilidad. La ortogonalidad entra como dos
 condiciones reales ($\operatorname{Re}S=\operatorname{Im}S=0$); Margolus--Levitin no
 necesita n\'umeros complejos en absoluto.
 
@@ -416,7 +430,7 @@ par\'abola de la \S\ref{sec:circle}}}
 \;-\;i\,\underbrace{\Cl(\theta)}_{\text{positiva, por la \S\ref{sec:fejer}}}\Big).
 \]
 Su energ\'ia media $\sum_n p_n\,n$ \emph{diverge}. Su varianza de energ\'ia tambi\'en.
-Ambas cotas del Teorema~\ref{thm:qsl} se satisfacen vac\'iamente: sobre este estado, los
+Ambas cotas del Teorema~\ref{thm:qsl} se cumplen por vacuidad: sobre este estado, los
 l\'imites de velocidad de la mec\'anica cu\'antica no predicen nada. Uno podr\'ia
 suponer que un estado as\'i, sin cota de energ\'ia, se ortogonaliza al instante. La
 verdad es el extremo opuesto:
@@ -435,9 +449,9 @@ signo al primer caso.
 \end{proof}
 
 De hecho $\lvert S\rvert\ge\frac{6}{\pi^2}\cdot\frac{\pi^2}{12}=\frac12$ en todo el
-c\'irculo: el estado nunca llega ni a \emph{mitad} de camino de la distinguibilidad
-(Figura~\ref{fig:clock}). Un reloj con presupuesto energ\'etico infinito cuya aguja
-nunca completa una campanada --- porque el presupuesto se gasta en una cola espectral
+c\'irculo (certificado num\'ericamente en malla fina; el teorema Lean es la no anulaci\'on): el estado nunca llega ni a \emph{mitad} de camino de la distinguibilidad
+(Figura~\ref{fig:clock}). Un reloj con presupuesto energ\'etico infinito cuya campana
+nunca llega a sonar --- porque el presupuesto se gasta en una cola espectral
 pesada y no en separaci\'on coherente. La energ\'ia es necesaria para la velocidad de
 evoluci\'on (Margolus--Levitin); este es el contrapunto verificado a m\'aquina de que no
 es, ni de lejos, suficiente.
@@ -474,7 +488,7 @@ Todo lo que aqu\'i es matem\'atica es cl\'asico: Euler (1768), Landen (1780), Cl
 Margolus--Levitin (1998); la lectura TBA de los valores \'aureos es de los noventa. No
 reclamamos ninguna identidad nueva ni ninguna desigualdad nueva. Las contribuciones son:
 (i)~el desarrollo verificado a m\'aquina en s\'i --- seg\'un nuestras comprobaciones de
-junio de 2026, la primera formalizaci\'on en cualquier asistente de pruebas de cada
+junio de 2026, la primera formalizaci\'on en cualquier asistente de demostraci\'on de cada
 elemento listado en el resumen;
 (ii)~tres decisiones de ingenier\'ia de pruebas quiz\'a reutilizables: el telescopio de
 Dirichlet sin divisi\'on, la cota de Abel sin asint\'otica $\Cl\ge\sin(\theta)/2$, y los
@@ -482,7 +496,7 @@ enunciados completamente reales (medida espectral escalar) de los l\'imites de
 velocidad;
 (iii)~el ensamblaje del Teorema~\ref{thm:clock}, cuya lectura f\'isica no hemos visto
 enunciada, aunque no nos sorprender\'ia que fuera folclore entre especialistas en
-polilogaritmos o en QSL; y (iv)~la observaci\'on de la Observaci\'on~\ref{rem:ek}.
+polilogaritmos o en QSL; y (iv)~la Observaci\'on~\ref{rem:ek}.
 
 Sobre la metodolog\'ia: la formalizaci\'on se llev\'o a cabo en colaboraci\'on con un
 asistente de IA (Claude, Anthropic), con cada paso custodiado por el n\'ucleo de Lean,
@@ -509,6 +523,52 @@ de la Observaci\'on~\ref{rem:ek}.
 (Vietoris) --- el kit ya est\'a en su sitio.
 \end{enumerate}
 
+\section*{Preguntas para llevarse}
+
+Un art\'iculo construido a base de preguntas debe terminar con las que no supo
+responder --- una por estaci\'on del mapa, ninguna ret\'orica.
+
+\begin{enumerate}
+\item[\textbf{Sobre P1.}] El peso 1 (logaritmos) no necesita l\'imites delicados; el
+peso 2 necesit\'o exactamente uno ($\ln x\cdot\ln(1-x)\to0$, el \'unico sitio donde
+nuestra formalizaci\'on tuvo que pelear). ¿Es el n\'umero de l\'imites de frontera
+genuinamente delicados un \emph{invariante del peso} --- y qu\'e cuenta?
+
+\item[\textbf{Sobre P2.}] Llegamos a los valores \'aureos de Landen sustituyendo una
+identidad de dos variables (la de Abel) por tres de una variable, porque el punto
+\'aureo vive donde las \'orbitas de la reflexi\'on y de Landen se cortan. ¿Qu\'e
+especializaciones de la relaci\'on de cinco t\'erminos son alcanzables as\'i ---
+precisamente: cu\'al es el subgrupo de relaciones generado por reflexi\'on, Landen y
+duplicaci\'on dentro del grupo completo de ecuaciones funcionales de $\Li$, y est\'a la
+relaci\'on de cinco t\'erminos en \'el?
+
+\item[\textbf{Sobre P3.}] En el c\'irculo, la serie del coseno de peso par es un
+polinomio y la del seno es transcendentalmente nueva; en peso impar los papeles se
+intercambian. ¿Qu\'e \emph{sabe} la paridad del peso sobre la frontera para
+intercambiar la mitad mansa y la salvaje?
+
+\item[\textbf{Sobre P4.}] Tres pruebas de positividad de este desarrollo comparten una
+misma forma: sube-y-baja con ambos extremos en cero (Fej\'er--Jackson, la desigualdad
+del coseno de Margolus--Levitin, y la propia $\Cl$ v\'ia la integral de
+$-\ln(2\sin(t/2))$). ¿Hay un solo teorema detr\'as --- un principio del m\'aximo para
+sumas positivas --- del que las tres sean instancias, y ser\'ia \emph{ese} lo correcto
+a formalizar a continuaci\'on?
+
+\item[\textbf{Sobre P5.}] El estado zeta derrota a ambos l\'imites de velocidad de los
+libros de texto mediante una cola espectral pesada, y sin embargo su comportamiento de
+ortogonalizaci\'on est\'a perfectamente determinado. ¿Cu\'al es el funcional correcto
+de la medida espectral que \emph{s\'i} decide $\tau_\perp$ --- y es el diccionario de
+Enestr\"om--Kakeya de la Observaci\'on~\ref{rem:ek} su sombra sobre los estados
+mon\'otonos?
+
+\item[\textbf{Sobre el cruce.}] El teorema del t\'itulo existe porque dos hilos
+formalizados se encontraron en un objeto que no era de ninguno. Las bibliotecas de
+pruebas de hoy contienen miles de teoremas desconectados. ¿Cu\'antas otras parejas
+est\'an a una sustituci\'on de distancia de un Teorema~\ref{thm:clock} --- y
+podr\'ia hacerse que un asistente de demostraci\'on \emph{buscara} esos cruces, en vez
+de esperarlos?
+\end{enumerate}
+
 \appendix
 
 \section{Reproducir}\label{app:repro}
@@ -528,16 +588,16 @@ matem\'atico contra num\'erica de 20--40 d\'igitos antes de dibujar.
 \centering\small
 \begin{tabular}{@{}llr@{}}
 \toprule
-Archivo & Contenido & L\'ineas\\
+\rowcolor{ggteal!18} Archivo & Contenido & L\'ineas\\
 \midrule
-\lean{Dilog/Basic.lean} & $\Li$: serie, derivada, reflexi\'on, Landen,&\\
-& duplicaci\'on, $\Li(\frac12)$, escalera \'aurea, Rogers $\Lrog$, Lee--Yang & 581\\
+\rowcolor{ggband!35} \lean{Dilog/Basic.lean} & $\Li$: serie, derivada, reflexi\'on, Landen,&\\
+\rowcolor{ggband!35} & duplicaci\'on, $\Li(\frac12)$, escalera \'aurea, Rogers $\Lrog$, Lee--Yang & 581\\
 \lean{Dilog/Clausen.lean} & $\Cl$, $G$ de Catalan, par\'abola de Bernoulli,
 $\Cl\ge\sin\theta/2$,&\\
 & $\Cl(2\pi-\theta)=-\Cl(\theta)$, Teorema~\ref{thm:clock} & 332\\
-\lean{Dilog/FejerJackson.lean} & desigualdad de Fej\'er--Jackson & 189\\
+\rowcolor{ggband!35} \lean{Dilog/FejerJackson.lean} & desigualdad de Fej\'er--Jackson & 189\\
 \lean{QSL/Basic.lean} & Margolus--Levitin (+ la desigualdad del coseno) & 238\\
-\lean{QSL/MandelstamTamm.lean} & Mandelstam--Tamm, forma $L^1$ & 134\\
+\rowcolor{ggband!35} \lean{QSL/MandelstamTamm.lean} & Mandelstam--Tamm, forma $L^1$ & 134\\
 \midrule
 && 1\,474\\
 \bottomrule

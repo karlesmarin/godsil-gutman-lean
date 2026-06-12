@@ -85,36 +85,44 @@ three standard axioms.
 \end{abstract}
 
 \medskip
-\noindent\emph{How to read this paper.} It is written as the story of six questions,
-in the order they actually arose; each section opens with its question and ends by
-handing the reader the next one. Figure~\ref{fig:map} is the map. If you read only one
-thing, read Theorem~\ref{thm:clock} and Figure~\ref{fig:clock}; the Lean inventory is
-Table~\ref{tab:inventory}, and reproduction takes three commands
+\noindent\emph{How to read this paper.} It is written as the story of six questions.
+Five of them form a chain --- each section opens with its question and closes by handing
+the reader the next. The sixth (\emph{how fast can a quantum state evolve?}) did
+\emph{not} grow out of the chain: it was born independently, from asking which part of
+the ``universe as a computer'' metaphor is an actual theorem, and it \emph{crossed} the
+chain at its end. Figure~\ref{fig:map} is the honest map, crossing included. If you read
+only one thing, read Theorem~\ref{thm:clock} and Figure~\ref{fig:clock}; the Lean
+inventory is Table~\ref{tab:inventory}, and reproduction takes three commands
 (Appendix~\ref{app:repro}).
 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  node distance=4mm and 8mm,
   obj/.style={draw=ggteal, thick, rounded corners=2pt, fill=ggband!40,
     align=center, font=\small, inner sep=5pt},
   q/.style={font=\scriptsize\itshape, text=ggamber!80!black, align=center},
   arr/.style={-{Stealth[length=2.4mm]}, thick, ggteal}]
 \node[obj] (hole) {a hole in\\the library};
-\node[obj, right=14mm of hole] (li2) {$\Li$ and its\\functional equations};
-\node[obj, right=14mm of li2] (gold) {the golden\\ladder};
-\node[obj, below=9mm of gold] (circle) {the circle:\\parabola $+$ $\Cl$};
-\node[obj, left=14mm of circle] (pos) {Fej\'er--Jackson:\\$\Cl>0$};
-\node[obj, left=14mm of pos, fill=ggamber!25, draw=ggamber] (clock)
+\node[obj, right=31mm of hole] (li2) {$\Li$ and its\\functional equations};
+\node[obj, right=31mm of li2] (gold) {the golden\\ladder};
+\node[obj, below=16mm of gold] (circle) {the circle:\\parabola $+$ $\Cl$};
+\node[obj, left=31mm of circle] (pos) {Fej\'er--Jackson:\\$\Cl>0$};
+\node[obj, left=31mm of pos, fill=ggamber!25, draw=ggamber] (clock)
   {\textbf{the clock that}\\\textbf{never ticks}};
-\draw[arr] (hole) -- node[q, above=0.5mm] {Q1: what does the\\series know?} (li2);
-\draw[arr] (li2) -- node[q, above=0.5mm] {Q2: ladder without\\Abel?} (gold);
-\draw[arr] (gold) -- node[q, right=1mm] {Q3: what happens\\on the circle?} (circle);
-\draw[arr] (circle) -- node[q, above=0.5mm] {Q4: why is the\\wild half positive?} (pos);
-\draw[arr] (pos) -- node[q, above=0.5mm] {Q5: what physical thing\\beats to this?} (clock);
+\node[obj, below=18mm of pos] (qsl) {speed limits:\\Margolus--Levitin,\\Mandelstam--Tamm};
+\node[q, below=1mm of qsl] {born elsewhere: ``which part of\\`the universe is a
+  computer' is a theorem?''};
+\draw[arr] (hole) -- node[q, above=1.2mm] {Q1: what does\\the series know?} (li2);
+\draw[arr] (li2) -- node[q, above=1.2mm] {Q2: ladder\\without Abel?} (gold);
+\draw[arr] (gold) -- node[q, right=1.5mm] {Q3: what happens\\on the circle?} (circle);
+\draw[arr] (circle) -- node[q, above=1.2mm] {Q4: why is the\\wild half positive?} (pos);
+\draw[arr] (pos) -- node[q, above=1.2mm] {Q5: what physical\\thing beats to this?} (clock);
+\draw[arr] (qsl) -| node[q, left=1mm, pos=0.85] {the threads\\cross} (clock);
 \end{tikzpicture}
-\caption{The journey, question by question. Every node is a block of
-\lean{sorry}-free Lean; every arrow is the question that produced the next block.}
+\caption{The honest map. The dilogarithm thread runs along the top and back; the
+quantum thread (bottom) was born independently and \emph{crossed} it at the end ---
+the crossing, not the chain, is where the title theorem lives. Every node is a block of
+\lean{sorry}-free Lean.}
 \label{fig:map}
 \end{figure}
 
@@ -349,14 +357,18 @@ The generating script asserts the bound on a $400$-point grid at $30$ digits.}
 \label{fig:clausen}
 \end{figure}
 
-\emph{The turn --- the big one.} Step back and look at what we are holding. A sum
-$\sum p_n e^{-in\theta}$ with positive weights $p_n\propto 1/n^2$, whose imaginary part
-we have just proven never vanishes on $(0,\pi)$. A physicist reads that expression
-instantly: it is the \emph{autocorrelation of a quantum state} --- the inner product
-between a state and its own time evolution, for populations $p_n$ on equally spaced
-energy levels. The circle has been measuring \emph{time} all along, and our positivity
-theorem is a statement about a quantum system that cannot reach an orthogonal state.
-How fast \emph{can} any quantum system reach one?
+\emph{The turn --- the big one, and the honest one.} Step back and look at what we are
+holding: a sum $\sum p_n e^{-in\theta}$ with positive weights $p_n\propto 1/n^2$, whose
+imaginary part never vanishes on $(0,\pi)$. A physicist reads that expression instantly
+--- it is the \emph{autocorrelation of a quantum state}, the inner product between a
+state and its own time evolution, for populations $p_n$ on equally spaced energy
+levels. We must be honest about how this reading entered the project, because it did
+\emph{not} grow out of the chain of questions: a parallel thread --- born from asking
+which part of the old ``universe as a computer'' metaphor is an actual theorem --- had
+already formalized the two classical bounds on how fast any quantum state can evolve.
+At this point the two threads crossed: the circle had been measuring \emph{time} all
+along, and the positivity theorem we had just proved was a statement about a quantum
+system that cannot reach an orthogonal state. What do the speed limits say about it?
 
 \section{Q5: what physical thing beats to this function?}\label{sec:clock}
 
@@ -421,7 +433,7 @@ first case.
 \end{proof}
 
 In fact $\lvert S\rvert\ge\frac{6}{\pi^2}\cdot\frac{\pi^2}{12}=\frac12$ on the whole
-circle: the state never gets even \emph{halfway} to distinguishability
+circle (certified numerically on a fine grid; the Lean theorem is the non-vanishing): the state never gets even \emph{halfway} to distinguishability
 (Figure~\ref{fig:clock}). A clock with an infinite energy budget whose hand never
 completes a tick --- because the budget is spent on a heavy spectral tail rather than
 on coherent separation. Energy is necessary for evolution speed (Margolus--Levitin);
@@ -490,6 +502,48 @@ of Remark~\ref{rem:ek}.
 toolkit is in place.
 \end{enumerate}
 
+\section*{Questions to take with you}
+
+A paper built from questions should end with the ones it could not answer --- one per
+station of the map, none of them rhetorical.
+
+\begin{enumerate}
+\item[\textbf{On Q1.}] Weight 1 (logarithms) needs no delicate limits; weight 2 needed
+exactly one ($\ln x\cdot\ln(1-x)\to0$, the only place our formalization had to fight).
+Is the number of genuinely delicate boundary limits an \emph{invariant of the weight}
+--- and what does it count?
+
+\item[\textbf{On Q2.}] We reached Landen's golden values by replacing one two-variable
+identity (Abel's) with three one-variable ones, because the golden point sits where
+reflection and Landen orbits intersect. Which specializations of the five-term relation
+are reachable this way --- precisely: what is the subgroup of relations generated by
+reflection, Landen and duplication inside the full functional-equation group of $\Li$,
+and is the five-term relation in it?
+
+\item[\textbf{On Q3.}] On the circle, the even-weight cosine series is a polynomial and
+the sine series is transcendentally new; at odd weight the roles swap. What does weight
+parity \emph{know} about the boundary that makes it exchange the tame and the wild
+half?
+
+\item[\textbf{On Q4.}] Three positivity proofs in this development share one shape:
+rise-then-fall with both endpoints at zero (Fej\'er--Jackson, the Margolus--Levitin
+cosine inequality, and $\Cl$ itself via the integral of $-\ln(2\sin(t/2))$). Is there a
+single theorem behind them --- a maximum principle for positive sums --- of which all
+three are instances, and would \emph{it} be the right thing to formalize next?
+
+\item[\textbf{On Q5.}] The zeta state defeats both textbook speed limits through a
+heavy spectral tail, yet its orthogonalization behaviour is perfectly determined. What
+is the correct functional of the spectral measure that \emph{does} decide $\tau_\perp$
+--- and is the Enestr\"om--Kakeya dictionary of Remark~\ref{rem:ek} its shadow on
+monotone states?
+
+\item[\textbf{On the crossing.}] The title theorem exists because two formalized
+threads met in an object neither owned. Today's proof libraries contain thousands of
+disconnected theorems. How many other pairs are one substitution away from a
+Theorem~\ref{thm:clock} --- and could a proof assistant be made to \emph{search} for
+such crossings, instead of waiting for them?
+\end{enumerate}
+
 \appendix
 
 \section{Reproducing}\label{app:repro}
@@ -509,15 +563,15 @@ mathematical content against 20--40-digit numerics before drawing.
 \centering\small
 \begin{tabular}{@{}llr@{}}
 \toprule
-File & Contents & Lines\\
+\rowcolor{ggteal!18} File & Contents & Lines\\
 \midrule
-\lean{Dilog/Basic.lean} & $\Li$: series, derivative, reflection, Landen,&\\
-& duplication, $\Li(\frac12)$, golden ladder, Rogers $\Lrog$, Lee--Yang & 581\\
+\rowcolor{ggband!35} \lean{Dilog/Basic.lean} & $\Li$: series, derivative, reflection, Landen,&\\
+\rowcolor{ggband!35} & duplication, $\Li(\frac12)$, golden ladder, Rogers $\Lrog$, Lee--Yang & 581\\
 \lean{Dilog/Clausen.lean} & $\Cl$, Catalan's $G$, Bernoulli parabola, $\Cl\ge\sin\theta/2$,&\\
 & $\Cl(2\pi-\theta)=-\Cl(\theta)$, Theorem~\ref{thm:clock} & 332\\
-\lean{Dilog/FejerJackson.lean} & Fej\'er--Jackson inequality & 189\\
+\rowcolor{ggband!35} \lean{Dilog/FejerJackson.lean} & Fej\'er--Jackson inequality & 189\\
 \lean{QSL/Basic.lean} & Margolus--Levitin (+ the cosine inequality) & 238\\
-\lean{QSL/MandelstamTamm.lean} & Mandelstam--Tamm, $L^1$ form & 134\\
+\rowcolor{ggband!35} \lean{QSL/MandelstamTamm.lean} & Mandelstam--Tamm, $L^1$ form & 134\\
 \midrule
 && 1\,474\\
 \bottomrule
