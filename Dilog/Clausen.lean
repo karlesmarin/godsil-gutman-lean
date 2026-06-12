@@ -5,6 +5,7 @@ Authors: Carles Marín
 -/
 import Mathlib
 import Dilog.Basic
+import Dilog.FejerJackson
 
 /-!
 # The Clausen function `Cl₂` and Catalan's constant
@@ -179,5 +180,91 @@ theorem hasSum_cos_div_sq {θ : ℝ} (h0 : 0 ≤ θ) (h2π : θ ≤ 2 * π) :
   have hne : (2 * π : ℝ) ≠ 0 := by positivity
   field_simp
   ring
+
+/-! ### Positivity of `Cl₂` on `(0, π)`
+
+Abel rearrangement of the partial sums of the `Cl₂` series in terms of the
+Fejér–Jackson sums, then `fejerSum_pos` makes every piece positive. The arrangement is
+asymptotics-free: every partial sum is at least `sin θ / 2`. -/
+
+/-- Abel summation identity: the `(N+1)`-term partial sum of the `Cl₂` series equals
+`S_{N+1}/(N+1) + ∑_{k<N} S_{k+1}·(1/(k+1) − 1/(k+2))` in terms of the Fejér–Jackson
+sums `S_M = fejerSum M`. -/
+private lemma cl2_partial_abel (θ : ℝ) (N : ℕ) :
+    ∑ k ∈ Finset.range (N + 1), Real.sin (((k : ℝ) + 1) * θ) / ((k : ℝ) + 1) ^ 2
+      = fejerSum (N + 1) θ / ((N : ℝ) + 1)
+        + ∑ k ∈ Finset.range N,
+            fejerSum (k + 1) θ * (1 / ((k : ℝ) + 1) - 1 / ((k : ℝ) + 2)) := by
+  induction N with
+  | zero =>
+    simp [fejerSum]
+  | succ M ih =>
+    rw [Finset.sum_range_succ, ih, Finset.sum_range_succ]
+    have hsplit : fejerSum (M + 2) θ
+        = fejerSum (M + 1) θ + Real.sin (((M : ℝ) + 2) * θ) / ((M : ℝ) + 2) := by
+      unfold fejerSum
+      rw [Finset.sum_range_succ,
+        show (((M + 1 : ℕ) : ℝ) + 1) = (M : ℝ) + 2 by push_cast; ring]
+    have hc1 : (((M + 1 : ℕ) : ℝ) + 1) = (M : ℝ) + 2 := by push_cast; ring
+    rw [hc1, hsplit]
+    have h1 : ((M : ℝ) + 1) ≠ 0 := by positivity
+    have h2 : ((M : ℝ) + 2) ≠ 0 := by positivity
+    field_simp
+    ring
+
+/-- **Positivity of the Clausen function** on `(0, π)`: `0 < Cl₂ θ` — in fact
+`Cl₂ θ ≥ sin θ / 2`. Via Fejér–Jackson positivity and Abel summation; this is the
+analytic heart of "weight-2 zeta states never reach an orthogonal state". -/
+theorem Cl₂_pos {θ : ℝ} (h0 : 0 < θ) (hπ : θ < π) : 0 < Cl₂ θ := by
+  have hsin := Real.sin_pos_of_pos_of_lt_pi h0 hπ
+  -- every (N+1)-term partial sum is at least `sin θ / 2`
+  have hpartial : ∀ N : ℕ,
+      Real.sin θ / 2 ≤ ∑ k ∈ Finset.range (N + 1),
+        Real.sin (((k : ℝ) + 1) * θ) / ((k : ℝ) + 1) ^ 2 := by
+    intro N
+    rw [cl2_partial_abel θ N]
+    have hS : 0 < fejerSum (N + 1) θ / ((N : ℝ) + 1) := by
+      have := fejerSum_pos (N + 1) (by omega) h0 hπ
+      positivity
+    rcases Nat.eq_zero_or_pos N with h | h
+    · subst h
+      have h1 : fejerSum 1 θ = Real.sin θ := by
+        simp [fejerSum]
+      simp only [Finset.range_zero, Finset.sum_empty, add_zero, Nat.cast_zero, zero_add]
+      rw [h1] at hS ⊢
+      linarith [hS]
+    · -- the `k = 0` summand alone is `S₁·(1 − 1/2) = sin θ / 2`
+      have h1 : fejerSum 1 θ * (1 / ((0 : ℕ) + 1 : ℝ) - 1 / ((0 : ℕ) + 2 : ℝ))
+          = Real.sin θ / 2 := by
+        simp [fejerSum]
+        ring
+      have hterms : ∀ k ∈ Finset.range N,
+          0 ≤ fejerSum (k + 1) θ * (1 / ((k : ℝ) + 1) - 1 / ((k : ℝ) + 2)) := by
+        intro k _
+        apply mul_nonneg (fejerSum_pos (k + 1) (by omega) h0 hπ).le
+        have ha : (0 : ℝ) < (k : ℝ) + 1 := by positivity
+        have hb : (0 : ℝ) < (k : ℝ) + 2 := by positivity
+        rw [sub_nonneg]
+        apply one_div_le_one_div_of_le ha
+        linarith
+      have hsum_ge : Real.sin θ / 2
+          ≤ ∑ k ∈ Finset.range N,
+              fejerSum (k + 1) θ * (1 / ((k : ℝ) + 1) - 1 / ((k : ℝ) + 2)) := by
+        calc Real.sin θ / 2
+            = fejerSum (0 + 1) θ * (1 / ((0 : ℕ) + 1 : ℝ) - 1 / ((0 : ℕ) + 2 : ℝ)) := by
+              rw [← h1]
+          _ ≤ _ := by
+              apply Finset.single_le_sum hterms
+              exact Finset.mem_range.mpr h
+      linarith
+  -- pass to the limit of partial sums
+  have htend := ((summable_Cl₂ θ).hasSum).tendsto_sum_nat
+  have hge : Real.sin θ / 2 ≤ Cl₂ θ := by
+    apply ge_of_tendsto htend
+    filter_upwards [Filter.eventually_ge_atTop 1] with N hN
+    obtain ⟨M, rfl⟩ := Nat.exists_eq_add_of_le hN
+    rw [add_comm 1 M]
+    exact hpartial M
+  linarith
 
 end Dilog
