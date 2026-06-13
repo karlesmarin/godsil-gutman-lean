@@ -68,12 +68,18 @@ at θ = π. The dilogarithm is the boundary of the polylog-OPUC family.
 * **Proof:** elementary; verified numerically — `min|W| = |alternating sum|` on eight
   exact (non-truncated) completely-monotone families, and step 3's `min Re Φ = Φ(−1)`
   at θ = π.
-* **Literature:** searched the completely-monotone / Hausdorff-moment, Markov/Cauchy-
-  transform, Nevanlinna, Kaluza, absolutely-monotonic, and Herglotz/Carathéodory
-  literatures (June 2026) and did **not** find this minimum-modulus statement named. The
-  ingredients (Herglotz positive real part + an elementary per-mode monotonicity) are
-  entirely classical, so it is most plausibly **folklore or a known exercise**; no strong
-  novelty is claimed. The contribution, if any, is the clean assembly and its tie to the
+* **Literature (hard wheel-check, June 2026).** The framework is fully classical: the
+  generating functions of completely monotone (Hausdorff-moment) sequences are exactly the
+  Pick functions analytic and positive on `(−∞,1)` (Berg, *On generating functions of
+  Hausdorff moment sequences*, arXiv:1401.8052), and `Φ(z)=∫₀¹ x/(1−xz)dμ` is the
+  Cauchy–Stieltjes transform of a positive measure, i.e. a Carathéodory/Herglotz function
+  (Re Φ > 0). Across three fronts — Hausdorff-moment generating-function literature,
+  Carathéodory/Herglotz extremal theory, and the quantum autocorrelation / survival-
+  probability literature — the **specific minimum-modulus statement (min on `|z|=1`
+  attained at the antipode `z=−1`) was not found stated or named.** So it is an elementary
+  corollary inside a 100%-classical framework: most plausibly **folklore or a known
+  exercise**, with **no strong novelty claimed**; equally, no citable prior statement was
+  located. The contribution is the clean assembly, the first machine-checked form, and the
   quantum-speed-limit reading.
 * **Formalization:** the four steps are Mathlib-shaped (positivity of an integral, one
   derivative sign, `Complex.re_le_abs`). The obstacle is the completely-monotone ⟺
