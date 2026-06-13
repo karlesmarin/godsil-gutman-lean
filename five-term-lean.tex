@@ -261,12 +261,9 @@ assistant does not trust it; it executes it, and execution has an order.
 The cancellation was checked numerically to thirty digits before it was formalized---and the
 formalization still caught a subtlety the eye misses. When \lean{field\_simp} clears the
 denominators of $G'(t)$ it silently reorders the product $x\cdot y$ to $y\cdot x$, and then
-needs the hypothesis $1-y x\neq0$---in that exact term order---present in context to
-discharge the inverse it produces. Supplied a moment too late, the goal will not close, and
-no amount of \lean{ring} repairs it; supplied in the wrong order ($1-xy$ rather than
-$1-yx$), likewise. The fix is one line, but finding it cost more than the rest of the proof:
-the non-vanishing fact had to be stated for both orders and placed before the
-simplification, not after.
+needs $1-yx\neq0$, in \emph{that} term order and already in context, to discharge the inverse
+it produces. The fix is one line---state the non-vanishing fact for both orders, before the
+simplification---but finding it cost more than the rest of the proof.
 
 \begin{recipebox}{What a proof assistant earns its keep on}
 On paper, ``clear denominators and the rest cancels'' is one phrase. Formally it is an
@@ -404,6 +401,28 @@ Bloch group, the Bloch--Wigner five-term) will need; and the \emph{proof-enginee
 of Section~\ref{sec:caught}, where the nine-into-five cancellation is the kind of step a
 formal check earns its keep on.
 
+\emph{Prior formalizations.} The priority claim rests on a documented search, not a feeling.
+On 2026-06-12/13 I searched, for the dilogarithm and for the five-term relation: Mathlib
+(Loogle and \lean{grep}; no \lean{dilog}/\lean{polylog} declaration exists, only a comment
+referring to $\Li$) and the wider Lean community repositories; the Isabelle Archive of Formal
+Proofs; the Coq/Rocq ecosystem (\texttt{coq-community}, \texttt{opam}); HOL~Light; and
+Metamath (\texttt{set.mm}). None contains the dilogarithm as an analytic object with its
+functional equations, and none contains the five-term relation. The structural backstop is
+simpler than any search: the relation needs a formalized $\Li$ to be \emph{stated}, and no
+proof assistant had one until the companion paper built it---so a machine-checked five-term
+relation cannot predate that. As always, such a claim is made to the best of my knowledge.
+
+\emph{Size of the formalization.} The new work for this paper is \lean{Dilog/FiveTerm.lean}:
+$243$ lines, five theorems (Table~\ref{tab:inventory}), elaborating in $17$~s once Mathlib and
+the companion's \lean{Dilog/Basic.lean} are cached. It sits on \lean{Dilog/Basic.lean}
+($581$ lines: the dilogarithm, its derivative, reflection, Landen, duplication) from the
+companion paper, and on Mathlib for all the analysis (term-by-term differentiation, the
+mean-value constancy theorem, the $-t\log t$ limit). The proof reuses Mathlib's analytic
+library wholesale; what is original is the $243$-line bridge and the three reusable blocks.
+Every theorem depends only on the three standard axioms (\lean{propext},
+\lean{Classical.choice}, \lean{Quot.sound}); there is no \lean{native\_decide}, no
+\lean{sorry}, and no custom axiom.
+
 \emph{On methodology.} The formalization was done with an AI assistant (Claude, Anthropic),
 under the discipline of the companion paper: the central cancellation verified numerically
 to thirty digits before formalizing, and every named theorem checked by \lean{\#print
@@ -493,7 +512,8 @@ models, \emph{Nucl.\ Phys.\ B} \textbf{342} (1990) 695--720.
 \bibitem{nahm} W.~Nahm, Conformal field theory and torsion elements of the Bloch group, in
 \emph{Frontiers in Number Theory, Physics, and Geometry II}, Springer, 2007, 67--132.
 \bibitem{clock} C.~Mar\'in, \emph{The Clock That Never Ticks: a machine-checked path from
-the dilogarithm to quantum speed limits in Lean~4}, companion paper, same repository, 2026.
+the dilogarithm to quantum speed limits in Lean~4}, Zenodo, 2026.
+\texttt{doi:10.5281/zenodo.20675271}.
 \bibitem{mathlib} The mathlib Community, The Lean mathematical library, in \emph{CPP 2020},
 ACM, 2020, 367--381.
 \end{thebibliography}

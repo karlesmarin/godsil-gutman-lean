@@ -269,13 +269,10 @@ conf\'ia. Un asistente de pruebas no conf\'ia; lo ejecuta, y la ejecuci\'on tien
 La cancelaci\'on se verific\'o num\'ericamente a treinta d\'igitos antes de formalizarla ---y
 la formalizaci\'on a\'un caz\'o una sutileza que la vista pasa por alto. Cuando
 \lean{field\_simp} limpia los denominadores de $G'(t)$ reordena en silencio el producto
-$x\cdot y$ a $y\cdot x$, y luego necesita la hip\'otesis $1-y x\neq0$ ---en ese orden exacto
-de t\'erminos--- presente en el contexto para descargar el inverso que produce. Aportada un
-instante demasiado tarde, el goal no cierra, y ninguna cantidad de \lean{ring} lo repara;
-aportada en el orden equivocado ($1-xy$ en vez de $1-yx$), lo mismo. El arreglo es una
-l\'inea, pero hallarlo cost\'o m\'as que el resto de la prueba: el hecho de no-anulaci\'on
-hubo de enunciarse para ambos \'ordenes y colocarse antes de la simplificaci\'on, no
-despu\'es.
+$x\cdot y$ a $y\cdot x$, y luego necesita $1-yx\neq0$, en \emph{ese} orden de t\'erminos y ya
+en el contexto, para descargar el inverso que produce. El arreglo es una l\'inea ---enunciar
+el hecho de no-anulaci\'on para ambos \'ordenes, antes de la simplificaci\'on--- pero hallarlo
+cost\'o m\'as que el resto de la prueba.
 
 \begin{recipebox}{En qu\'e se gana el sueldo un asistente de pruebas}
 Sobre el papel, ``despeja denominadores y el resto se cancela'' es una sola frase.
@@ -419,6 +416,30 @@ continuidad interior--- que es exactamente lo que cualquier desarrollo de peso~2
 cancelaci\'on de nueve-en-cinco es la clase de paso en que una verificaci\'on formal se gana
 el sueldo.
 
+\emph{Formalizaciones previas.} La afirmaci\'on de prioridad descansa en una b\'usqueda
+documentada, no en una intuici\'on. El 12--13 de junio de 2026 busqu\'e, para el dilogaritmo y
+para la relaci\'on de cinco t\'erminos: Mathlib (Loogle y \lean{grep}; no existe declaraci\'on
+\lean{dilog}/\lean{polylog}, solo un comentario que remite a $\Li$) y los repositorios m\'as
+amplios de la comunidad Lean; el Archive of Formal Proofs de Isabelle; el ecosistema Coq/Rocq
+(\texttt{coq-community}, \texttt{opam}); HOL~Light; y Metamath (\texttt{set.mm}). Ninguno
+contiene el dilogaritmo como objeto anal\'itico con sus ecuaciones funcionales, ni la
+relaci\'on de cinco t\'erminos. El respaldo estructural es m\'as simple que cualquier
+b\'usqueda: la relaci\'on necesita un $\Li$ formalizado para poder \emph{enunciarse}, y
+ning\'un asistente de pruebas lo ten\'ia hasta que el paper compa\~nero lo construy\'o ---as\'i
+que un cinco t\'erminos verificado por m\'aquina no puede ser anterior a eso. Como siempre,
+tal afirmaci\'on se hace hasta donde uno sabe.
+
+\emph{Tama\~no de la formalizaci\'on.} El trabajo nuevo de este paper es
+\lean{Dilog/FiveTerm.lean}: $243$ l\'ineas, cinco teoremas (Tabla~\ref{tab:inventory}), que
+elaboran en $17$~s una vez cacheados Mathlib y el \lean{Dilog/Basic.lean} del compa\~nero.
+Descansa sobre \lean{Dilog/Basic.lean} ($581$ l\'ineas: el dilogaritmo, su derivada,
+reflexi\'on, Landen, duplicaci\'on) del paper compa\~nero, y sobre Mathlib para todo el
+an\'alisis (derivaci\'on t\'ermino a t\'ermino, la constancia por el valor medio, el l\'imite
+$-t\log t$). La prueba reutiliza la biblioteca anal\'itica de Mathlib al completo; lo original
+es el puente de $243$ l\'ineas y los tres bloques reutilizables. Cada teorema depende solo de
+los tres axiomas est\'andar (\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}); sin
+\lean{native\_decide}, sin \lean{sorry}, sin axioma propio.
+
 \emph{Sobre la metodolog\'ia.} La formalizaci\'on se hizo con un asistente de IA (Claude,
 Anthropic), bajo la disciplina del paper compa\~nero: la cancelaci\'on central verificada
 num\'ericamente a treinta d\'igitos antes de formalizar, y cada teorema comprobado con
@@ -512,8 +533,8 @@ models, \emph{Nucl.\ Phys.\ B} \textbf{342} (1990) 695--720.
 \bibitem{nahm} W.~Nahm, Conformal field theory and torsion elements of the Bloch group, en
 \emph{Frontiers in Number Theory, Physics, and Geometry II}, Springer, 2007, 67--132.
 \bibitem{clock} C.~Mar\'in, \emph{The Clock That Never Ticks: a machine-checked path from
-the dilogarithm to quantum speed limits in Lean~4}, paper compa\~nero, mismo repositorio,
-2026.
+the dilogarithm to quantum speed limits in Lean~4}, Zenodo, 2026.
+\texttt{doi:10.5281/zenodo.20675271}.
 \bibitem{mathlib} The mathlib Community, The Lean mathematical library, en \emph{CPP 2020},
 ACM, 2020, 367--381.
 \end{thebibliography}
