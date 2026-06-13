@@ -258,25 +258,6 @@ An independent strand (`Dilog/`, `QSL/`), `sorry`-free (axioms: `propext`,
 | `margolus_levitin` | `π ≤ 2⟨E⟩τ` at orthogonality — first QSL in any prover | `QSL/Basic.lean` |
 | `mandelstam_tamm_L1` | `1 ≤ D₁τ` (`L¹` Mandelstam–Tamm) | `QSL/MandelstamTamm.lean` |
 
-#### Abel's five-term relation (`Dilog/FiveTerm.lean`) — *The Pentagon, Machine-Checked*
-
-The weight-2 capstone, built on the dilogarithm above: the **generator** from which every
-rational functional equation of `Li₂` follows (Wojtkowiak, de Jeu). To the best of our
-knowledge the first machine-checked five-term relation in any proof assistant. `sorry`-free;
-three standard axioms. Sequel to *The Clock That Never Ticks*, which climbed the golden
-ladder without it.
-
-| Lean name | Statement | Role |
-|---|---|---|
-| `rogersL_fiveterm` | `L(x)+L(y) = L(xy) + L(x(1−y)/(1−xy)) + L(y(1−x)/(1−xy))` on `(0,1)²` | the five-term relation |
-| `fiveterm_hasDerivAt_zero` | the five-term difference has identically zero derivative (nine logs collapse to a basis of five) | core |
-| `hasDerivAt_rogersL` | `L'(x) = −½·(ln(1−x)/x + ln x/(1−x))` | reusable block |
-| `tendsto_rogersL_nhdsGT_zero` | `L(t) → 0` as `t → 0⁺` (the `−t·ln t` squeeze) | reusable block |
-| `continuousAt_rogersL` | `L` continuous on `(0,1)` | reusable block |
-
-Two hand-checkable instances: `(x,y)=(½,½)` gives `L(¼)+2L(⅓) = π²/6`; `(x,y)=(1/φ,1/φ)`
-collapses all three arguments to `1/φ²`, giving `2L(1/φ) = 3L(1/φ²) = π²/5`.
-
 #### Complex dilogarithm and zero localization (`Dilog/ComplexBoundary.lean`)
 
 A development towards machine-checked **localization of the zeros of the dilogarithm**
@@ -297,6 +278,25 @@ zeros are absent from every proof assistant. `sorry`-free; three standard axioms
 
 The full existence/uniqueness of the zero (O'Sullivan Thm 1.1, via the argument principle
 or Newton's method) is future work.
+
+### Abel's five-term relation — *The Pentagon, Machine-Checked*
+
+The weight-2 capstone (`Dilog/FiveTerm.lean`), built on the dilogarithm above: the
+**generator** from which every rational functional equation of `Li₂` follows (Wojtkowiak, de
+Jeu). To the best of our knowledge the first machine-checked five-term relation in any proof
+assistant. `sorry`-free; three standard axioms. Sequel to *The Clock That Never Ticks*, which
+climbed the golden ladder without it.
+
+| Lean name | Statement | Role |
+|---|---|---|
+| `rogersL_fiveterm` | `L(x)+L(y) = L(xy) + L(x(1−y)/(1−xy)) + L(y(1−x)/(1−xy))` on `(0,1)²` | the five-term relation |
+| `fiveterm_hasDerivAt_zero` | the five-term difference has identically zero derivative (nine logs collapse to a basis of five) | core |
+| `hasDerivAt_rogersL` | `L'(x) = −½·(ln(1−x)/x + ln x/(1−x))` | reusable block |
+| `tendsto_rogersL_nhdsGT_zero` | `L(t) → 0` as `t → 0⁺` (the `−t·ln t` squeeze) | reusable block |
+| `continuousAt_rogersL` | `L` continuous on `(0,1)` | reusable block |
+
+Two hand-checkable instances: `(x,y)=(½,½)` gives `L(¼)+2L(⅓) = π²/6`; `(x,y)=(1/φ,1/φ)`
+collapses all three arguments to `1/φ²`, giving `2L(1/φ) = 3L(1/φ²) = π²/5`.
 
 ### The Ihara side — Jacobi's formula and Newton's identity
 
