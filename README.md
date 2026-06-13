@@ -101,6 +101,10 @@ A second, **independent strand** (different subject area, same repository) forma
   orthogonal state, because its autocorrelation is `(6/π²)·Li₂(e^{−iθ})` and the dilogarithm
   has no zero on the unit circle. EN + ES. DOI
   [10.5281/zenodo.20675270](https://doi.org/10.5281/zenodo.20675270) (concept, latest version).
+  A follow-on development (`Dilog/ComplexBoundary.lean`) extends this to the **complex**
+  dilogarithm and begins the machine-checked **localization of its zeros** (O'Sullivan,
+  arXiv:1507.07980) — the same `Cl₂ > 0` that powers the clock now places the dilogarithm's
+  zeros inside the unit circle.
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
@@ -242,6 +246,27 @@ An independent strand (`Dilog/`, `QSL/`), `sorry`-free (axioms: `propext`,
 | `margolus_levitin` | `π ≤ 2⟨E⟩τ` at orthogonality — first QSL in any prover | `QSL/Basic.lean` |
 | `mandelstam_tamm_L1` | `1 ≤ D₁τ` (`L¹` Mandelstam–Tamm) | `QSL/MandelstamTamm.lean` |
 
+#### Complex dilogarithm and zero localization (`Dilog/ComplexBoundary.lean`)
+
+A development towards machine-checked **localization of the zeros of the dilogarithm**
+(O'Sullivan, *Zeros of the dilogarithm*, arXiv:1507.07980), built on the real `Cl₂` /
+Bernoulli-parabola machinery above. To the best of our knowledge (search of the
+Lean/Mathlib, Isabelle/AFP and Coq ecosystems, June 2026) the complex dilogarithm and its
+zeros are absent from every proof assistant. `sorry`-free; three standard axioms.
+
+| Lean name | Statement | Phase |
+|---|---|---|
+| `Li₂c` | the complex dilogarithm `∑ zⁿ/n²`, summable on the closed unit disk | 1 |
+| `Li₂c_exp_re`, `Li₂c_exp_im` | boundary decomposition: `Re Li₂c(e^{iθ}) = π²/6−πθ/2+θ²/4`, `Im = Cl₂ θ` | 1 |
+| `Li₂c_exp_ne_zero` | no zero on the unit circle for `θ ∈ (0,2π)` (principal branch) | 1 |
+| `hasDerivAt_Li₂c` | the analytic core `Li₂c'(z) = −log(1−z)/z` | 2 |
+| `phi`, `hasDerivAt_phi`, `z_mul_deriv_phi` | multivalued `φ_{A,B}` + O'Sullivan (2.1) `z·φ' = −log(1−z)+2πiB` | 2 |
+| `continuousOn_Li₂c` | continuity of `Li₂c` on the closed disk (M-test) | 3 |
+| `Iθ_one`, `exists_Iθ_zero_lt_one` | `I_θ(1) = Cl₂(θ)`; the imaginary-part zero curve lies **inside** the disk for `θ ∈ (0,π)`, `B ≥ 1` (core of O'Sullivan Prop. 5.3) | 3 |
+
+The full existence/uniqueness of the zero (O'Sullivan Thm 1.1, via the argument principle
+or Newton's method) is future work.
+
 ### The Ihara side — Jacobi's formula and Newton's identity
 
 The resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
@@ -301,6 +326,7 @@ Ihara/AdjugateDiagMinor.lean adjugate diagonal entry = principal minor          
 # Dilog/, QSL/ — the dilogarithm + quantum speed limits (independent strand)
 Dilog/Basic.lean             Li₂: series, derivative, reflection, Landen, duplication, golden ladder, Rogers L
 Dilog/Clausen.lean           Clausen Cl₂, Catalan's constant, Bernoulli parabola, Cl₂≥sinθ/2, zeta-state theorem
+Dilog/ComplexBoundary.lean   complex Li₂c, boundary decomposition, derivative, φ_{A,B}, zero-curve localization
 Dilog/FejerJackson.lean      the Fejér–Jackson inequality
 QSL/Basic.lean               Margolus–Levitin quantum speed limit (+ the cosine inequality)
 QSL/MandelstamTamm.lean      Mandelstam–Tamm, L¹ form
