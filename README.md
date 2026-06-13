@@ -106,6 +106,18 @@ A second, **independent strand** (different subject area, same repository) forma
   arXiv:1507.07980) — the same `Cl₂ > 0` that powers the clock now places the dilogarithm's
   zeros inside the unit circle.
 
+- **The Pentagon, Machine-Checked** ([`five-term-lean.pdf`](five-term-lean.pdf)): the sequel
+  to *The Clock That Never Ticks*. A `sorry`-free proof (`Dilog/FiveTerm.lean`, 243 lines on
+  the dilogarithm built there) of **Abel's five-term relation**
+  `L(x) + L(y) = L(xy) + L(x(1−y)/(1−xy)) + L(y(1−x)/(1−xy))` for the Rogers `L`-function —
+  the generator of the whole weight-2 theory: by Wojtkowiak and de Jeu every rational
+  functional equation of `Li₂` follows from it, and it is the defining relation of the Bloch
+  group and the pentagon of cluster algebras and of the quantum dilogarithm. The Clock paper
+  climbed the golden ladder *without* it; this closes that thread. The proof is the classical
+  one made rigorous: vanishing derivative (nine logs collapse to a basis of five) → constant
+  → boundary value. EN + ES. DOI
+  [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715) (concept, latest version).
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.
@@ -442,6 +454,12 @@ Paper II figures and SageMath cross-checks:
   title  = {The Clock That Never Ticks: A Machine-Checked Path from the Dilogarithm to Quantum Speed Limits in Lean 4},
   year   = {2026}, doi = {10.5281/zenodo.20675270},
   note   = {Independent strand (concept DOI, latest version). \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026FiveTermLean,
+  author = {Mar\'in, Carles},
+  title  = {The Pentagon, Machine-Checked: Abel's Five-Term Relation for the Dilogarithm in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20682715},
+  note   = {Sequel to The Clock That Never Ticks (concept DOI, latest version). \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
 
