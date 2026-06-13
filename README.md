@@ -83,6 +83,24 @@ A companion strand formalizes the **Ihara side** of spectral graph theory:
   non-backtracking walk counts, used by Part VI. DOI
   [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470).
 
+A second, **independent strand** (different subject area, same repository) formalizes the
+**real dilogarithm and quantum speed limits**:
+
+- **The Clock That Never Ticks** ([`clock-never-ticks.pdf`](clock-never-ticks.pdf)):
+  a `sorry`-free development (∼1 500 lines) that fills a hole in Mathlib — the dilogarithm
+  `Li₂` the library cites but does not define — and follows it to a quantum-mechanics
+  ending. To the best of our knowledge the first formalization in any proof assistant of:
+  the real dilogarithm with Euler's reflection, Landen's transformation and the duplication
+  formula; the golden-ratio ladder `Li₂(1/φ²) = π²/15 − ln²φ` (from a 3×3 linear system, no
+  five-term relation) and the Lee–Yang effective central charge `c_eff = 2/5`; the Clausen
+  function `Cl₂` and Catalan's constant `G = Cl₂(π/2)`; the Fejér–Jackson inequality; the
+  bound `Cl₂(θ) ≥ sin(θ)/2`; and the Margolus–Levitin and (an `L¹` form of the)
+  Mandelstam–Tamm quantum speed limits. They assemble into the title theorem: the weight-2
+  zeta state (populations `∝ 1/n²` on equally spaced levels) has infinite mean energy and
+  infinite variance — both textbook speed limits say nothing — yet never reaches an
+  orthogonal state, because its autocorrelation is `(6/π²)·Li₂(e^{−iθ})` and the dilogarithm
+  has no zero on the unit circle. EN + ES. Zenodo DOI pending.
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.
@@ -206,6 +224,23 @@ This is the **Ihara/π₁ side** complementing the matching polynomial (the
 tree/Plancherel side). With both endpoints in Lean, **Part VI** fuses them into the
 trace-formula gap law.
 
+### The dilogarithm and quantum speed limits — *The Clock That Never Ticks*
+
+An independent strand (`Dilog/`, `QSL/`), `sorry`-free (axioms: `propext`,
+`Classical.choice`, `Quot.sound`).
+
+| Lean name | Statement | File |
+|---|---|---|
+| `Li2_add_Li2_one_sub` | Euler reflection `Li₂(x)+Li₂(1−x) = π²/6 − ln x·ln(1−x)` | `Dilog/Basic.lean` |
+| `Li2_landen`, `Li2_sq`, `Li2_one_half` | Landen transformation, duplication, `Li₂(½)` | `Dilog/Basic.lean` |
+| `rogersL_inv_goldenRatio_sq`, `rogersL_gold_sum` | golden ladder + Rogers `L`, Lee–Yang `c_eff = 2/5` | `Dilog/Basic.lean` |
+| `catalanConst`, `Cl₂_pi_div_two` | Clausen function `Cl₂`, Catalan's constant `G = Cl₂(π/2)` | `Dilog/Clausen.lean` |
+| `Cl₂_pos` | `Cl₂(θ) ≥ sin(θ)/2 > 0` on `(0,π)` (asymptotics-free Abel) | `Dilog/Clausen.lean` |
+| `zetaState_never_orthogonal` | the weight-2 zeta state never reaches orthogonality | `Dilog/Clausen.lean` |
+| `fejerSum_pos` | Fejér–Jackson `Σ_{k=1}^M sin(kθ)/k > 0` on `(0,π)` | `Dilog/FejerJackson.lean` |
+| `margolus_levitin` | `π ≤ 2⟨E⟩τ` at orthogonality — first QSL in any prover | `QSL/Basic.lean` |
+| `mandelstam_tamm_L1` | `1 ≤ D₁τ` (`L¹` Mandelstam–Tamm) | `QSL/MandelstamTamm.lean` |
+
 ### The Ihara side — Jacobi's formula and Newton's identity
 
 The resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
@@ -262,6 +297,13 @@ Ihara/PowerSumLogDeriv.lean  Newton log-derivative (geom-series / reversed produ
 Ihara/ResolventDiag.lean     diagonal resolvent, charpolyRev = det(I − X·M)          (Jacobi–Newton companion)
 Ihara/AdjugateDiagMinor.lean adjugate diagonal entry = principal minor              (Jacobi–Newton companion)
 
+# Dilog/, QSL/ — the dilogarithm + quantum speed limits (independent strand)
+Dilog/Basic.lean             Li₂: series, derivative, reflection, Landen, duplication, golden ladder, Rogers L
+Dilog/Clausen.lean           Clausen Cl₂, Catalan's constant, Bernoulli parabola, Cl₂≥sinθ/2, zeta-state theorem
+Dilog/FejerJackson.lean      the Fejér–Jackson inequality
+QSL/Basic.lean               Margolus–Levitin quantum speed limit (+ the cosine inequality)
+QSL/MandelstamTamm.lean      Mandelstam–Tamm, L¹ form
+
 # papers — each with an -es Spanish edition and a compiled .pdf
 godsil-gutman-lean.tex       Paper I    — Random Signs into Matchings
 heilmann-lieb-lean.tex       Paper II   — Unfolding a Graph into a Tree
@@ -272,6 +314,7 @@ gap-window-lean.tex          Paper VI   — The Walks That Remember the Cycles
 ihara-bass-lean.tex          companion  — Folding Edges into Vertices (Bass)
 jacobi-newton-lean.tex       companion  — What a Determinant's Derivative Knows
 ldpc-census.tex              applied    — Certified Short-Cycle Counts for IEEE 802.11n LDPC
+clock-never-ticks.tex        strand     — The Clock That Never Ticks (dilogarithm → QSL)
 references.bib               bibliography
 figures/                     figure scripts + PDFs + per-paper tables.tex
 research/                    numerical locks, sweeps, the LDPC census pipeline
@@ -287,6 +330,7 @@ Requires [`elan`](https://github.com/leanprover/elan). The toolchain is pinned i
 lake exe cache get      # prebuilt Mathlib oleans (recommended)
 lake build              # core, MSS/* (Papers I–II)
 lake build Ihara        # Ihara/* (Papers III–VI and the companions)
+lake build Dilog QSL    # dilogarithm + quantum speed limits (independent strand)
 ```
 
 Axiom footprint of the headline theorems:
@@ -366,6 +410,12 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20649056},
   note   = {Applied companion. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026ClockNeverTicks,
+  author = {Mar\'in, Carles},
+  title  = {The Clock That Never Ticks: A Machine-Checked Path from the Dilogarithm to Quantum Speed Limits in Lean 4},
+  year   = {2026},
+  note   = {Independent strand; Zenodo DOI pending. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
@@ -378,6 +428,7 @@ Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746),
 Jacobi–Newton [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470),
 Part VI [10.5281/zenodo.20648488](https://doi.org/10.5281/zenodo.20648488),
 Applied census [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
+*The Clock That Never Ticks* (dilogarithm + QSL strand): Zenodo DOI pending.
 
 ## Author and license
 
