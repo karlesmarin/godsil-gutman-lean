@@ -175,4 +175,27 @@ theorem Li₂c_exp_ne_zero {θ : ℝ} (h0 : 0 < θ) (h2π : θ < 2 * π) :
   · rw [← Li₂c_exp_re_eq, h, Complex.zero_re]
   · rw [← Li₂c_exp_im, h, Complex.zero_im]
 
+/-- The multivalued dilogarithm branch `φ_{A,B}(z) = Li₂(z) + 4π²A + 2πiB·log z`
+(O'Sullivan, A,B ∈ ℤ). On the principal branch `A = B = 0`, `φ = Li₂c`. -/
+noncomputable def phi (A B : ℤ) (z : ℂ) : ℂ :=
+  Li₂c z + 4 * (π : ℂ) ^ 2 * (A : ℂ) + 2 * (π : ℂ) * I * (B : ℂ) * Complex.log z
+
+/-- The derivative of `φ_{A,B}` on the punctured slit disk. -/
+theorem hasDerivAt_phi (A B : ℤ) {z : ℂ} (hz : ‖z‖ < 1) (hslit : z ∈ Complex.slitPlane) :
+    HasDerivAt (phi A B)
+      (-Complex.log (1 - z) / z + 2 * (π : ℂ) * I * (B : ℂ) * z⁻¹) z := by
+  have hz0 : z ≠ 0 := by rintro rfl; simp [Complex.mem_slitPlane_iff] at hslit
+  have h1 := hasDerivAt_Li₂c hz hz0
+  have hc : HasDerivAt (fun _ : ℂ => 4 * (π : ℂ) ^ 2 * (A : ℂ)) 0 z := hasDerivAt_const z _
+  have hlog := (Complex.hasDerivAt_log hslit).const_mul (2 * (π : ℂ) * I * (B : ℂ))
+  have h := (h1.add hc).add hlog
+  simpa [phi, add_zero] using h
+
+/-- **O'Sullivan (2.1)**: `z·φ'_{A,B}(z) = -log(1-z) + 2πiB` on the punctured slit disk. -/
+theorem z_mul_deriv_phi (B : ℤ) {z : ℂ} (hslit : z ∈ Complex.slitPlane) :
+    z * (-Complex.log (1 - z) / z + 2 * (π : ℂ) * I * (B : ℂ) * z⁻¹)
+      = -Complex.log (1 - z) + 2 * (π : ℂ) * I * (B : ℂ) := by
+  have hz0 : z ≠ 0 := by rintro rfl; simp [Complex.mem_slitPlane_iff] at hslit
+  field_simp
+
 end Dilog
