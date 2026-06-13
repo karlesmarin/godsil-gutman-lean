@@ -1,0 +1,293 @@
+% !TeX program = pdflatex
+% The Pentagon, Machine-Checked — Abel's five-term relation for the dilogarithm in Lean 4.
+% Build: pdflatex five-term-lean.tex (twice, for refs)
+% Verified against the Lean source 2026-06-13 (lake build Dilog, 8424 jobs, exit 0;
+% #print axioms on every named theorem -> propext, Classical.choice, Quot.sound only).
+% Toolchain v4.30.0-rc2, Mathlib pin 701fb6e9.
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\DeclareUnicodeCharacter{2082}{\ensuremath{_2}}
+\usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref}
+\usepackage{xurl}
+\usepackage[table]{xcolor}
+\definecolor{ggteal}{HTML}{1B6F8C}
+\definecolor{ggband}{HTML}{DCE7EB}
+\definecolor{ggamber}{HTML}{E08A1E}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{float}
+\usepackage[section]{placeins}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Li}{\mathrm{Li}_2}
+\DeclareMathOperator{\Lrog}{L}
+\hypersetup{colorlinks=true,linkcolor=ggteal,citecolor=ggteal,urlcolor=ggteal}
+\newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
+  arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
+\newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+\newtcolorbox{recipebox}[1]{boxrule=0.9pt,colframe=ggamber,colback=ggband!25,
+  arc=3pt,title={\textbf{#1}},fonttitle=\small,fontupper=\small}
+
+\title{\bf The Pentagon, Machine-Checked\\[4pt]
+  \large\normalfont Abel's five-term relation for the dilogarithm in Lean~4}
+\author{Carles Mar\'in\thanks{Formalized with AI assistance (Claude, Anthropic); the
+mathematics and all claims are the author's responsibility. The exact boundary of the
+contribution is stated in Section~\ref{sec:boundary}.}\\[3pt]
+  \normalsize Independent researcher \quad\textbar\quad \texttt{karlesmarin@gmail.com}\\
+  \normalsize ORCID 0009-0007-5637-9688}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give the first machine-checked proof, in any proof assistant, of \emph{Abel's
+five-term relation} for the dilogarithm. In its cleanest form, with $\Lrog$ the Rogers
+$\Lrog$-function, the relation reads, for $x,y\in(0,1)$,
+\[
+  \Lrog(x)+\Lrog(y)=\Lrog(xy)+\Lrog\!\Big(\tfrac{x(1-y)}{1-xy}\Big)
+    +\Lrog\!\Big(\tfrac{y(1-x)}{1-xy}\Big).
+\]
+This single identity is the capstone of the weight-2 theory: by theorems of Wojtkowiak
+and de~Jeu, \emph{every} functional equation of the dilogarithm with rational arguments
+is a consequence of it. The formalization is in Lean~4 over Mathlib, built on a
+self-contained development of $\Li$ (Mathlib carries no dilogarithm). The proof is the
+classical differentiation argument made fully rigorous: fixing $y$, the five-term
+difference has identically zero derivative on $(0,1)$ -- an algebraic cancellation of
+nine logarithmic terms into a five-element basis -- so it is constant, and its boundary
+value as $x\to0^+$ is computed by squeezing $\log x\cdot\log(1-x)\to0$. The result is
+\lean{sorry}-free, depending only on \lean{propext}, \lean{Classical.choice} and
+\lean{Quot.sound}.
+\end{abstract}
+
+\section{The most important functional equation}\label{sec:intro}
+
+The dilogarithm $\Li(x)=\sum_{n\ge1}x^n/n^2$ obeys a small zoo of functional equations.
+Two are elementary -- Euler's \emph{reflection} $\Li(x)+\Li(1-x)=\tfrac{\pi^2}{6}-\log
+x\log(1-x)$ and \emph{Landen}'s transformation -- and one is not: the \emph{five-term
+relation}, found by Spence (1809) and Abel (1830) and rediscovered many times since. It
+is the deepest of the weight-2 identities, and the only one that genuinely needs two
+variables.
+
+Its importance is not folklore. Wojtkowiak proved that every one-variable functional
+equation of $\Li$ with arguments rational in the variable is a $\mathbb{Z}$-linear
+combination of instances of the five-term relation; de~Jeu extended this to arbitrarily
+many variables~\cite{Wojtkowiak,deJeu}. The same identity is the defining relation of the
+\emph{Bloch group}, hence governs scissors-congruence invariants and the volumes of
+hyperbolic $3$-manifolds~\cite{Zagier}; in the theory of cluster algebras it is the
+\emph{pentagon}, the relation satisfied by a sequence of five mutations~\cite{Nakanishi}.
+When one writes the five arguments in a cycle (Figure~\ref{fig:pentagon}) the relation
+acquires a five-fold symmetry that is the source of all of this structure.
+
+The cleanest statement uses the \emph{Rogers $\Lrog$-function}
+$\Lrog(x):=\Li(x)+\tfrac12\log x\log(1-x)$, in which the spurious logarithmic terms of
+the raw $\Li$ form are absorbed and the relation becomes a pure sum of five $\Lrog$
+values, with no elementary correction:
+\keyeq{\Lrog(x)+\Lrog(y)=\Lrog(xy)+\Lrog\!\Big(\tfrac{x(1-y)}{1-xy}\Big)
+  +\Lrog\!\Big(\tfrac{y(1-x)}{1-xy}\Big),\qquad x,y\in(0,1).}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[scale=1.5,every node/.style={font=\small}]
+  \foreach \i/\lab in {0/{$x$},1/{$\tfrac{x(1-y)}{1-xy}$},2/{$y$},
+      3/{$\tfrac{y(1-x)}{1-xy}$},4/{$xy$}}{
+    \node (n\i) at ({90+\i*72}:1.25) {};
+    \node at ({90+\i*72}:1.55) {\lab};
+    \fill[ggteal] ({90+\i*72}:1.25) circle (1.4pt);
+  }
+  \foreach \i in {0,...,4}{
+    \pgfmathtruncatemacro{\j}{mod(\i+1,5)}
+    \draw[ggteal,-{Stealth[length=4pt]}] (n\i) -- (n\j);
+  }
+\end{tikzpicture}
+\caption{\label{fig:pentagon}The five arguments of the relation on a cycle. The
+five-fold symmetry of this pentagon is the combinatorial shadow of the Bloch-group
+relation and of the cluster-algebra pentagon.}
+\end{figure}
+
+\paragraph{The state of formalization.} Mathlib, the largest formal mathematics library,
+carries no dilogarithm at all: neither $\Li$ nor any of its functional equations. A check
+of the Lean, Isabelle and Rocq (Coq) libraries in June~2026 turned up no formalization of
+the five-term relation, or indeed of $\Li$ as an analytic object beyond elementary special
+values. The development reported here is therefore self-contained: it sits on top of a
+from-scratch Lean construction of $\Li$ (its series, derivative \lean{$-\log(1-x)/x$},
+reflection, Landen and duplication), of which the five-term relation is the capstone.
+With it, the two-variable identities and the polylogarithm \emph{ladders} -- evaluations
+such as the golden-ratio and quartic-base ladders -- become reachable as corollaries
+rather than separate formalization targets.
+
+\section{The statement, and the idea of the proof}\label{sec:proof}
+
+\begin{theorem}[\lean{Dilog.rogersL\_fiveterm}]\label{thm:five}
+For all $x,y\in(0,1)$,
+\[
+  \Lrog(x)+\Lrog(y)=\Lrog(xy)+\Lrog\!\Big(\tfrac{x(1-y)}{1-xy}\Big)
+    +\Lrog\!\Big(\tfrac{y(1-x)}{1-xy}\Big).
+\]
+\end{theorem}
+
+The proof is the textbook differentiation argument, carried out with full rigour. Fix
+$y\in(0,1)$ and set
+\[
+  G(t)=\Lrog(t)-\Lrog(ty)-\Lrog\!\Big(\tfrac{t(1-y)}{1-ty}\Big)
+    -\Lrog\!\Big(\tfrac{y(1-t)}{1-ty}\Big).
+\]
+The theorem is the statement $G(x)=-\Lrog(y)$. The argument has three movements.
+
+\paragraph{1. The derivative vanishes.} For $x,y\in(0,1)$ all three composite arguments
+lie in $(0,1)$ as well, so each term is differentiable. Writing
+$\Lrog'(t)=-\tfrac12\big(\tfrac{\log(1-t)}{t}+\tfrac{\log t}{1-t}\big)$, the chain rule
+turns $G'(t)$ into a sum of four such expressions weighted by the derivatives of the
+composite arguments. Every logarithm that appears -- of $t$, of $ty$, of the two
+fractional arguments, and of their complements -- expands, by $\log(ab)=\log a+\log b$
+and $\log(a/b)=\log a-\log b$, into the five-element basis
+\[
+  \{\log t,\ \log y,\ \log(1-t),\ \log(1-y),\ \log(1-ty)\}.
+\]
+In that basis $G'(t)$ is a rational expression whose every coefficient cancels: $G'\equiv
+0$ on $(0,1)$. In Lean this is the single delicate step (\lean{fiveterm\_hasDerivAt\_zero}):
+the nine logarithmic terms are rewritten into the basis and the rational remainder is
+cleared and closed by \lean{ring}; the cancellation was checked numerically to thirty
+digits before it was formalized.
+
+\paragraph{2. Hence $G$ is constant.} A function with vanishing derivative on the open,
+connected interval $(0,1)$ is constant there (Mathlib's
+\lean{IsOpen.is\_const\_of\_deriv\_eq\_zero}, the mean-value theorem in disguise). So
+$G(x)=G(t)$ for every $t\in(0,1)$.
+
+\paragraph{3. The boundary value.} It remains to evaluate the constant. As $t\to0^+$,
+$ty\to0$, $\tfrac{t(1-y)}{1-ty}\to0$, and $\tfrac{y(1-t)}{1-ty}\to y$, so
+\[
+  G(t)\ \longrightarrow\ \Lrog(0)-\Lrog(0)-\Lrog(0)-\Lrog(y)=-\Lrog(y),
+\]
+provided $\Lrog$ is right-continuous at $0$ with $\Lrog(0)=0$. This is the one analytic
+subtlety: $\Lrog(t)=\Li(t)+\tfrac12\log t\log(1-t)$, and while $\Li$ is continuous, the
+product $\log t\cdot\log(1-t)$ is an indeterminate $(-\infty)\cdot0$. It is tamed by a
+squeeze (\lean{tendsto\_rogersL\_nhdsGT\_zero}): on $(0,\tfrac12]$ one has
+$-\log(1-t)\le 2t$ (from $\log z\ge1-z^{-1}$), so
+\[
+  0\ \le\ \log t\cdot\log(1-t)=(-\log t)(-\log(1-t))\ \le\ 2t\,(-\log t)=2\,(-t\log t)\
+  \longrightarrow\ 0,
+\]
+because $t\log t\to0$ -- Mathlib's \lean{Real.continuous\_mul\_log}. Combining, $G$ tends
+to $-\Lrog(y)$; being constant and equal to $G(x)$ near $0$, it \emph{equals}
+$-\Lrog(y)$. Rearranging $G(x)=-\Lrog(y)$ gives Theorem~\ref{thm:five}. \qed
+
+\begin{recipebox}{The proof in one breath}
+Fix $y$. Differentiate the five-term difference in $x$: the logs cancel into a basis of
+five and the rest is \lean{ring}. Zero derivative on a connected interval means constant.
+Slide $x$ to $0$: three terms vanish, one survives as $\Lrog(y)$, and the constant is
+$-\Lrog(y)$.
+\end{recipebox}
+
+\section{The building blocks}\label{sec:blocks}
+
+The headline theorem rests on three reusable pieces, each \lean{sorry}-free with the
+standard three axioms.
+
+\begin{lemma}[\lean{Dilog.hasDerivAt\_rogersL}]
+On $(0,1)$, $\displaystyle\Lrog'(x)=-\tfrac12\Big(\tfrac{\log(1-x)}{x}
++\tfrac{\log x}{1-x}\Big)$.
+\end{lemma}
+This is the same derivative scheme already used in the Euler-reflection and Landen
+formalizations: combine the derivative $-\log(1-x)/x$ of $\Li$ with the product rule for
+$\tfrac12\log x\log(1-x)$.
+
+\begin{lemma}[\lean{Dilog.tendsto\_rogersL\_nhdsGT\_zero}]
+$\Lrog(t)\to0$ as $t\to0^+$.
+\end{lemma}
+The $\Li$ part is continuous on $[-1,1]$; the log-product is squeezed to $0$ by
+$2\,(-t\log t)$ as above. This is the only place the proof leaves pure algebra for genuine
+analysis.
+
+\begin{lemma}[\lean{Dilog.continuousAt\_rogersL}]
+$\Lrog$ is continuous at every $x\in(0,1)$.
+\end{lemma}
+Needed for the surviving boundary term $\Lrog\big(\tfrac{y(1-t)}{1-ty}\big)\to\Lrog(y)$:
+$\Li$ is continuous at interior points, and $\log x$, $\log(1-x)$ are continuous where
+their arguments are positive.
+
+\section{The boundary of the contribution}\label{sec:boundary}
+
+Everything here that is mathematics is classical. The five-term relation is due to Spence
+and Abel; the Rogers $\Lrog$-function and its role in cleaning the identity are from
+Rogers (1907); the universality statements are Wojtkowiak's and de~Jeu's; the
+differentiation proof is standard. We claim no new identity and no new inequality.
+
+The contributions are three. First, the \emph{formalization itself}: to the author's
+knowledge (checks of June~2026) this is the first machine-checked proof of the five-term
+relation in any proof assistant, and it is built on the first machine-checked
+dilogarithm. Second, the \emph{reusable infrastructure} -- the Rogers-$\Lrog$ derivative,
+the right-continuity at $0$ via the $-t\log t$ squeeze, and the interior continuity --
+which is exactly what any further weight-2 development (ladders, the Bloch group, the
+five-term in Bloch--Wigner form) will need. Third, the \emph{proof-engineering record}:
+the cancellation of nine logarithms into a five-element basis is the kind of step where a
+formal check earns its keep, and the boundary limit is a small but instructive piece of
+elementary asymptotics rarely written out in full.
+
+\emph{On methodology.} The formalization was carried out with an AI assistant (Claude,
+Anthropic), with the central cancellation verified numerically to thirty digits before
+formalization and every named theorem checked by \lean{\#print axioms} to depend only on
+\lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}. Correctness does not rest
+on the assistant: the Lean kernel checks every proof. The mathematics and the claims
+remain the author's responsibility.
+
+\section{Open roads}\label{sec:roads}
+
+\begin{enumerate}
+\item \textbf{Ladders as corollaries.} With the five-term relation in hand, the
+golden-ratio ladders $\Lrog(1/\varphi)=\pi^2/10$, $\Lrog(1/\varphi^2)=\pi^2/15$ and their
+quartic-base relatives are linear-algebra consequences rather than separate proofs; making
+this mechanical in Lean is the natural next step.
+\item \textbf{The Bloch--Wigner five-term.} The same relation holds for the
+single-valued Bloch--Wigner function $D$ on $\mathbb{C}$, where it underlies the
+hyperbolic-volume and scissors-congruence applications; formalizing $D$ and its five-term
+relation is the complex-analytic sequel.
+\item \textbf{Universality.} Wojtkowiak's theorem -- that every rational one-variable
+functional equation reduces to the five-term -- would be a deep and rewarding
+formalization target, of which the present result is the indispensable first brick.
+\end{enumerate}
+
+\section*{Reproducing}
+\begin{verbatim}
+git clone https://github.com/karlesmarin/godsil-gutman-lean
+cd godsil-gutman-lean && lake exe cache get
+lake build Dilog.FiveTerm
+\end{verbatim}
+Lean toolchain \lean{v4.30.0-rc2}, Mathlib pinned at \lean{701fb6e9}. The five-term
+relation is \lean{Dilog.rogersL\_fiveterm} in \lean{Dilog/FiveTerm.lean}; its supporting
+lemmas are \lean{hasDerivAt\_rogersL}, \lean{fiveterm\_hasDerivAt\_zero},
+\lean{tendsto\_rogersL\_nhdsGT\_zero} and \lean{continuousAt\_rogersL}. Each is checked by
+\lean{\#print axioms} to depend only on \lean{propext}, \lean{Classical.choice},
+\lean{Quot.sound}.
+
+\begin{thebibliography}{9}
+\bibitem{Wojtkowiak} Z.\ Wojtkowiak, \emph{The basic structure of polylogarithmic
+functional equations}, in \textit{Structural Properties of Polylogarithms} (L.\ Lewin,
+ed.), Math.\ Surveys Monogr.\ \textbf{37}, AMS (1991), 205--231.
+\bibitem{deJeu} R.\ de Jeu, \emph{Towards regulator formulae for the $K$-theory of curves
+and number fields}, Compositio Math.\ \textbf{124} (2000), 137--194.
+\bibitem{Zagier} D.\ Zagier, \emph{The dilogarithm function}, in \textit{Frontiers in
+Number Theory, Physics, and Geometry II}, Springer (2007), 3--65.
+\bibitem{Nakanishi} T.\ Nakanishi, \emph{Dilogarithm identities for conformal field
+theories and cluster algebras}, in \textit{Symmetries, Integrable Systems and
+Representations}, Springer Proc.\ Math.\ Stat.\ \textbf{40} (2013), 407--444.
+\bibitem{Rogers} L.\ J.\ Rogers, \emph{On function sum theorems connected with the series
+$\sum x^n/n^2$}, Proc.\ London Math.\ Soc.\ \textbf{4} (1907), 169--189.
+\bibitem{Lewin} L.\ Lewin, \emph{Polylogarithms and Associated Functions},
+North-Holland (1981).
+\bibitem{Mathlib} The Mathlib Community, \emph{The Lean Mathematical Library},
+CPP 2020, 367--381.
+\end{thebibliography}
+
+\end{document}
