@@ -232,4 +232,87 @@ the sign that localizes the zero inside the disk (O'Sullivan Prop. 5.3). -/
 theorem Iθ_one_pos (B : ℤ) {θ : ℝ} (h0 : 0 < θ) (hπ : θ < π) : 0 < Iθ B θ 1 := by
   rw [Iθ_one]; exact Cl₂_pos h0 hπ
 
+/-- A uniform bound `‖Li₂c z‖ ≤ M` on the closed disk, `M = ∑ ‖1/(n+1)²‖`. -/
+theorem norm_Li₂c_le {z : ℂ} (hz : ‖z‖ ≤ 1) :
+    ‖Li₂c z‖ ≤ ∑' n : ℕ, ‖(1 : ℂ) / ((n : ℂ) + ((1 : ℕ) : ℂ)) ^ 2‖ := by
+  have hbd : ∀ n : ℕ, ‖z ^ (n + 1) / ((n : ℂ) + 1) ^ 2‖
+      ≤ ‖(1 : ℂ) / ((n : ℂ) + ((1 : ℕ) : ℂ)) ^ 2‖ := by
+    intro n
+    simp only [Nat.cast_one]
+    rw [norm_div, norm_div, norm_one, norm_pow]
+    gcongr
+    exact (pow_le_pow_left₀ (norm_nonneg z) hz (n + 1)).trans_eq (one_pow _)
+  have hns : Summable (fun n : ℕ => ‖z ^ (n + 1) / ((n : ℂ) + 1) ^ 2‖) :=
+    Summable.of_nonneg_of_le (fun n => norm_nonneg _) hbd
+      (summable_pow_div_add (1 : ℂ) 2 1 (by norm_num))
+  rw [Li₂c]
+  refine (norm_tsum_le_tsum_norm hns).trans ?_
+  exact Summable.tsum_le_tsum hbd hns (summable_pow_div_add (1 : ℂ) 2 1 (by norm_num))
+
+/-- Norm of the ray point `r·e^{iθ}` is `r` (for `r ≥ 0`). -/
+private lemma norm_ray (θ : ℝ) {r : ℝ} (hr : 0 ≤ r) :
+    ‖(r : ℂ) * Complex.exp ((θ : ℂ) * I)‖ = r := by
+  rw [norm_mul, Complex.norm_exp, Complex.mul_I_re, Complex.ofReal_im, neg_zero,
+    Real.exp_zero, mul_one, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+
+/-- **O'Sullivan Prop. 5.3 (localization, the achievable core)**: for `B ≥ 1` and
+`θ ∈ (0,π)`, the imaginary-part curve `I_θ = 0` is met **strictly inside** the unit disk.
+Proof: `I_θ(1) = Cl₂(θ) > 0`, `I_θ` is `≤ 0` at a small `r₀ ∈ (0,1)` (the `2πB·log r`
+term dominates the bounded `Im Li₂c`), and continuity + the intermediate value theorem. -/
+theorem exists_Iθ_zero_lt_one (B : ℤ) (hB : 1 ≤ B) {θ : ℝ} (h0 : 0 < θ) (hπ : θ < π) :
+    ∃ r ∈ Set.Ioo (0 : ℝ) 1, Iθ B θ r = 0 := by
+  have hπ0 : 0 < π := Real.pi_pos
+  set M : ℝ := ∑' n : ℕ, ‖(1 : ℂ) / ((n : ℂ) + ((1 : ℕ) : ℂ)) ^ 2‖ with hMdef
+  have hM0 : 0 ≤ M := tsum_nonneg (fun n => norm_nonneg _)
+  set r₀ : ℝ := Real.exp (-(M + 1) / (2 * π)) with hr₀def
+  have hr₀0 : 0 < r₀ := Real.exp_pos _
+  have hr₀1 : r₀ < 1 := by
+    have hneg : -(M + 1) / (2 * π) < 0 :=
+      div_neg_of_neg_of_pos (by linarith [hM0]) (by positivity)
+    calc r₀ = Real.exp (-(M + 1) / (2 * π)) := hr₀def
+      _ < Real.exp 0 := Real.exp_lt_exp.mpr hneg
+      _ = 1 := Real.exp_zero
+  have hB' : (1 : ℝ) ≤ (B : ℝ) := by exact_mod_cast hB
+  -- continuity on [r₀, 1]
+  have hcont : ContinuousOn (fun r => Iθ B θ r) (Set.Icc r₀ 1) := by
+    have hray : ContinuousOn (fun r : ℝ => (r : ℂ) * Complex.exp ((θ : ℂ) * I)) (Set.Icc r₀ 1) :=
+      (by fun_prop : Continuous fun r : ℝ => (r : ℂ) * Complex.exp ((θ : ℂ) * I)).continuousOn
+    have hmaps : Set.MapsTo (fun r : ℝ => (r : ℂ) * Complex.exp ((θ : ℂ) * I))
+        (Set.Icc r₀ 1) (Metric.closedBall 0 1) := by
+      intro r hr
+      rw [Metric.mem_closedBall, dist_zero_right, norm_ray θ (le_trans hr₀0.le hr.1)]
+      exact hr.2
+    have h1 : ContinuousOn (fun r : ℝ => (Li₂c ((r : ℂ) * Complex.exp ((θ : ℂ) * I))).im)
+        (Set.Icc r₀ 1) :=
+      Complex.continuous_im.comp_continuousOn (continuousOn_Li₂c.comp hray hmaps)
+    have h2 : ContinuousOn (fun r : ℝ => 2 * π * (B : ℝ) * Real.log r) (Set.Icc r₀ 1) := by
+      refine continuousOn_const.mul (Real.continuousOn_log.mono ?_)
+      intro r hr
+      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
+      exact (lt_of_lt_of_le hr₀0 hr.1).ne'
+    exact h1.add h2
+  -- value at 1
+  have hf1 : 0 < Iθ B θ 1 := Iθ_one_pos B h0 hπ
+  -- value at r₀ is ≤ 0
+  have hf0 : Iθ B θ r₀ ≤ 0 := by
+    have him : (Li₂c ((r₀ : ℂ) * Complex.exp ((θ : ℂ) * I))).im ≤ M := by
+      refine (Complex.im_le_norm _).trans ?_
+      have : ‖(r₀ : ℂ) * Complex.exp ((θ : ℂ) * I)‖ ≤ 1 := by
+        rw [norm_ray θ hr₀0.le]; exact hr₀1.le
+      exact norm_Li₂c_le this
+    have hlog : 2 * π * (B : ℝ) * Real.log r₀ ≤ -(M + 1) := by
+      rw [hr₀def, Real.log_exp]
+      rw [show 2 * π * (B : ℝ) * (-(M + 1) / (2 * π)) = -((B : ℝ) * (M + 1)) by
+        field_simp]
+      nlinarith [hM0, hB']
+    have : Iθ B θ r₀ = (Li₂c ((r₀ : ℂ) * Complex.exp ((θ : ℂ) * I))).im
+        + 2 * π * (B : ℝ) * Real.log r₀ := rfl
+    rw [this]; linarith
+  -- intermediate value theorem
+  obtain ⟨r, hr, hr0⟩ := intermediate_value_Icc hr₀1.le hcont ⟨hf0, hf1.le⟩
+  refine ⟨r, ⟨lt_of_lt_of_le hr₀0 hr.1, ?_⟩, hr0⟩
+  rcases lt_or_eq_of_le hr.2 with h | h
+  · exact h
+  · exfalso; rw [h] at hr0; linarith [hf1, hr0]
+
 end Dilog
