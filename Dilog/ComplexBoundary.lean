@@ -98,6 +98,74 @@ theorem Li₂c_exp_re {θ : ℝ} (h0 : 0 ≤ θ) (h2π : θ ≤ 2 * π) :
     (Li₂c (Complex.exp ((θ : ℂ) * I))).re = π ^ 2 / 6 - π * θ / 2 + θ ^ 2 / 4 := by
   rw [Li₂c_exp_re_eq, zetaStateRe_eq h0 h2π]
 
+/-- The analytic core, complex form: `Li₂c'(z) = -log(1-z)/z` on the punctured open disk.
+The complex companion of `Dilog.hasDerivAt_Li₂`, by the same term-by-term differentiation
+under a geometric majorant on a ball, then the complex Mercator series. -/
+theorem hasDerivAt_Li₂c {z : ℂ} (hz : ‖z‖ < 1) (hz0 : z ≠ 0) :
+    HasDerivAt Li₂c (-Complex.log (1 - z) / z) z := by
+  set r : ℝ := (‖z‖ + 1) / 2 with hr
+  have hzr : ‖z‖ < r := by rw [hr]; linarith
+  have hr1 : r < 1 := by rw [hr]; linarith
+  have hr0 : 0 < r := by rw [hr]; positivity
+  set t : Set ℂ := Metric.ball 0 r with ht_def
+  have hzt : z ∈ t := by
+    rw [ht_def, Metric.mem_ball, dist_zero_right]; exact hzr
+  set g : ℕ → ℂ → ℂ := fun n w => w ^ (n + 1) / ((n : ℂ) + 1) ^ 2 with hg_def
+  set g' : ℕ → ℂ → ℂ := fun n w => w ^ n / ((n : ℂ) + 1) with hg'_def
+  have hne : ∀ n : ℕ, ((n : ℂ) + 1) ≠ 0 := fun n => Nat.cast_add_one_ne_zero n
+  have hg : ∀ n w, w ∈ t → HasDerivAt (g n) (g' n w) w := by
+    intro n w _
+    have h1 : HasDerivAt (fun u : ℂ => u ^ (n + 1)) (((n : ℂ) + 1) * w ^ n) w := by
+      simpa [Nat.cast_add, Nat.cast_one] using hasDerivAt_pow (n + 1) w
+    have h2 := h1.div_const (((n : ℂ) + 1) ^ 2)
+    convert h2 using 1
+    rw [hg'_def, pow_two, mul_div_mul_left _ _ (hne n)]
+  have hg' : ∀ n w, w ∈ t → ‖g' n w‖ ≤ r ^ n := by
+    intro n w hw
+    rw [ht_def, Metric.mem_ball, dist_zero_right] at hw
+    rw [hg'_def, norm_div, norm_pow]
+    have hd : ‖(n : ℂ) + 1‖ = (n : ℝ) + 1 := by
+      rw [show (n : ℂ) + 1 = ((n + 1 : ℕ) : ℂ) by push_cast; ring, Complex.norm_natCast]
+      push_cast; ring
+    rw [hd]
+    calc ‖w‖ ^ n / ((n : ℝ) + 1) ≤ ‖w‖ ^ n :=
+          div_le_self (by positivity) (by linarith [Nat.cast_nonneg (α := ℝ) n])
+      _ ≤ r ^ n := pow_le_pow_left₀ (norm_nonneg w) hw.le n
+  have hu : Summable fun n : ℕ => r ^ n := summable_geometric_of_lt_one hr0.le hr1
+  have hg0 : Summable fun n => g n z := summable_Li₂c hz.le
+  have key : HasDerivAt (fun w => ∑' n, g n w) (∑' n, g' n z) z :=
+    hasDerivAt_tsum_of_isPreconnected hu Metric.isOpen_ball Metric.isPreconnected_ball
+      hg hg' hzt hg0 hzt
+  -- complex Mercator: `∑ zⁿ⁺¹/(n+1) = -log(1-z)`
+  have hlog : ∑' n : ℕ, z ^ (n + 1) / ((n : ℂ) + 1) = -Complex.log (1 - z) := by
+    have hz' : ‖(-z)‖ < 1 := by rwa [norm_neg]
+    have H := Complex.hasSum_taylorSeries_log hz'
+    have hfun : (fun n : ℕ => (-1 : ℂ) ^ (n + 1) * (-z) ^ n / (n : ℂ))
+        = fun n : ℕ => -(z ^ n / (n : ℂ)) := by
+      funext n
+      rw [neg_pow z n, ← mul_assoc, ← pow_add, show n + 1 + n = 2 * n + 1 by ring,
+        pow_succ, pow_mul, neg_one_sq, one_pow]
+      ring
+    rw [hfun, show (1 : ℂ) + -z = 1 - z by ring] at H
+    have H2 : HasSum (fun n : ℕ => z ^ n / (n : ℂ)) (-Complex.log (1 - z)) := by
+      simpa using H.neg
+    have Hshift := (hasSum_nat_add_iff (f := fun n : ℕ => z ^ n / (n : ℂ)) 1).mpr
+      (show HasSum (fun n : ℕ => z ^ n / (n : ℂ))
+          (-Complex.log (1 - z) + ∑ i ∈ Finset.range 1, z ^ i / (i : ℂ)) by simpa using H2)
+    have Htarget : HasSum (fun n : ℕ => z ^ (n + 1) / ((n : ℂ) + 1)) (-Complex.log (1 - z)) := by
+      have heq : (fun n : ℕ => z ^ (n + 1) / ((n : ℂ) + 1))
+          = fun n : ℕ => z ^ (n + 1) / (((n + 1 : ℕ) : ℂ)) := by
+        funext n; push_cast; ring
+      rw [heq]; exact Hshift
+    exact Htarget.tsum_eq
+  have hfactor : ∑' n : ℕ, z ^ (n + 1) / ((n : ℂ) + 1)
+      = z * ∑' n : ℕ, z ^ n / ((n : ℂ) + 1) := by
+    rw [← tsum_mul_left]; congr 1; ext n; rw [pow_succ]; ring
+  have hsum : ∑' n : ℕ, g' n z = -Complex.log (1 - z) / z := by
+    rw [hg'_def, eq_div_iff hz0, mul_comm, ← hfactor, hlog]
+  rw [hsum] at key
+  exact key
+
 /-- **No zero on the unit circle** for `θ ∈ (0, 2π)` (principal branch). Direct from the
 Clock paper's `zetaState_never_orthogonal` via the boundary decomposition. -/
 theorem Li₂c_exp_ne_zero {θ : ℝ} (h0 : 0 < θ) (h2π : θ < 2 * π) :
