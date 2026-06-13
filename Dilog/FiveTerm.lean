@@ -80,10 +80,12 @@ theorem fiveterm_hasDerivAt_zero {x y : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1)
   have hc : y * (1 - x) / (1 - x * y) ∈ Ioo (0 : ℝ) 1 :=
     ⟨div_pos (mul_pos hy0 h1x) hD, by rw [div_lt_one hD]; nlinarith⟩
   -- derivatives of the three rational arguments
-  have da : HasDerivAt (fun t : ℝ => t * y) y x := (hasDerivAt_id x).mul_const y
+  have da : HasDerivAt (fun t : ℝ => t * y) y x := by
+    simpa using (hasDerivAt_id x).mul_const y
   have dden : HasDerivAt (fun t : ℝ => 1 - t * y) (-y) x := by
     simpa using ((hasDerivAt_id x).mul_const y).const_sub (1 : ℝ)
-  have dbnum : HasDerivAt (fun t : ℝ => t * (1 - y)) (1 - y) x := (hasDerivAt_id x).mul_const (1 - y)
+  have dbnum : HasDerivAt (fun t : ℝ => t * (1 - y)) (1 - y) x := by
+    simpa using (hasDerivAt_id x).mul_const (1 - y)
   have db := dbnum.div dden hD'
   have dcnum : HasDerivAt (fun t : ℝ => y * (1 - t)) (y * -1) x :=
     ((hasDerivAt_id x).const_sub (1 : ℝ)).const_mul y
@@ -99,9 +101,12 @@ theorem fiveterm_hasDerivAt_zero {x y : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1)
   have hxy0 : x * y ≠ 0 := ne_of_gt (mul_pos hx0 hy0)
   have hx0' : x ≠ 0 := ne_of_gt hx0
   have hy0' : y ≠ 0 := ne_of_gt hy0
+  have hDyx : (1 : ℝ) - y * x ≠ 0 := by rw [mul_comm]; exact hD'
   -- simplify `1 - b` and `1 - c`
-  have hb1 : 1 - x * (1 - y) / (1 - x * y) = (1 - x) / (1 - x * y) := by field_simp; ring
-  have hc1 : 1 - y * (1 - x) / (1 - x * y) = (1 - y) / (1 - x * y) := by field_simp; ring
+  have hb1 : 1 - x * (1 - y) / (1 - x * y) = (1 - x) / (1 - x * y) := by
+    field_simp; ring
+  have hc1 : 1 - y * (1 - x) / (1 - x * y) = (1 - y) / (1 - x * y) := by
+    field_simp; ring
   rw [hb1, hc1]
   -- expand all logarithms into the basis
   rw [Real.log_mul hx0' hy0',
@@ -109,6 +114,8 @@ theorem fiveterm_hasDerivAt_zero {x y : ℝ} (hx : x ∈ Ioo (0 : ℝ) 1)
       Real.log_div h1x.ne' hD',
       Real.log_div (mul_pos hy0 h1x).ne' hD', Real.log_mul hy0' h1x.ne',
       Real.log_div h1y.ne' hD']
+  have h1x' : (1 : ℝ) - x ≠ 0 := h1x.ne'
+  have h1y' : (1 : ℝ) - y ≠ 0 := h1y.ne'
   field_simp
   ring
 
