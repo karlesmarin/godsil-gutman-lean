@@ -45,6 +45,4 @@ ax.set_xticklabels([r"$0$", r"$\pi/2$", r"$\pi$", r"$3\pi/2$", r"$2\pi$"])
 ax.set_xlabel(r"$\theta$")
 ax.set_ylabel(r"$\mathrm{Cl}_2(\theta)$")
 ax.legend(frameon=False, fontsize=9, loc="lower left")
-ax.set_title(r"The Clausen function: positive on $(0,\pi)$, with the Lean lower bound",
-             fontsize=11)
 save(fig, "dilog_fig2_clausen")

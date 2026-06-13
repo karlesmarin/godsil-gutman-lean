@@ -29,7 +29,7 @@ two = np.abs(np.cos(ts / 2))
 ax.plot(ts, zeta, color=COL["pos"], lw=2.0, zorder=3,
         label=r"zeta state $p_n\propto 1/n^2$:  $\frac{6}{\pi^2}|\mathrm{Li}_2(e^{-i\theta})|$")
 ax.plot(ts, two, color=COL["neg"], lw=1.6, ls="--", zorder=2,
-        label=r"two-level state $\frac{|0\rangle+|2E\rangle}{\sqrt{2}}$:  $|\cos(\theta/2)|$")
+        label=r"two-level state $\frac{|0\rangle+|E\rangle}{\sqrt{2}}$:  $|\cos(\theta/2)|$")
 ax.axhline(float(6 / pi**2 * (pi**2 / 12)), color=COL["accent"], lw=1.0, ls=":",
            zorder=1)
 ax.annotate(r"floor $=\frac{6}{\pi^2}\cdot\frac{\pi^2}{12}=\frac{1}{2}$  (never orthogonal)",
@@ -43,5 +43,4 @@ ax.set_xlabel(r"$\theta = $ time (units $\hbar/E$-spacing)")
 ax.set_ylabel(r"$|S(\theta)| = |\langle\psi_0|\psi_\theta\rangle|$")
 ax.set_ylim(-0.05, 1.05)
 ax.legend(frameon=False, fontsize=9, loc="upper right")
-ax.set_title("The clock that never ticks: two states, same level spacing", fontsize=11)
 save(fig, "dilog_fig3_clock")

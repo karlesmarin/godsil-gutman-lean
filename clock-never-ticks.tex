@@ -20,6 +20,8 @@
 \definecolor{ggamber}{HTML}{E08A1E}
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
+\usepackage{float}
+\usepackage[section]{placeins}
 \usepackage[most]{tcolorbox}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
@@ -129,6 +131,19 @@ the crossing, not the chain, is where the title theorem lives. Every node is a b
 \section{The question that starts it: why does the library cite a function it does not
 have?}\label{sec:intro}
 
+Few functions have been discovered as many times as the dilogarithm. Euler wrote down
+its series in the 1760s; within a century it had been met again by Spence, by Abel in
+the study of its functional equations, by Lobachevsky in the measurement of hyperbolic
+space, and by Kummer --- each giving it a different name and a different reason to care.
+Two centuries later it reappeared, unbidden, in the finite parts of Feynman integrals
+and in the thermodynamics of integrable systems. It is the rare non-elementary function
+that now and then consents to a closed form, and the catalogue of those closed forms
+reads like a tour of mathematics. So there is something almost comic in the fact that,
+in 2026 --- after a decade of one of the most ambitious formalization efforts ever
+attempted --- the dilogarithm was not in the library at all. The machines we now use to
+certify theorems had never been told what $\Li$ is. They had, however, been told to
+mention it.
+
 The file \lean{Mathlib/Analysis/SpecialFunctions/Integrals/LogTrigonometric.lean} of
 Mathlib --- the mathematical library of the Lean~4 proof assistant, on which a
 substantial part of contemporary formalized mathematics is built --- describes one of
@@ -204,6 +219,12 @@ And the duplication formula needs no calculus at all: it is a pure rearrangement
 series by even and odd indices (\lean{tsum\_even\_add\_odd}), the formal mirror of how
 Euler would have proved it.
 
+\emph{From theory to practice.} The dilogarithm is the standard weight-2 function of
+one-loop Feynman integrals and of hyperbolic and $K$-theoretic invariants; textbooks
+reach for it constantly. The practical value of formalizing it is modest and specific:
+a verified \lean{Li2} with its functional equations --- including the one delicate
+boundary limit --- that downstream Lean developments can import rather than re-derive.
+
 \emph{The turn.} Three functional equations in hand, the classical showpieces of the
 subject are the golden-ratio evaluations --- and every textbook reaches them through
 Abel's five-term relation, a two-variable identity we have \emph{not} formalized.
@@ -246,15 +267,12 @@ cancel (\lean{rogersL\_inv\_goldenRatio\_sq}, \lean{rogersL\_gold\_sum}):
 and the first, normalized, is the effective central charge of the Lee--Yang
 thermodynamic Bethe ansatz, $c_{\mathrm{eff}}=\Lrog(1/\varphi^2)/\Lrog(1)=2/5$ --- to
 our knowledge the first TBA dilogarithm identity verified in a proof assistant.
-Figure~\ref{fig:golden} shows the curve with its certified values.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.78\textwidth]{dilog_fig1_golden}
-\caption{The real dilogarithm. Every marked value is a \lean{sorry}-free Lean theorem;
-the generating script asserts each against $40$-digit numerics before drawing.}
-\label{fig:golden}
-\end{figure}
+\emph{From theory to practice.} The value $c_{\mathrm{eff}}=2/5$ is the effective central
+charge of the Lee--Yang model, a non-unitary minimal CFT whose Yang--Lee zeros have been
+observed experimentally in spin systems. The identity formalized here is the simplest
+entry of the thermodynamic-Bethe-ansatz dilogarithm table; having one machine-checked
+anchors any later formalization of integrable-model thermodynamics.
 
 \emph{The turn.} The ladder spends the function's life \emph{inside} the interval of
 convergence. The natural next territory is the boundary itself. What does the series do
@@ -285,11 +303,18 @@ it produces a celebrity:
 G \;=\; \Cl\!\Big(\frac{\pi}{2}\Big) \;=\; \sum_{k\ge0}\frac{(-1)^k}{(2k+1)^2}
 \;=\;0.9159\ldots,
 \]
-\textbf{Catalan's constant}, absent from every proof assistant until now
+\textbf{Catalan's constant}, absent --- as far as we could determine --- from every
+proof assistant until now
 (\lean{catalanConst}, \lean{Cl₂\_pi\_div\_two}; the proof is the same even/odd
 rearrangement as the duplication formula --- even-indexed sines vanish, odd-indexed give
 the alternating series). Basic symmetries come for free: $\Cl(0)=\Cl(\pi)=0$, $\Cl$ is
 odd, and $\Cl(2\pi-\theta)=-\Cl(\theta)$.
+
+\emph{From theory to practice.} $\Cl$ is, up to scale, Lobachevsky's function: the volume
+of an ideal hyperbolic tetrahedron is a sum of three $\Cl$ values, so this is the
+analytic core of hyperbolic $3$-manifold and knot-complement volumes. Catalan's constant
+appears as the dimer entropy $G/\pi$ of the square lattice. A verified $\Cl$ is a
+concrete step toward machine-checked hyperbolic volumes and lattice-entropy constants.
 
 \emph{The turn.} Plot the wild half (Figure~\ref{fig:clausen}) and one suspicion
 dominates everything: between $0$ and $\pi$ the function looks \emph{positive}. Two
@@ -357,6 +382,12 @@ The generating script asserts the bound on a $400$-point grid at $30$ digits.}
 \label{fig:clausen}
 \end{figure}
 
+\emph{From theory to practice.} The Fej\'er kernel underlies Ces\`aro summability of
+Fourier series --- the standard remedy for Gibbs oscillation in signal reconstruction and
+filter design --- and positivity of trigonometric partial sums is a recurring gate in
+geometric function theory. The verified inequality is a reusable building block for
+formalized approximation theory.
+
 \emph{The turn --- the big one, and the honest one.} Step back and look at what we are
 holding: a sum $\sum p_n e^{-in\theta}$ with positive weights $p_n\propto 1/n^2$, whose
 imaginary part never vanishes on $(0,\pi)$. A physicist reads that expression instantly
@@ -417,7 +448,9 @@ parabola of \S\ref{sec:circle}}}
 \]
 Its mean energy $\sum_n p_n\,n$ \emph{diverges}. So does its energy variance. Both
 bounds of Theorem~\ref{thm:qsl} are vacuously satisfied: on this state, the speed
-limits of quantum mechanics predict nothing at all. One might guess such an
+limits of quantum mechanics predict nothing at all. We choose it on purpose --- it is
+the bounds' blind spot, the regime where the textbook limits fall silent, and the
+formalized dilogarithm is what answers in their place. One might guess such an
 energy-unbounded state orthogonalizes instantly. The truth is the opposite extreme:
 
 \begin{theorem}[{\lean{zetaState\_never\_orthogonal}}]\label{thm:clock}
@@ -439,11 +472,18 @@ completes a tick --- because the budget is spent on a heavy spectral tail rather
 on coherent separation. Energy is necessary for evolution speed (Margolus--Levitin);
 this is the machine-checked counterpoint that it is nowhere near sufficient.
 
+\emph{From theory to practice.} Quantum speed limits set the minimum time for a gate, a
+measurement, or a state transfer on a given energy budget; they recur across quantum
+computing, metrology, and quantum thermodynamics (battery charging, optimal control).
+The zeta state carries a practical lesson: a large energy budget buys no speed if it
+sits in a heavy spectral tail --- fast evolution needs energy spread \emph{coherently},
+not merely in quantity.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.82\textwidth]{dilog_fig3_clock}
 \caption{Two states with the same level spacing. The two-level state
-$(\lvert0\rangle+\lvert2E\rangle)/\sqrt2$ (dashed) saturates Margolus--Levitin and
+$(\lvert0\rangle+\lvert E\rangle)/\sqrt2$ (dashed) saturates Margolus--Levitin and
 strikes orthogonality at $\theta=\pi$. The zeta state (solid), with \emph{infinite}
 mean energy, has $\lvert S\rvert\ge\frac12$: the clock that never ticks. The script
 asserts the floor equals $\eta(2)=\pi^2/12$ at $\theta=\pi$.}
@@ -453,14 +493,19 @@ asserts the floor equals $\eta(2)=\pi^2/12$ at $\theta=\pi$.}
 \begin{remark}[Which clocks do tick: a closing observation]\label{rem:ek}
 For monotone non-increasing populations on equally spaced levels, ticking
 (orthogonalization) means a zero of the power series $\sum_n p_nz^n$ \emph{on} the unit
-circle --- and the Enestr\"om--Kakeya theorem (1893/1912)~\cite{enestrom} localizes such
-zeros: they occur only in the equality cases, where the decrements $p_{n-1}-p_n$
-concentrate on an arithmetic progression, placing the zeros at roots of unity. The
-Margolus--Levitin--sharp state $(\lvert0\rangle+\lvert2E\rangle)/\sqrt2$ is exactly such
-an equality case ($\frac12(1+z)$, zero at $z=-1$). We have not found this dictionary
---- root location of positive-coefficient polynomials $\leftrightarrow$
-orthogonalizability of monotone quantum states --- in either literature; we record it as
-an observation and a road.
+circle. The Enestr\"om--Kakeya theorem (1893/1912)~\cite{enestrom} already forbids zeros
+inside the disc; its boundary case pins down the rest. From
+$(1-z)\sum_k p_kz^k=p_0+\sum_{k\ge1}(p_k-p_{k-1})z^k-p_Nz^{N+1}$, the triangle inequality
+at $\lvert z\rvert=1$ is an equality only if every nonzero decrement $p_{k-1}-p_k$ sits
+at an index $k$ with $z^k=1$: the decrements must concentrate on an arithmetic
+progression, and the zero is a root of unity. The Margolus--Levitin--sharp state
+$(\lvert0\rangle+\lvert E\rangle)/\sqrt2$ is exactly such a case ($\frac12(1+z)$, zero at
+$z=-1$). The zeta state is the opposite extreme: its successive decrements
+$p_n-p_{n+1}>0$ at \emph{every} index, never confined to a progression, so no root of
+unity survives and the clock cannot tick --- recovering Theorem~\ref{thm:clock} from the
+coefficient side. We have not found the resulting dictionary --- root location of
+positive-coefficient series $\leftrightarrow$ orthogonalizability of monotone quantum
+states --- in either literature; we record it as an observation and a road.
 \end{remark}
 
 \section{The boundary of the contribution}\label{sec:boundary}
@@ -478,12 +523,24 @@ telescope, the asymptotics-free Abel bound $\Cl\ge\sin(\theta)/2$, and the fully
 stated, though we would not be surprised to find it folklore among polylogarithm or QSL
 specialists; and (iv)~the observation of Remark~\ref{rem:ek}.
 
+\emph{Related formalization.} We build directly on Mathlib's analytic infrastructure:
+term-by-term differentiation, the Weierstrass $M$-test, mean-value machinery, and the
+Bernoulli--Fourier expansion that hands us the parabola for free. Special functions in
+the proof-assistant literature have so far centred on $\Gamma$, $\zeta$, and the
+elementary transcendental functions; the polylogarithms, the Clausen function, and
+positive trigonometric sums were not among them. On the quantum side, the established
+libraries (CoqQ, SQIR, Isabelle Marries Dirac) formalize circuits and gate semantics
+rather than dynamical bounds on continuous evolution. This development sits in the gap
+between those two bodies of work.
+
 On methodology: the formalization was carried out in collaboration with an AI assistant
 (Claude, Anthropic), with every step gated by the Lean kernel, every identity checked
 independently at 20--50 digits \emph{before} formalization, and every named theorem
 verified by \lean{\#print axioms} to depend only on \lean{propext},
-\lean{Classical.choice}, \lean{Quot.sound}. The mathematics, the mistakes, and the
-claims remain the author's responsibility.
+\lean{Classical.choice}, \lean{Quot.sound}. Correctness does not rest on the assistant:
+the Lean kernel checks every proof, so the AI affected the path to each theorem, not its
+validity. The mathematics, the mistakes, and the claims remain the author's
+responsibility.
 
 \section{Open roads}\label{sec:roads}
 
@@ -536,12 +593,6 @@ heavy spectral tail, yet its orthogonalization behaviour is perfectly determined
 is the correct functional of the spectral measure that \emph{does} decide $\tau_\perp$
 --- and is the Enestr\"om--Kakeya dictionary of Remark~\ref{rem:ek} its shadow on
 monotone states?
-
-\item[\textbf{On the crossing.}] The title theorem exists because two formalized
-threads met in an object neither owned. Today's proof libraries contain thousands of
-disconnected theorems. How many other pairs are one substitution away from a
-Theorem~\ref{thm:clock} --- and could a proof assistant be made to \emph{search} for
-such crossings, instead of waiting for them?
 \end{enumerate}
 
 \appendix
@@ -559,7 +610,7 @@ mathematical content against 20--40-digit numerics before drawing.
 
 \section{Lean inventory}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering\small
 \begin{tabular}{@{}llr@{}}
 \toprule

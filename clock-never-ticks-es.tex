@@ -20,6 +20,8 @@
 \definecolor{ggamber}{HTML}{E08A1E}
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
+\usepackage{float}
+\usepackage[section]{placeins}
 \usepackage[most]{tcolorbox}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
@@ -132,6 +134,20 @@ bloque de Lean sin \lean{sorry}.}
 \section{La pregunta que lo inicia: ¿por qu\'e la biblioteca cita una funci\'on que no
 tiene?}\label{sec:intro}
 
+Pocas funciones se han descubierto tantas veces como el dilogaritmo. Euler escribi\'o su
+serie en la d\'ecada de 1760; antes de que pasara un siglo ya lo hab\'ian reencontrado
+Spence, Abel en el estudio de sus ecuaciones funcionales, Lobachevsky en la medida del
+espacio hiperb\'olico, y Kummer --- cada uno d\'andole un nombre distinto y una raz\'on
+distinta para que importara. Dos siglos despu\'es reapareci\'o, sin avisar, en las
+partes finitas de las integrales de Feynman y en la termodin\'amica de los sistemas
+integrables. Es esa rara funci\'on no elemental que de vez en cuando consiente una forma
+cerrada, y el cat\'alogo de esas formas cerradas se lee como un recorrido por las
+matem\'aticas. As\'i que hay algo casi c\'omico en el hecho de que, en 2026 --- tras una
+d\'ecada de uno de los esfuerzos de formalizaci\'on m\'as ambiciosos jam\'as intentados
+--- el dilogaritmo no estuviera en la biblioteca en absoluto. A las m\'aquinas con que
+hoy certificamos teoremas nunca se les hab\'ia dicho qu\'e es $\Li$. Pero s\'i se les
+hab\'ia dicho que lo mencionaran.
+
 El archivo \lean{Mathlib/Analysis/SpecialFunctions/Integrals/LogTrigonometric.lean} de
 Mathlib --- la biblioteca matem\'atica del asistente de demostraci\'on Lean~4, sobre la que se
 construye buena parte de la matem\'atica formalizada contempor\'anea --- describe una de
@@ -210,6 +226,13 @@ convergencia, y una definici\'on por serie de potencias no contin\'ua anal\'itic
 absoluto: es un puro reordenamiento de la serie por \'indices pares e impares
 (\lean{tsum\_even\_add\_odd}), el espejo formal de c\'omo la habr\'ia probado Euler.
 
+\emph{De la teor\'ia a la pr\'actica.} El dilogaritmo es la funci\'on est\'andar de peso
+2 de las integrales de Feynman a un bucle y de los invariantes hiperb\'olicos y de
+$K$-teor\'ia; los libros de texto recurren a \'el constantemente. El valor pr\'actico de
+formalizarlo es modesto y concreto: una \lean{Li2} verificada con sus ecuaciones
+funcionales --- incluido el \'unico l\'imite delicado de frontera --- que otros
+desarrollos en Lean pueden importar en vez de rederivar.
+
 \emph{El giro.} Con tres ecuaciones funcionales en la mano, las joyas cl\'asicas del
 tema son las evaluaciones \'aureas --- y todos los libros de texto llegan a ellas por la
 relaci\'on de cinco t\'erminos de Abel, una identidad de dos variables que \emph{no}
@@ -254,16 +277,14 @@ $\Lrog(x)=\Li(x)+\tfrac12\ln x\ln(1-x)$ los defectos $\ln^2$ se cancelan
 y el primero, normalizado, es la carga central efectiva del ansatz de Bethe
 termodin\'amico de Lee--Yang, $c_{\mathrm{eff}}=\Lrog(1/\varphi^2)/\Lrog(1)=2/5$ ---
 hasta donde sabemos, la primera identidad dilogar\'itmica TBA verificada en un asistente
-de pruebas. La Figura~\ref{fig:golden} muestra la curva con sus valores certificados.
+de pruebas.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.78\textwidth]{dilog_fig1_golden}
-\caption{El dilogaritmo real. Cada valor marcado es un teorema Lean sin \lean{sorry};
-el script generador verifica cada uno contra num\'erica de 40 d\'igitos antes de
-dibujar.}
-\label{fig:golden}
-\end{figure}
+\emph{De la teor\'ia a la pr\'actica.} El valor $c_{\mathrm{eff}}=2/5$ es la carga
+central efectiva del modelo de Lee--Yang, una CFT minimal no unitaria cuyos ceros de
+Yang--Lee se han observado experimentalmente en sistemas de esp\'ines. La identidad aqu\'i
+formalizada es la entrada m\'as simple de la tabla dilogar\'itmica del ansatz
+termodin\'amico de Bethe; tener una verificada a m\'aquina ancla cualquier
+formalizaci\'on posterior de la termodin\'amica de modelos integrables.
 
 \emph{El giro.} La escalera vive la vida de la funci\'on \emph{dentro} del intervalo de
 convergencia. El siguiente territorio natural es la propia frontera. ¿Qu\'e hace la
@@ -294,11 +315,20 @@ celebridad:
 G \;=\; \Cl\!\Big(\frac{\pi}{2}\Big) \;=\; \sum_{k\ge0}\frac{(-1)^k}{(2k+1)^2}
 \;=\;0{,}9159\ldots,
 \]
-la \textbf{constante de Catalan}, ausente de todos los asistentes de demostraci\'on hasta ahora
+la \textbf{constante de Catalan}, ausente --- hasta donde pudimos determinar --- de todos
+los asistentes de demostraci\'on hasta ahora
 (\lean{catalanConst}, \lean{Cl₂\_pi\_div\_two}; la prueba es el mismo reordenamiento
 par/impar que la duplicaci\'on --- los senos de \'indice par se anulan, los impares dan
 la serie alternada). Las simetr\'ias b\'asicas salen gratis: $\Cl(0)=\Cl(\pi)=0$, $\Cl$
 es impar, y $\Cl(2\pi-\theta)=-\Cl(\theta)$.
+
+\emph{De la teor\'ia a la pr\'actica.} $\Cl$ es, salvo escala, la funci\'on de
+Lobachevsky: el volumen de un tetraedro hiperb\'olico ideal es una suma de tres valores
+de $\Cl$, as\'i que esto es el coraz\'on anal\'itico de los vol\'umenes de
+$3$-variedades hiperb\'olicas y complementos de nudos. La constante de Catalan aparece
+como la entrop\'ia de d\'imeros $G/\pi$ de la red cuadrada. Una $\Cl$ verificada es un
+paso concreto hacia vol\'umenes hiperb\'olicos y constantes de entrop\'ia reticular
+comprobados a m\'aquina.
 
 \emph{El giro.} Dib\'ujese la mitad salvaje (Figura~\ref{fig:clausen}) y una sospecha
 domina todo: entre $0$ y $\pi$ la funci\'on parece \emph{positiva}. Dos valores y una
@@ -367,6 +397,13 @@ d\'igitos.}
 \label{fig:clausen}
 \end{figure}
 
+\emph{De la teor\'ia a la pr\'actica.} El n\'ucleo de Fej\'er sustenta la sumabilidad
+Ces\`aro de las series de Fourier --- el remedio est\'andar contra la oscilaci\'on de
+Gibbs en reconstrucci\'on de se\~nales y dise\~no de filtros --- y la positividad de
+sumas parciales trigonom\'etricas es una puerta recurrente en la teor\'ia geom\'etrica de
+funciones. La desigualdad verificada es un ladrillo reutilizable para la teor\'ia de
+aproximaci\'on formalizada.
+
 \emph{El giro --- el grande, y el honesto.} Demos un paso atr\'as y miremos lo que
 tenemos en las manos: una suma $\sum p_n e^{-in\theta}$ con pesos positivos
 $p_n\propto 1/n^2$, cuya parte imaginaria nunca se anula en $(0,\pi)$. Un f\'isico lee
@@ -431,9 +468,11 @@ par\'abola de la \S\ref{sec:circle}}}
 \]
 Su energ\'ia media $\sum_n p_n\,n$ \emph{diverge}. Su varianza de energ\'ia tambi\'en.
 Ambas cotas del Teorema~\ref{thm:qsl} se cumplen por vacuidad: sobre este estado, los
-l\'imites de velocidad de la mec\'anica cu\'antica no predicen nada. Uno podr\'ia
-suponer que un estado as\'i, sin cota de energ\'ia, se ortogonaliza al instante. La
-verdad es el extremo opuesto:
+l\'imites de velocidad de la mec\'anica cu\'antica no predicen nada. Lo elegimos a
+prop\'osito --- es el punto ciego de las cotas, el r\'egimen donde los l\'imites de los
+libros enmudecen, y el dilogaritmo formalizado es lo que responde en su lugar. Uno
+podr\'ia suponer que un estado as\'i, sin cota de energ\'ia, se ortogonaliza al
+instante. La verdad es el extremo opuesto:
 
 \begin{theorem}[{\lean{zetaState\_never\_orthogonal}}]\label{thm:clock}
 Para todo $\theta\in(0,2\pi)$, las partes real e imaginaria de la autocorrelaci\'on del
@@ -456,11 +495,19 @@ pesada y no en separaci\'on coherente. La energ\'ia es necesaria para la velocid
 evoluci\'on (Margolus--Levitin); este es el contrapunto verificado a m\'aquina de que no
 es, ni de lejos, suficiente.
 
+\emph{De la teor\'ia a la pr\'actica.} Los l\'imites de velocidad cu\'anticos fijan el
+tiempo m\'inimo de una puerta, una medida o una transferencia de estado para un
+presupuesto de energ\'ia dado; reaparecen en computaci\'on cu\'antica, metrolog\'ia y
+termodin\'amica cu\'antica (carga de bater\'ias, control \'optimo). El estado zeta deja
+una lecci\'on pr\'actica: un gran presupuesto de energ\'ia no compra velocidad si se
+asienta en una cola espectral pesada --- la evoluci\'on r\'apida necesita energ\'ia
+repartida \emph{coherentemente}, no solo en cantidad.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.82\textwidth]{dilog_fig3_clock}
 \caption{Dos estados con el mismo espaciado de niveles. El estado de dos niveles
-$(\lvert0\rangle+\lvert2E\rangle)/\sqrt2$ (discontinuo) satura Margolus--Levitin y
+$(\lvert0\rangle+\lvert E\rangle)/\sqrt2$ (discontinuo) satura Margolus--Levitin y
 alcanza la ortogonalidad en $\theta=\pi$. El estado zeta (continuo), con energ\'ia media
 \emph{infinita}, tiene $\lvert S\rvert\ge\frac12$: el reloj que nunca suena. El script
 verifica que el suelo vale $\eta(2)=\pi^2/12$ en $\theta=\pi$.}
@@ -470,15 +517,21 @@ verifica que el suelo vale $\eta(2)=\pi^2/12$ en $\theta=\pi$.}
 \begin{remark}[Qu\'e relojes s\'i suenan: una observaci\'on de cierre]\label{rem:ek}
 Para poblaciones mon\'otonas no crecientes sobre niveles equiespaciados, sonar
 (ortogonalizarse) significa un cero de la serie de potencias $\sum_n p_nz^n$ \emph{en}
-el c\'irculo unidad --- y el teorema de Enestr\"om--Kakeya (1893/1912)~\cite{enestrom}
-localiza esos ceros: ocurren solo en los casos de igualdad, donde los decrementos
-$p_{n-1}-p_n$ se concentran en una progresi\'on aritm\'etica, colocando los ceros en
-ra\'ices de la unidad. El estado que satura Margolus--Levitin,
-$(\lvert0\rangle+\lvert2E\rangle)/\sqrt2$, es exactamente un caso de igualdad
-($\frac12(1+z)$, cero en $z=-1$). No hemos encontrado este diccionario --- localizaci\'on
-de ra\'ices de polinomios de coeficientes positivos $\leftrightarrow$
-ortogonalizabilidad de estados cu\'anticos mon\'otonos --- en ninguna de las dos
-literaturas; lo registramos como observaci\'on y como camino.
+el c\'irculo unidad. El teorema de Enestr\"om--Kakeya (1893/1912)~\cite{enestrom} ya
+proh\'ibe ceros dentro del disco; su caso de frontera fija el resto. De
+$(1-z)\sum_k p_kz^k=p_0+\sum_{k\ge1}(p_k-p_{k-1})z^k-p_Nz^{N+1}$, la desigualdad
+triangular en $\lvert z\rvert=1$ es igualdad solo si cada decremento no nulo
+$p_{k-1}-p_k$ se sit\'ua en un \'indice $k$ con $z^k=1$: los decrementos deben
+concentrarse en una progresi\'on aritm\'etica, y el cero es una ra\'iz de la unidad. El
+estado que satura Margolus--Levitin, $(\lvert0\rangle+\lvert E\rangle)/\sqrt2$, es
+exactamente un caso as\'i ($\frac12(1+z)$, cero en $z=-1$). El estado zeta es el extremo
+opuesto: sus decrementos sucesivos $p_n-p_{n+1}>0$ en \emph{todo} \'indice, nunca
+confinados a una progresi\'on, as\'i que ninguna ra\'iz de la unidad sobrevive y el reloj
+no puede sonar --- recuperando el Teorema~\ref{thm:clock} desde el lado de los
+coeficientes. No hemos encontrado el diccionario resultante --- localizaci\'on de
+ra\'ices de series de coeficientes positivos $\leftrightarrow$ ortogonalizabilidad de
+estados cu\'anticos mon\'otonos --- en ninguna de las dos literaturas; lo registramos
+como observaci\'on y como camino.
 \end{remark}
 
 \section{La frontera de la contribuci\'on}\label{sec:boundary}
@@ -498,12 +551,25 @@ velocidad;
 enunciada, aunque no nos sorprender\'ia que fuera folclore entre especialistas en
 polilogaritmos o en QSL; y (iv)~la Observaci\'on~\ref{rem:ek}.
 
+\emph{Formalizaci\'on relacionada.} Construimos directamente sobre la infraestructura
+anal\'itica de Mathlib: derivaci\'on t\'ermino a t\'ermino, el criterio $M$ de
+Weierstrass, la maquinaria del valor medio y el desarrollo de Bernoulli--Fourier que nos
+entrega la par\'abola gratis. Las funciones especiales en la literatura de asistentes de
+demostraci\'on se han centrado hasta ahora en $\Gamma$, $\zeta$ y las funciones
+transcendentes elementales; los polilogaritmos, la funci\'on de Clausen y las sumas
+trigonom\'etricas positivas no estaban entre ellas. Por el lado cu\'antico, las
+bibliotecas establecidas (CoqQ, SQIR, Isabelle Marries Dirac) formalizan circuitos y
+sem\'antica de puertas, no cotas din\'amicas sobre evoluci\'on continua. Este desarrollo
+se sit\'ua en el hueco entre esos dos cuerpos de trabajo.
+
 Sobre la metodolog\'ia: la formalizaci\'on se llev\'o a cabo en colaboraci\'on con un
 asistente de IA (Claude, Anthropic), con cada paso custodiado por el n\'ucleo de Lean,
 cada identidad verificada independientemente a 20--50 d\'igitos \emph{antes} de
 formalizar, y cada teorema comprobado con \lean{\#print axioms} para depender solo de
-\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. Las matem\'aticas, los
-errores y las afirmaciones siguen siendo responsabilidad del autor.
+\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. La correcci\'on no descansa
+en el asistente: el n\'ucleo de Lean comprueba cada prueba, as\'i que la IA afect\'o al
+camino hacia cada teorema, no a su validez. Las matem\'aticas, los errores y las
+afirmaciones siguen siendo responsabilidad del autor.
 
 \section{Caminos abiertos}\label{sec:roads}
 
@@ -560,13 +626,6 @@ ortogonalizaci\'on est\'a perfectamente determinado. ¿Cu\'al es el funcional co
 de la medida espectral que \emph{s\'i} decide $\tau_\perp$ --- y es el diccionario de
 Enestr\"om--Kakeya de la Observaci\'on~\ref{rem:ek} su sombra sobre los estados
 mon\'otonos?
-
-\item[\textbf{Sobre el cruce.}] El teorema del t\'itulo existe porque dos hilos
-formalizados se encontraron en un objeto que no era de ninguno. Las bibliotecas de
-pruebas de hoy contienen miles de teoremas desconectados. ¿Cu\'antas otras parejas
-est\'an a una sustituci\'on de distancia de un Teorema~\ref{thm:clock} --- y
-podr\'ia hacerse que un asistente de demostraci\'on \emph{buscara} esos cruces, en vez
-de esperarlos?
 \end{enumerate}
 
 \appendix
@@ -584,7 +643,7 @@ matem\'atico contra num\'erica de 20--40 d\'igitos antes de dibujar.
 
 \section{Inventario Lean}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering\small
 \begin{tabular}{@{}llr@{}}
 \toprule
