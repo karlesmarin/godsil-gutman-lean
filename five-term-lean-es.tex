@@ -1,9 +1,11 @@
 % !TeX program = pdflatex
 % El pentágono, verificado por máquina — la relación de cinco términos de Abel en Lean 4.
+% Secuela de "El reloj que nunca avanza": cierra el hilo del five-term que aquel paper dejó abierto.
 % Build: pdflatex five-term-lean-es.tex (dos veces, para referencias)
 % Verificado contra el fuente Lean 2026-06-13 (lake build Dilog.FiveTerm, exit 0;
 % #print axioms en cada teorema -> propext, Classical.choice, Quot.sound).
 % Toolchain v4.30.0-rc2, Mathlib pin 701fb6e9.
+% Todas las instancias numéricas reverificadas a 30 dps (research/_tmp).
 
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
@@ -35,71 +37,142 @@
 \newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
   arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
 \newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+\newtcolorbox{recipebox}[1]{colframe=ggamber,colback=ggamber!8,arc=3pt,boxrule=0.8pt,
+  title=\textbf{#1},coltitle=white,colbacktitle=ggamber}
 
 \title{\bf El pent\'agono, verificado por m\'aquina\\[4pt]
   \large\normalfont La relaci\'on de cinco t\'erminos de Abel en Lean~4}
 \author{Carles Mar\'in\thanks{Formalizado con asistencia de IA (Claude, Anthropic); la
-matem\'atica y todas las afirmaciones son responsabilidad del autor. El l\'imite exacto de
-la contribuci\'on se enuncia en el resumen y en la Secci\'on~\ref{sec:boundary}.}\\[3pt]
-  \normalsize Investigador independiente \quad\textbar\quad \texttt{karlesmarin@gmail.com}\\
-  \normalsize ORCID 0009-0007-5637-9688}
+matem\'atica y todas las afirmaciones son responsabilidad del autor. La metodolog\'ia y el
+l\'imite exacto de la contribuci\'on est\'an en la Secci\'on~\ref{sec:boundary}.}\\[3pt]
+  \normalsize Investigador independiente\\
+  \normalsize \texttt{karlesmarin@gmail.com}}
 \date{Junio 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Doy una prueba verificada por m\'aquina, \lean{sorry}-libre, en Lean~4 sobre Mathlib, de la
-\emph{relaci\'on de cinco t\'erminos de Abel} para el dilogaritmo. Con $\Lrog$ la funci\'on
-$\Lrog$ de Rogers, dice, para $x,y\in(0,1)$,
+Presento una prueba verificada por m\'aquina, \lean{sorry}-libre, en Lean~4 sobre Mathlib,
+de la \emph{relaci\'on de cinco t\'erminos de Abel} para el dilogaritmo. Con $\Lrog$ la
+funci\'on $\Lrog$ de Rogers, dice, para $x,y\in(0,1)$,
 \[
   \Lrog(x)+\Lrog(y)=\Lrog(xy)+\Lrog\!\Big(\tfrac{x(1-y)}{1-xy}\Big)
     +\Lrog\!\Big(\tfrac{y(1-x)}{1-xy}\Big).
 \]
-Esta sola identidad es toda la teor\'ia de peso~2 en una l\'inea: por teoremas de
-Wojtkowiak y de~Jeu, \emph{toda} ecuaci\'on funcional de $\Li$ con argumentos racionales es
-consecuencia suya, y es la relaci\'on que define el grupo de Bloch y el pent\'agono de las
-\'algebras de cl\'uster. La prueba es el argumento cl\'asico de derivaci\'on hecho del todo
-riguroso: fijando $y$, la diferencia de cinco t\'erminos tiene derivada id\'enticamente
-nula en $(0,1)$ -- nueve t\'erminos logar\'itmicos colapsan a una base de cinco y el resto
-es \lean{ring} -- luego es constante, y su valor en la frontera cuando $x\to0^+$ se calcula
-por compresi\'on de $\log x\cdot\log(1-x)\to0$. El desarrollo es autocontenido: Mathlib no
-tiene dilogaritmo, as\'i que esto descansa sobre una construcci\'on de $\Li$ en Lean hecha
-desde cero. Soy exacto sobre el l\'imite: la matem\'atica es enteramente cl\'asica (Spence,
-Abel, Rogers; la universalidad de Wojtkowiak y de~Jeu); la contribuci\'on es la
-formalizaci\'on -- hasta donde s\'e la primera prueba verificada por m\'aquina de la
-relaci\'on de cinco t\'erminos, y el primer dilogaritmo verificado por m\'aquina, en
-cualquier asistente de pruebas -- junto con tres bloques reutilizables. El teorema central y
+Esta sola identidad es toda la teor\'ia de peso~2 en una l\'inea: por teoremas de Wojtkowiak
+y de~Jeu, \emph{toda} ecuaci\'on funcional de $\Li$ con argumentos racionales es
+consecuencia suya; es la relaci\'on que define el grupo de Bloch, y el pent\'agono de las
+\'algebras de cl\'uster y del dilogaritmo cu\'antico. Un paper compa\~nero, \emph{El reloj
+que nunca avanza}, construy\'o un dilogaritmo en Lean desde cero y subi\'o la escalera de la
+raz\'on \'aurea \emph{sin} esta relaci\'on, dej\'andola expl\'icitamente abierta; este paper
+cierra ese hilo. La prueba es el argumento cl\'asico de derivaci\'on hecho del todo riguroso:
+fijando $y$, la diferencia de cinco t\'erminos tiene derivada id\'enticamente nula en
+$(0,1)$ ---nueve t\'erminos logar\'itmicos colapsan a una base de cinco y el resto es
+\lean{ring}--- luego es constante, y su valor en la frontera cuando $x\to0^+$ se calcula por
+compresi\'on de $\log x\cdot\log(1-x)\to0$. Soy exacto sobre el l\'imite: la matem\'atica es
+enteramente cl\'asica (Spence, Abel, Rogers; la universalidad de Wojtkowiak y de~Jeu); la
+contribuci\'on es la formalizaci\'on ---hasta donde s\'e, la primera relaci\'on de cinco
+t\'erminos verificada por m\'aquina, sobre el primer dilogaritmo verificado por m\'aquina, en
+cualquier asistente de pruebas--- junto con tres bloques reutilizables. El teorema central y
 sus bloques dependen solo de \lean{propext}, \lean{Classical.choice} y \lean{Quot.sound}.
 \end{abstract}
 
-\section{Una identidad para gobernarlas a todas}\label{sec:intro}
+\medskip
+\noindent\emph{C\'omo leer este paper.} Es la historia de cuatro preguntas, cada una abriendo
+una secci\'on y entregando al lector la siguiente, caminando de un enigma a un hilo cerrado.
+El enigma: un paper compa\~nero alcanz\'o las evaluaciones m\'as profundas del dilogaritmo
+\emph{sin} la identidad que todos llaman central ---as\'i que, \,¿merece siquiera la pena
+verificarla por m\'aquina (Q1)? S\'i, porque no es una identidad m\'as sino el
+\emph{generador} de todas; eso le gana la prueba (Q2), una prueba que la m\'aquina afil\'o
+en un punto que la pluma pasa de puntillas (Q3); y una vez certificada, las piezas de gala
+que el compa\~nero alcanz\'o por el camino largo caen como corolarios (Q4). Si solo lee una
+cosa, lea el Teorema~\ref{thm:five} y la Figura~\ref{fig:pentagon}; el inventario Lean es la
+Tabla~\ref{tab:inventory}; los l\'imites honestos est\'an en la Secci\'on~\ref{sec:boundary};
+reproducir son tres comandos.
 
-Pon $x=y=\tfrac12$. La relaci\'on de cinco t\'erminos colapsa, tras
-$\tfrac{(1/2)(1/2)}{1-1/4}=\tfrac13$, a
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  obj/.style={draw=ggteal,thick,rounded corners=2pt,fill=ggband!40,align=center,
+    font=\small,inner sep=5pt,minimum height=10mm},
+  q/.style={font=\scriptsize\itshape,text=ggamber!80!black,align=center},
+  arr/.style={-{Stealth[length=2.4mm]},thick,ggteal}]
+  \node[obj] (clock) {el paper \emph{Reloj}\\sube sin Abel};
+  \node[obj,right=24mm of clock] (gen) {el cinco-t\'erminos\\es el \emph{generador}};
+  \node[obj,right=24mm of gen] (proof) {tres pasos:\\$G'\!=\!0$, const, frontera};
+  \node[obj,below=15mm of proof] (caught) {lo que caz\'o\\la m\'aquina};
+  \node[obj,left=24mm of caught] (coro) {escaleras \emph{con} Abel,\\Bloch, cl\'uster};
+  \node[obj,left=24mm of coro,fill=ggamber!25,draw=ggamber] (done)
+    {\textbf{el pent\'agono,}\\\textbf{verificado}};
+  \draw[arr] (clock) -- node[q,above=1mm] {Q1: ¿vale\\la pena?} (gen);
+  \draw[arr] (gen) -- node[q,above=1mm] {Q2: ¿misma\\receta humilde?} (proof);
+  \draw[arr] (proof) -- node[q,right=1mm] {Q3: ¿qu\'e salt\'o\\la pluma?} (caught);
+  \draw[arr] (caught) -- node[q,above=1mm] {Q4: ¿qu\'e cae\\gratis?} (coro);
+  \draw[arr] (coro) -- (done);
+\end{tikzpicture}
+\caption{El mapa del lector. El hilo arranca donde el paper compa\~nero \emph{Reloj} lo dej\'o
+(la escalera \'aurea subida sin Abel) y cierra en el pent\'agono verificado por m\'aquina;
+cada flecha es la pregunta que responde su secci\'on. Cada nodo es un bloque de Lean
+\lean{sorry}-libre.}
+\label{fig:readermap}
+\end{figure}
+
+\section{Q1: ¿por qu\'e verificar por m\'aquina una identidad de la que el compa\~nero
+prescindi\'o?}\label{sec:intro}
+
+Hay identidades que importan por lo que afirman; esta importa por d\'onde no deja de
+reaparecer. Tome los cinco n\'umeros que se sientan en las esquinas de un pent\'agono,
+aplique a cada uno el dilogaritmo, y los cinco valores no son libres: obedecen una relaci\'on
+fija, la misma cualquiera que sea el pent\'agono de partida. Ese solo hecho es, disfrazado,
+la relaci\'on que define el grupo de Bloch en la geometr\'ia hiperb\'olica, el pent\'agono de
+mutaciones en las \'algebras de cl\'uster, y la identidad del pent\'agono del dilogaritmo
+cu\'antico en la f\'isica matem\'atica ---una misma relaci\'on con tres m\'ascaras. Tiene dos
+siglos y ha sido redescubierta bajo una docena de nombres; y con todo, tras una d\'ecada de
+uno de los esfuerzos de formalizaci\'on m\'as ambiciosos jam\'as emprendidos, a ning\'un
+asistente de pruebas se le hab\'ia dicho nunca que es cierta. Este paper se lo dice ---y
+luego pregunta por qu\'e algo as\'i est\'a en todas partes a la vez.
+
+Un anticipo de lo que hace la relaci\'on, antes de toda teor\'ia. Ponga $x=y=\tfrac12$. Tras
+$\tfrac{(1/2)(1/2)}{1-1/4}=\tfrac13$ la relaci\'on de abajo colapsa a
 \[
   2\,\Lrog\!\big(\tfrac12\big)=\Lrog\!\big(\tfrac14\big)+2\,\Lrog\!\big(\tfrac13\big),
   \qquad\text{es decir}\qquad \Lrog\!\big(\tfrac14\big)+2\,\Lrog\!\big(\tfrac13\big)
   =\frac{\pi^2}{6},
 \]
-ya que $\Lrog(\tfrac12)=\pi^2/12$. Que una suma de tres valores del dilogaritmo en
-$\tfrac14$ y $\tfrac13$ d\'e exactamente $\pi^2/6$ no es obvio; es una de las infinitas
-sombras de una sola ley en dos variables. El dilogaritmo $\Li(x)=\sum_{n\ge1}x^n/n^2$
-obedece un pu\~nado de ecuaciones funcionales. Dos son elementales -- la \emph{reflexi\'on}
-de Euler $\Li(x)+\Li(1-x)=\tfrac{\pi^2}{6}-\log x\log(1-x)$ y la transformaci\'on de
-\emph{Landen} -- y una no lo es: la \emph{relaci\'on de cinco t\'erminos}, hallada por
-Spence (1809) y Abel (1830) y redescubierta una y otra vez desde entonces. Es la identidad
-de peso~2 m\'as profunda, y la \'unica que de verdad necesita dos variables.
+ya que $\Lrog(\tfrac12)=\pi^2/12$. Que una suma de tres valores del dilogaritmo en $\tfrac14$
+y $\tfrac13$ sea \emph{exactamente} $\pi^2/6$ no es obvio; es una de las infinitas sombras de
+una sola ley en dos variables ---y esa ley es lo que verificamos por m\'aquina aqu\'i.
 
-Su centralidad es un teorema, no un eslogan. Wojtkowiak prob\'o que toda ecuaci\'on
-funcional de una variable de $\Li$ con argumentos racionales es combinaci\'on
-$\mathbb{Z}$-lineal de instancias de la relaci\'on de cinco t\'erminos; de~Jeu lo
-extendi\'o a cualquier n\'umero de variables~\cite{Wojtkowiak,deJeu}. La misma identidad
-\emph{define} el grupo de Bloch, luego gobierna los invariantes de congruencia por tijeras
-y los vol\'umenes de las $3$-variedades hiperb\'olicas~\cite{Zagier}; en las \'algebras de
-cl\'uster es el \emph{pent\'agono}, la relaci\'on de cinco mutaciones~\cite{Nakanishi}.
-Escribe los cinco argumentos sobre un ciclo (Figura~\ref{fig:pentagon}) y aparece la
-simetr\'ia de orden cinco que mueve todo esto.
+\emph{Cuenta hist\'orica.} El dilogaritmo es de Euler (d\'ecada de 1760). Sus ecuaciones
+funcionales las cartografiaron Landen (1780), Spence (1809), Abel (1827, publicado
+en~1881~\cite{abel}) y Kummer; Rogers dio la forma sim\'etrica en 1907~\cite{rogers}. La
+profundidad de la relaci\'on de cinco t\'erminos se volvi\'o estructural solo despu\'es, con
+los reguladores de Bloch~\cite{bloch} y el grupo que lleva su nombre.
+
+Hay un motivo para dudar. Un paper compa\~nero de esta l\'inea, \emph{El reloj que nunca
+avanza}~\cite{clock}, construy\'o un dilogaritmo en Lean desde cero ---su serie, su derivada
+$-\log(1-x)/x$, la reflexi\'on de Euler, la transformaci\'on de Landen, la f\'ormula de
+duplicaci\'on--- y luego alcanz\'o las piezas de gala cl\'asicas del tema, las evaluaciones
+de la raz\'on \'aurea $\Li(1/\varphi)$ y $\Li(1/\varphi^2)$, por un sistema lineal de tres
+por tres, \emph{sin relaci\'on de cinco t\'erminos alguna}. Todo manual llega a esos valores
+por Abel; la formalizaci\'on hall\'o una puerta lateral. As\'i que la primera pregunta
+honesta no es c\'omo probar la relaci\'on de cinco t\'erminos sino si vale la pena: si las
+piezas de gala se alcanzan sin ella, ¿en qu\'e se gana la identidad el sueldo?
+
+La respuesta es que la relaci\'on de cinco t\'erminos no es una identidad entre varias. Es el
+\emph{generador} de todo el tema. Wojtkowiak prob\'o que toda ecuaci\'on funcional de una
+variable de $\Li$ con argumentos racionales es combinaci\'on $\mathbb{Z}$-lineal de
+instancias de la relaci\'on de cinco t\'erminos; de~Jeu lo extendi\'o a cualquier n\'umero de
+variables~\cite{wojtkowiak,dejeu}. La misma relaci\'on \emph{define} el grupo de Bloch, luego
+gobierna los invariantes de congruencia por tijeras y los vol\'umenes de las $3$-variedades
+hiperb\'olicas~\cite{bloch,suslin,neumannzagier}; en las \'algebras de cl\'uster es el
+\emph{pent\'agono}, la relaci\'on de cinco mutaciones~\cite{nakanishi}; y en su forma
+cu\'antica es la identidad del pent\'agono del dilogaritmo cu\'antico de
+Faddeev--Kashaev~\cite{faddeevkashaev}. La puerta lateral del compa\~nero sube una escalera;
+la relaci\'on de cinco t\'erminos es la escalinata entera. Eso es lo que merece certificarse.
+\emph{¿Puede el mismo kit humilde que prob\'o la reflexi\'on y Landen alcanzar tambi\'en el
+generador?}
 
 El enunciado m\'as limpio usa la \emph{funci\'on $\Lrog$ de Rogers}
 $\Lrog(x):=\Li(x)+\tfrac12\log x\log(1-x)$, que absorbe los logaritmos sueltos de la forma
@@ -122,22 +195,18 @@ cruda de $\Li$ y convierte la relaci\'on en una suma pura de cinco valores de $\
   }
 \end{tikzpicture}
 \caption{\label{fig:pentagon}Los cinco argumentos sobre un ciclo. La simetr\'ia de orden
-cinco de este pent\'agono es la sombra combinatoria de la relaci\'on del grupo de Bloch y
-del pent\'agono de mutaciones de las \'algebras de cl\'uster.}
+cinco de este pent\'agono es la sombra combinatoria que comparten la relaci\'on del grupo de
+Bloch, el pent\'agono de mutaciones de las \'algebras de cl\'uster, y la identidad del
+pent\'agono del dilogaritmo cu\'antico.}
 \end{figure}
 
-\paragraph{El estado de la formalizaci\'on.} Mathlib, la mayor biblioteca formal, no tiene
-dilogaritmo: ni $\Li$ ni ninguna de sus ecuaciones funcionales. Una revisi\'on de las
-bibliotecas de Lean, Isabelle y Rocq (Coq) en junio de~2026 no encontr\'o formalizaci\'on
-de la relaci\'on de cinco t\'erminos, ni de $\Li$ como objeto anal\'itico m\'as all\'a de
-valores especiales elementales. Lo que sigue descansa por tanto sobre una construcci\'on de
-$\Li$ en Lean desde cero -- su serie, su derivada $-\log(1-x)/x$, reflexi\'on, Landen,
-duplicaci\'on -- de la que la relaci\'on de cinco t\'erminos es el remate. Con ella, las
-identidades de dos variables y las \emph{escaleras} polilogar\'itmicas (las evaluaciones en
-la raz\'on \'aurea y en bases cu\'articas) pasan a ser corolarios y no objetivos de
-formalizaci\'on aparte.
+\section{Q2: ¿se alcanza el generador con la misma receta de tres pasos?}\label{sec:proof}
 
-\section{El enunciado, y la idea de la prueba}\label{sec:proof}
+\emph{Cuenta hist\'orica.} La prueba por derivaci\'on es la m\'as antigua: fijar una
+variable, mostrar que la derivada en la otra se anula, evaluar la constante en un extremo. Es
+en esencia la de Abel, repetida en Lewin~\cite{lewin} y Zagier~\cite{zagier}. Toda la
+cuesti\'on es si ``la derivada se anula'' y ``eval\'ua en el extremo'' sobreviven a hacerse
+del todo formales.
 
 \begin{theorem}[\lean{Dilog.rogersL\_fiveterm}]\label{thm:five}
 Para todo $x,y\in(0,1)$,
@@ -147,8 +216,8 @@ Para todo $x,y\in(0,1)$,
 \]
 \end{theorem}
 
-La pruebo del modo de manual -- por derivaci\'on -- pero con cada paso hecho riguroso. Fija
-$y\in(0,1)$ y pon
+La receta es la que el paper compa\~nero us\'o para cada identidad elemental: derivar,
+concluir que es constante, evaluar en la frontera. Fija $y\in(0,1)$ y pon
 \[
   G(t)=\Lrog(t)-\Lrog(ty)-\Lrog\!\Big(\tfrac{t(1-y)}{1-ty}\Big)
     -\Lrog\!\Big(\tfrac{y(1-t)}{1-ty}\Big).
@@ -159,42 +228,117 @@ El teorema es $G(x)=-\Lrog(y)$. Tres movimientos.
 vuelven a estar en $(0,1)$, luego cada t\'ermino es derivable. Con $\Lrog'(t)=
 -\tfrac12\big(\tfrac{\log(1-t)}{t}+\tfrac{\log t}{1-t}\big)$, la regla de la cadena escribe
 $G'(t)$ como cuatro de estas expresiones pesadas por las derivadas de los argumentos
-compuestos. Todo logaritmo que aparece -- de $t$, de $ty$, de los dos argumentos
-fraccionarios y sus complementos -- se desarrolla, por $\log(ab)=\log a+\log b$ y
+compuestos. Todo logaritmo que aparece ---de $t$, de $ty$, de los dos argumentos
+fraccionarios y sus complementos--- se desarrolla, por $\log(ab)=\log a+\log b$ y
 $\log(a/b)=\log a-\log b$, en la base de cinco elementos $\{\log t,\log y,\log(1-t),
 \log(1-y),\log(1-ty)\}$. En esa base $G'(t)$ es una expresi\'on racional cuyos coeficientes
 se cancelan todos: $G'\equiv0$. En Lean este es el \'unico paso delicado
 (\lean{fiveterm\_hasDerivAt\_zero}): los nueve logaritmos se reescriben a la base y el resto
-racional se limpia y se cierra con \lean{ring}. (La cancelaci\'on se verific\'o
-num\'ericamente a treinta d\'igitos antes de formalizar -- y la formalizaci\'on captur\'o
-una sutileza que la vista pasa por alto: \lean{field\_simp} reordena en silencio
-$x\cdot y$ a $y\cdot x$ y luego necesita $1-y x\neq0$ a mano para descargar el inverso
-resultante, un hecho que sencillamente ten\'ia que estar en el contexto en el momento
-exacto.)
+racional se limpia y se cierra con \lean{ring}.
 
 \paragraph{2. Luego $G$ es constante.} Una funci\'on con derivada nula en el intervalo
-abierto conexo $(0,1)$ es constante ah\'i -- el \lean{IsOpen.is\_const\_of\_deriv\_eq\_zero}
-de Mathlib, el teorema del valor medio disfrazado. As\'i $G(x)=G(t)$ para todo
-$t\in(0,1)$.
+abierto conexo $(0,1)$ es constante ah\'i ---el \lean{IsOpen.is\_const\_of\_deriv\_eq\_zero}
+de Mathlib, el teorema del valor medio disfrazado. As\'i $G(x)=G(t)$ para todo $t\in(0,1)$.
 
 \paragraph{3. El valor en la frontera.} Cuando $t\to0^+$, $ty\to0$,
 $\tfrac{t(1-y)}{1-ty}\to0$ y $\tfrac{y(1-t)}{1-ty}\to y$, luego
-$G(t)\to\Lrog(0)-\Lrog(0)-\Lrog(0)-\Lrog(y)=-\Lrog(y)$ -- \emph{siempre que} $\Lrog$ sea
-continua por la derecha en $0$ con $\Lrog(0)=0$. Esta es la \'unica sutileza anal\'itica.
-$\Lrog(t)=\Li(t)+\tfrac12\log t\log(1-t)$, y aunque $\Li$ es continua, $\log t\cdot
-\log(1-t)$ es una indeterminaci\'on $(-\infty)\cdot 0$. Se doma por compresi\'on: en
-$(0,\tfrac12]$ se tiene $-\log(1-t)\le 2t$ (de $\log z\ge1-z^{-1}$), luego
+$G(t)\to\Lrog(0)-\Lrog(0)-\Lrog(0)-\Lrog(y)=-\Lrog(y)$ ---\emph{siempre que} $\Lrog$ sea
+continua por la derecha en $0$ con $\Lrog(0)=0$. Esta es la \'unica sutileza anal\'itica, la
+misma que el paper compa\~nero aisl\'o. $\Lrog(t)=\Li(t)+\tfrac12\log t\log(1-t)$, y aunque
+$\Li$ es continua, $\log t\cdot\log(1-t)$ es una indeterminaci\'on $(-\infty)\cdot 0$. Se doma
+por compresi\'on: en $(0,\tfrac12]$ se tiene $-\log(1-t)\le 2t$ (de $\log z\ge1-z^{-1}$),
+luego
 \[
   0\ \le\ \log t\cdot\log(1-t)=(-\log t)\,(-\log(1-t))\ \le\ 2t\,(-\log t)=2\,(-t\log t)
   \ \longrightarrow\ 0,
 \]
-porque $t\log t\to0$ -- el \lean{Real.continuous\_mul\_log} de Mathlib. As\'i
-$G\to-\Lrog(y)$; siendo constante e igual a $G(x)$ cerca de $0$, \emph{vale} $-\Lrog(y)$,
-que es el Teorema~\ref{thm:five}. \qed
+porque $t\log t\to0$ (el \lean{Real.continuous\_mul\_log} de Mathlib). As\'i $G\to-\Lrog(y)$;
+siendo constante e igual a $G(x)$ cerca de $0$, \emph{vale} $-\Lrog(y)$, que es el
+Teorema~\ref{thm:five}. \qed
 
-\begin{tcolorbox}[colframe=ggamber,colback=ggamber!8,arc=3pt,boxrule=0.8pt,
-  title=\textbf{La receta: leer una evaluaci\'on en $\pi^2$ en tres l\'ineas},
-  coltitle=white,colbacktitle=ggamber]
+As\'i que la respuesta a Q2 es s\'i: el generador no necesita maquinaria que las identidades
+elementales no usaran ---solo que la cancelaci\'on de nueve-en-cinco cierre de verdad.
+\emph{Y ah\'i la pluma y la m\'aquina se separaron.}
+
+\section{Q3: ¿qu\'e caz\'o la m\'aquina que la pluma pasa de puntillas?}\label{sec:caught}
+
+\emph{Cuenta hist\'orica.} ``$G'\equiv0$ por un c\'alculo breve'' es como todo manual despacha
+el paso~1. La frase esconde un despeje de denominadores en el que, sobre el papel, uno
+conf\'ia. Un asistente de pruebas no conf\'ia; lo ejecuta, y la ejecuci\'on tiene un orden.
+
+La cancelaci\'on se verific\'o num\'ericamente a treinta d\'igitos antes de formalizarla ---y
+la formalizaci\'on a\'un caz\'o una sutileza que la vista pasa por alto. Cuando
+\lean{field\_simp} limpia los denominadores de $G'(t)$ reordena en silencio el producto
+$x\cdot y$ a $y\cdot x$, y luego necesita la hip\'otesis $1-y x\neq0$ ---en ese orden exacto
+de t\'erminos--- presente en el contexto para descargar el inverso que produce. Aportada un
+instante demasiado tarde, el goal no cierra, y ninguna cantidad de \lean{ring} lo repara;
+aportada en el orden equivocado ($1-xy$ en vez de $1-yx$), lo mismo. El arreglo es una
+l\'inea, pero hallarlo cost\'o m\'as que el resto de la prueba: el hecho de no-anulaci\'on
+hubo de enunciarse para ambos \'ordenes y colocarse antes de la simplificaci\'on, no
+despu\'es.
+
+\begin{recipebox}{En qu\'e se gana el sueldo un asistente de pruebas}
+Sobre el papel, ``despeja denominadores y el resto se cancela'' es una sola frase.
+Formalmente es una reescritura ordenada: \lean{field\_simp} puede reordenar un producto
+($x y \rightsquigarrow y x$) y luego exigir el hecho de no-anulaci\'on que casa
+($1-yx\neq0$) \emph{en ese orden, ya en el contexto}. El diagn\'ostico, archivado para el
+pr\'oximo desarrollo de peso~2: si \lean{field\_simp} deja un $(1-a)^{-1}$ sin limpiar, la
+hip\'otesis que falta es $(1-a)\neq0$ en el orden de t\'erminos que \lean{field\_simp}
+produjo ---aporta tanto $1-xy\neq0$ como su conmutado $1-yx\neq0$.
+\end{recipebox}
+
+Esto es toda la matem\'atica nueva, y es honestamente peque\~na: no un teorema sino una
+disciplina. Es tambi\'en justo la clase de paso que justifica verificar por m\'aquina una
+identidad cuya prueba informal todos ya creen. \emph{Con el generador certificado, ¿qu\'e nos
+regala ahora el camino largo del paper compa\~nero?}
+
+\section{Q4: con el pent\'agono certificado, ¿qu\'e cae gratis?}\label{sec:corollaries}
+
+\emph{Cuenta hist\'orica.} Las evaluaciones de la raz\'on \'aurea son de Landen (1780) y
+Rogers (1907~\cite{rogers}); su papel moderno como cargas centrales conformes pertenece al
+ansatz de Bethe termodin\'amico de los a\~nos 90~\cite{zamolodchikov,nahm,kirillov}. Toda
+ruta cl\'asica a ellas pasa por la relaci\'on de cinco t\'erminos; el paper compa\~nero tom\'o
+un desv\'io, y ahora la carretera principal est\'a abierta.
+
+La relaci\'on de cinco t\'erminos es una m\'aquina que convierte una elecci\'on de $(x,y)$ en
+una relaci\'on cerrada entre cinco valores de $\Lrog$. Alim\'entela con los puntos justos y se
+imprime el cat\'alogo del tema (Tabla~\ref{tab:instances}). Dos instancias son especialmente
+limpias porque sus argumentos \emph{coinciden}. En $(x,y)=(\tfrac12,\tfrac12)$ los dos
+argumentos fraccionarios son ambos $\tfrac13$, dando
+$2\Lrog(\tfrac12)=\Lrog(\tfrac14)+2\Lrog(\tfrac13)$. En $(x,y)=(1/\varphi,1/\varphi)$ los tres
+argumentos compuestos colapsan \emph{todos} a $1/\varphi^2$ (porque $1-1/\varphi^2=1/\varphi$
+y $1-1/\varphi=1/\varphi^2$), de modo que la relaci\'on de cinco t\'erminos dice
+$2\Lrog(1/\varphi)=3\Lrog(1/\varphi^2)$ ---y con los valores de la escalera
+$\Lrog(1/\varphi)=\pi^2/10$, $\Lrog(1/\varphi^2)=\pi^2/15$, esta es la identidad exacta
+$\pi^2/5=\pi^2/5$. La escalera \'aurea que el compa\~nero alcanz\'o por una puerta lateral es,
+desde aqu\'i, una sola sustituci\'on.
+
+\begin{table}[h]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\rowcolor{ggteal!18} $(x,y)$ & argumentos & la relaci\'on dice & valor exacto \\
+\midrule
+$(\tfrac12,\tfrac12)$ & $\tfrac14,\tfrac13,\tfrac13$
+  & $2\Lrog(\tfrac12)=\Lrog(\tfrac14)+2\Lrog(\tfrac13)$
+  & $\Lrog(\tfrac14)+2\Lrog(\tfrac13)=\tfrac{\pi^2}{6}$ \\
+$(\tfrac1\varphi,\tfrac1\varphi)$ & $\tfrac1{\varphi^2},\tfrac1{\varphi^2},\tfrac1{\varphi^2}$
+  & $2\Lrog(\tfrac1\varphi)=3\Lrog(\tfrac1{\varphi^2})$
+  & $\tfrac{\pi^2}{5}=\tfrac{\pi^2}{5}$ \\
+\bottomrule
+\end{tabular}
+\caption{El generador en acci\'on: dos elecciones de $(x,y)$ cuyos argumentos compuestos
+coinciden, y la identidad exacta que cada una imprime. Ambas filas reverificadas a treinta
+d\'igitos; la primera es comprobable a mano desde $\Lrog(\tfrac12)=\pi^2/12$, la segunda
+desde los valores de la escalera $\Lrog(1/\varphi)=\pi^2/10$, $\Lrog(1/\varphi^2)=\pi^2/15$.
+La reflexi\'on de Euler $\Lrog(x)+\Lrog(1-x)=\pi^2/6$ \emph{no} es una instancia de la
+relaci\'on de cinco t\'erminos sino su compa\~nera ---la simetrizaci\'on que limpia la forma
+de Rogers--- y se prueba aparte.}
+\label{tab:instances}
+\end{table}
+
+\begin{recipebox}{La receta: leer una evaluaci\'on en $\pi^2$ en tres l\'ineas}
 Elige cualquier $x,y\in(0,1)$ en los que los cuatro argumentos sean amables. (1) Forma
 $xy,\ \tfrac{x(1-y)}{1-xy},\ \tfrac{y(1-x)}{1-xy}$. (2) Aplica
 $\Lrog(x)+\Lrog(y)=$ su suma, con garant\'ia verificada por m\'aquina. (3) Sustituye los
@@ -204,27 +348,33 @@ $\tfrac13$, luego $2\,\Lrog(\tfrac12)=\Lrog(\tfrac14)+2\,\Lrog(\tfrac13)$. Como
 $\Lrog(\tfrac12)=\Li(\tfrac12)+\tfrac12\log^2\!2$ y $\Li(\tfrac12)=\tfrac{\pi^2}{12}-
 \tfrac12\log^2\!2$, los t\'erminos logar\'itmicos se cancelan y
 $\Lrog(\tfrac12)=\tfrac{\pi^2}{12}$; luego $\Lrog(\tfrac14)+2\,\Lrog(\tfrac13)=
-\tfrac{\pi^2}{6}$ -- una forma cerrada para tres valores del dilogaritmo, certificada.
-\end{tcolorbox}
+\tfrac{\pi^2}{6}$ ---una forma cerrada para tres valores del dilogaritmo, certificada.
+\end{recipebox}
+
+As\'i que el hilo que el paper compa\~nero dej\'o colgando queda cerrado. Subi\'o la escalera
+\'aurea sin Abel y se pregunt\'o si la puerta lateral era una curiosidad o una necesidad; la
+respuesta es que era un atajo, y la escalinata que rode\'o est\'a ahora verificada por
+m\'aquina. Las cuatro preguntas terminan donde empezaron ---en una suma de valores del
+dilogaritmo igual a $\pi^2/6$--- pero la identidad detr\'as ya no es una sombra en la pared:
+es un teorema en la biblioteca, con todo el tema de peso~2 colgando de \'el.
 
 \section{Los bloques de construcci\'on}\label{sec:blocks}
 
 El resultado central descansa sobre tres piezas reutilizables, cada una \lean{sorry}-libre
-con los tres axiomas est\'andar.
+con los tres axiomas est\'andar (Tabla~\ref{tab:inventory}).
 
 \begin{lemma}[\lean{Dilog.hasDerivAt\_rogersL}]
 En $(0,1)$, $\displaystyle\Lrog'(x)=-\tfrac12\Big(\tfrac{\log(1-x)}{x}+\tfrac{\log
 x}{1-x}\Big)$.
 \end{lemma}
-El mismo esquema de derivaci\'on ya usado para la reflexi\'on de Euler y Landen: combina
-$\Li'(x)=-\log(1-x)/x$ con la regla del producto para $\tfrac12\log x\log(1-x)$.
+El mismo esquema de derivaci\'on que el compa\~nero us\'o para la reflexi\'on y Landen:
+combina $\Li'(x)=-\log(1-x)/x$ con la regla del producto para $\tfrac12\log x\log(1-x)$.
 
 \begin{lemma}[\lean{Dilog.tendsto\_rogersL\_nhdsGT\_zero}]
 $\Lrog(t)\to0$ cuando $t\to0^+$.
 \end{lemma}
 La parte $\Li$ es continua en $[-1,1]$; el producto de logaritmos se comprime a $0$ por
-$2(-t\log t)$. Es el \'unico lugar donde la prueba deja el \'algebra pura por el
-an\'alisis.
+$2(-t\log t)$. Es el \'unico lugar donde la prueba deja el \'algebra pura por el an\'alisis.
 
 \begin{lemma}[\lean{Dilog.continuousAt\_rogersL}]
 $\Lrog$ es continua en todo $x\in(0,1)$.
@@ -232,43 +382,88 @@ $\Lrog$ es continua en todo $x\in(0,1)$.
 Necesario para el \'unico t\'ermino de frontera que sobrevive,
 $\Lrog\big(\tfrac{y(1-t)}{1-ty}\big)\to\Lrog(y)$.
 
+\begin{table}[h]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\rowcolor{ggteal!18} Nombre Lean & enunciado & d\'onde \\
+\midrule
+\lean{rogersL\_fiveterm} & la relaci\'on de cinco t\'erminos (Teorema~\ref{thm:five}) & \S\ref{sec:proof} \\
+\lean{fiveterm\_hasDerivAt\_zero} & $G'\equiv0$: nueve logs colapsan a cinco & \S\ref{sec:proof}--\ref{sec:caught} \\
+\lean{hasDerivAt\_rogersL} & $\Lrog'(x)=-\tfrac12(\tfrac{\log(1-x)}{x}+\tfrac{\log x}{1-x})$ & \S\ref{sec:blocks} \\
+\lean{tendsto\_rogersL\_nhdsGT\_zero} & $\Lrog(t)\to0$ cuando $t\to0^+$ & \S\ref{sec:blocks} \\
+\lean{continuousAt\_rogersL} & $\Lrog$ continua en $(0,1)$ & \S\ref{sec:blocks} \\
+\bottomrule
+\end{tabular}
+\caption{Los resultados que cargan el peso, todos \lean{sorry}-libres en
+\lean{Dilog/FiveTerm.lean} del repositorio, sobre el dilogaritmo de \lean{Dilog/Basic.lean}
+del paper compa\~nero. Axiomas de cada entrada: \lean{propext}, \lean{Classical.choice},
+\lean{Quot.sound}, y nada m\'as.}
+\label{tab:inventory}
+\end{table}
+
 \section{El l\'imite de la contribuci\'on}\label{sec:boundary}
 
 Todo lo que aqu\'i es matem\'atica es cl\'asico. La relaci\'on de cinco t\'erminos es de
 Spence y Abel; la funci\'on $\Lrog$ de Rogers es de Rogers (1907); los enunciados de
-universalidad son de Wojtkowiak y de~Jeu; la prueba por derivaci\'on es est\'andar. No
-afirmo ninguna identidad nueva ni ninguna desigualdad nueva. Las contribuciones son tres:
-la \emph{formalizaci\'on} (hasta donde s\'e la primera relaci\'on de cinco t\'erminos
-verificada por m\'aquina, sobre el primer dilogaritmo verificado por m\'aquina, en
-cualquier asistente de pruebas); la \emph{infraestructura reutilizable} -- la derivada de
-$\Lrog$ de Rogers, la continuidad por la derecha en $0$ v\'ia la compresi\'on $-t\log t$, y
-la continuidad interior -- que es exactamente lo que cualquier desarrollo de peso~2
-posterior (escaleras, el grupo de Bloch, el cinco t\'erminos de Bloch--Wigner) va a
-necesitar; y el \emph{registro de ingenier\'ia de pruebas}, donde la cancelaci\'on
-logar\'itmica de nueve-en-cinco es la clase de paso en que una verificaci\'on formal se
-gana el sueldo.
+universalidad son de Wojtkowiak y de~Jeu; la prueba por derivaci\'on es est\'andar. No afirmo
+ninguna identidad nueva ni ninguna desigualdad nueva. Las contribuciones son tres: la
+\emph{formalizaci\'on} (hasta donde s\'e, la primera relaci\'on de cinco t\'erminos
+verificada por m\'aquina, sobre el primer dilogaritmo verificado por m\'aquina, en cualquier
+asistente de pruebas); la \emph{infraestructura reutilizable} ---la derivada de $\Lrog$ de
+Rogers, la continuidad por la derecha en $0$ v\'ia la compresi\'on $-t\log t$, y la
+continuidad interior--- que es exactamente lo que cualquier desarrollo de peso~2 posterior
+(escaleras, el grupo de Bloch, el cinco t\'erminos de Bloch--Wigner) va a necesitar; y el
+\emph{registro de ingenier\'ia de pruebas} de la Secci\'on~\ref{sec:caught}, donde la
+cancelaci\'on de nueve-en-cinco es la clase de paso en que una verificaci\'on formal se gana
+el sueldo.
 
 \emph{Sobre la metodolog\'ia.} La formalizaci\'on se hizo con un asistente de IA (Claude,
-Anthropic), con la cancelaci\'on central verificada num\'ericamente a treinta d\'igitos
-antes de formalizar y cada teorema comprobado con \lean{\#print axioms} para depender solo
-de \lean{propext}, \lean{Classical.choice} y \lean{Quot.sound}. La correcci\'on no descansa
-en el asistente: el n\'ucleo de Lean verifica cada prueba. La matem\'atica y las
-afirmaciones son responsabilidad del autor.
+Anthropic), bajo la disciplina del paper compa\~nero: la cancelaci\'on central verificada
+num\'ericamente a treinta d\'igitos antes de formalizar, y cada teorema comprobado con
+\lean{\#print axioms} para depender solo de \lean{propext}, \lean{Classical.choice} y
+\lean{Quot.sound}. La correcci\'on no descansa en el asistente: el n\'ucleo de Lean verifica
+cada prueba. La matem\'atica y las afirmaciones son responsabilidad del autor.
 
-\section{Caminos abiertos}\label{sec:roads}
+\section{Preguntas abiertas}\label{sec:questions}
+
+El pent\'agono es ahora un teorema en la biblioteca. De pie sobre \'el, seis preguntas que
+merecen el pr\'oximo esfuerzo ---la \'ultima es la que yo me quedar\'ia.
 
 \begin{enumerate}
-\item \textbf{Escaleras como corolarios.} Con la relaci\'on de cinco t\'erminos, las
-escaleras de la raz\'on \'aurea $\Lrog(1/\varphi)=\pi^2/10$, $\Lrog(1/\varphi^2)=\pi^2/15$
-y sus parientes de base cu\'artica son consecuencias de \'algebra lineal y no pruebas
-aparte; mecanizar esto en Lean es el paso natural siguiente.
-\item \textbf{El cinco t\'erminos de Bloch--Wigner.} La misma relaci\'on vale para la
-funci\'on univaluada de Bloch--Wigner en $\mathbb{C}$, donde sostiene las aplicaciones de
-volumen hiperb\'olico y congruencia por tijeras; formalizarla es la secuela
-anal\'itico-compleja.
-\item \textbf{Universalidad.} La reducci\'on de Wojtkowiak de toda ecuaci\'on racional de
-una variable al cinco t\'erminos ser\'ia un objetivo de formalizaci\'on profundo, del que
-este es el primer ladrillo indispensable.
+\item \emph{Las escaleras como familia generada.} Cada fila de la Tabla~\ref{tab:instances}
+es la relaci\'on de cinco t\'erminos evaluada en un punto; mecanizar la sustituci\'on para que
+cada escalera \emph{se imprima} desde el \'unico teorema convertir\'ia un cat\'alogo en un
+corolario. ¿Cu\'anta de la tabla cl\'asica de valores del dilogaritmo es una \'orbita finita
+de la relaci\'on de cinco t\'erminos bajo sustituci\'on $\mathbb{Q}$-racional ---y d\'onde se
+detiene esa \'orbita?
+\item \emph{La secuela de Bloch--Wigner.} La misma relaci\'on vale para la funci\'on
+univaluada de Bloch--Wigner en $\mathbb{C}$, donde sostiene el volumen hiperb\'olico y la
+congruencia por tijeras~\cite{suslin,neumannzagier,goncharov}. ¿Cu\'al es el menor relato
+fiel del grupo de Bloch en Lean en el que $\mathrm{Vol}$ de una $3$-variedad hiperb\'olica se
+vuelve un n\'umero computable y certificado?
+\item \emph{El l\'imite cu\'antico.} El dilogaritmo cu\'antico de Faddeev--Kashaev satisface
+una identidad del pent\'agono~\cite{faddeevkashaev} cuyo l\'imite $\hbar\to0$ es la relaci\'on
+probada aqu\'i. ¿Puede un asistente de pruebas hacer de ese l\'imite un teorema en vez de una
+heur\'istica ---y, al hacerlo, expondr\'ia, como lo hizo la prueba cl\'asica, un paso que la
+literatura f\'isica pasa de puntillas?
+\item \emph{La universalidad, formalizada.} Wojtkowiak y de~Jeu reducen \emph{toda} ecuaci\'on
+funcional racional de $\Li$ a la relaci\'on de cinco t\'erminos~\cite{wojtkowiak,dejeu}. Esa
+reducci\'on es un algoritmo. ¿Qu\'e har\'ia falta para correrlo dentro de Lean, de modo que
+una identidad de dilogaritmo cualquiera se \emph{decida} contra el generador?
+\item \emph{Lo que ve la m\'aquina y la p\'agina esconde.} La Secci\'on~\ref{sec:caught}
+hall\'o un lugar donde la prueba formal fue estrictamente m\'as afilada que la informal ---una
+reescritura ordenada en la que la pluma conf\'ia. En un tema de dos siglos, reprobado una
+docena de veces, ¿cu\'antos de esos pasos silenciosos quedan, y es ``la prueba que un humano
+cree'' alguna vez exactamente la prueba que una m\'aquina aceptar\'a?
+\item \emph{Una para guardar.} La relaci\'on de cinco t\'erminos dice que cinco valores del
+dilogaritmo, le\'idos en torno a un pent\'agono, suman nada nuevo. Es la relaci\'on que define
+el grupo de Bloch, la mutaci\'on de cl\'uster, el dilogaritmo cu\'antico ---una identidad con
+las m\'ascaras de la geometr\'ia, el \'algebra y la f\'isica. Ahora que est\'a verificada por
+m\'aquina, la pregunta no es si es cierta sino por qu\'e est\'a \emph{en todas partes}: ¿qu\'e
+tiene un pent\'agono para que tantas partes de la matem\'atica sean, por debajo, los mismos
+cinco pasos que te devuelven a casa?
 \end{enumerate}
 
 \section*{Reproducir}
@@ -278,29 +473,49 @@ cd godsil-gutman-lean && lake exe cache get
 lake build Dilog.FiveTerm
 \end{verbatim}
 Lean \lean{v4.30.0-rc2}, Mathlib pin \lean{701fb6e9}. La relaci\'on es
-\lean{Dilog.rogersL\_fiveterm} en \lean{Dilog/FiveTerm.lean}; sus soportes son
-\lean{hasDerivAt\_rogersL}, \lean{fiveterm\_hasDerivAt\_zero},
-\lean{tendsto\_rogersL\_nhdsGT\_zero} y \lean{continuousAt\_rogersL}. Cada uno se comprueba
-con \lean{\#print axioms} para depender solo de \lean{propext}, \lean{Classical.choice},
-\lean{Quot.sound}.
+\lean{Dilog.rogersL\_fiveterm} en \lean{Dilog/FiveTerm.lean}; sus soportes est\'an en la
+Tabla~\ref{tab:inventory}. Cada uno se comprueba con \lean{\#print axioms} para depender solo
+de \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 
-\begin{thebibliography}{9}
-\bibitem{Wojtkowiak} Z.\ Wojtkowiak, \emph{The basic structure of polylogarithmic
-functional equations}, en \textit{Structural Properties of Polylogarithms} (L.\ Lewin,
-ed.), Math.\ Surveys Monogr.\ \textbf{37}, AMS (1991), 205--231.
-\bibitem{deJeu} R.\ de Jeu, \emph{Towards regulator formulae for the $K$-theory of curves
-and number fields}, Compositio Math.\ \textbf{124} (2000), 137--194.
-\bibitem{Zagier} D.\ Zagier, \emph{The dilogarithm function}, en \textit{Frontiers in
-Number Theory, Physics, and Geometry II}, Springer (2007), 3--65.
-\bibitem{Nakanishi} T.\ Nakanishi, \emph{Dilogarithm identities for conformal field
-theories and cluster algebras}, en \textit{Symmetries, Integrable Systems and
-Representations}, Springer Proc.\ Math.\ Stat.\ \textbf{40} (2013), 407--444.
-\bibitem{Rogers} L.\ J.\ Rogers, \emph{On function sum theorems connected with the series
-$\sum x^n/n^2$}, Proc.\ London Math.\ Soc.\ \textbf{4} (1907), 169--189.
-\bibitem{Lewin} L.\ Lewin, \emph{Polylogarithms and Associated Functions},
-North-Holland (1981).
-\bibitem{Mathlib} The Mathlib Community, \emph{The Lean Mathematical Library},
-CPP 2020, 367--381.
+\begin{thebibliography}{99}\small
+\bibitem{abel} N.~H.~Abel, \emph{\OE uvres compl\`etes} (L.~Sylow, S.~Lie, eds.), vol.~II,
+Gr{\o}ndahl, Christiania, 1881; la relaci\'on de cinco t\'erminos est\'a en la nota sobre el
+dilogaritmo.
+\bibitem{rogers} L.~J.~Rogers, On function sum theorems connected with the series
+$\sum x^n/n^2$, \emph{Proc.\ London Math.\ Soc.} \textbf{4} (1907) 169--189.
+\bibitem{lewin} L.~Lewin, \emph{Polylogarithms and Associated Functions}, North-Holland,
+1981.
+\bibitem{zagier} D.~Zagier, The dilogarithm function, en \emph{Frontiers in Number Theory,
+Physics, and Geometry II}, Springer, 2007, 3--65.
+\bibitem{wojtkowiak} Z.~Wojtkowiak, The basic structure of polylogarithmic functional
+equations, en \emph{Structural Properties of Polylogarithms} (L.~Lewin, ed.), Math.\
+Surveys Monogr.\ \textbf{37}, AMS, 1991, 205--231.
+\bibitem{dejeu} R.~de~Jeu, Towards regulator formulae for the $K$-theory of curves and
+number fields, \emph{Compositio Math.} \textbf{124} (2000) 137--194.
+\bibitem{bloch} S.~Bloch, \emph{Higher Regulators, Algebraic $K$-theory, and Zeta Functions
+of Elliptic Curves}, CRM Monogr.\ Ser.\ \textbf{11}, AMS, 2000 (lecciones de Irvine, 1978).
+\bibitem{suslin} A.~A.~Suslin, $K_3$ of a field, and the Bloch group, \emph{Proc.\ Steklov
+Inst.\ Math.} \textbf{183} (1991) 217--239.
+\bibitem{neumannzagier} W.~D.~Neumann, D.~Zagier, Volumes of hyperbolic three-manifolds,
+\emph{Topology} \textbf{24} (1985) 307--332.
+\bibitem{goncharov} A.~B.~Goncharov, Geometry of configurations, polylogarithms, and
+motivic cohomology, \emph{Adv.\ Math.} \textbf{114} (1995) 197--318.
+\bibitem{nakanishi} T.~Nakanishi, Dilogarithm identities for conformal field theories and
+cluster algebras, en \emph{Symmetries, Integrable Systems and Representations}, Springer
+Proc.\ Math.\ Stat.\ \textbf{40} (2013) 407--444.
+\bibitem{faddeevkashaev} L.~D.~Faddeev, R.~M.~Kashaev, Quantum dilogarithm as a kernel of
+the quantum modular double, \emph{Modern Phys.\ Lett.\ A} \textbf{9} (1994) 427--434.
+\bibitem{kirillov} A.~N.~Kirillov, Dilogarithm identities, \emph{Prog.\ Theor.\ Phys.\
+Suppl.} \textbf{118} (1995) 61--142.
+\bibitem{zamolodchikov} Al.~B.~Zamolodchikov, Thermodynamic Bethe ansatz in relativistic
+models, \emph{Nucl.\ Phys.\ B} \textbf{342} (1990) 695--720.
+\bibitem{nahm} W.~Nahm, Conformal field theory and torsion elements of the Bloch group, en
+\emph{Frontiers in Number Theory, Physics, and Geometry II}, Springer, 2007, 67--132.
+\bibitem{clock} C.~Mar\'in, \emph{The Clock That Never Ticks: a machine-checked path from
+the dilogarithm to quantum speed limits in Lean~4}, paper compa\~nero, mismo repositorio,
+2026.
+\bibitem{mathlib} The mathlib Community, The Lean mathematical library, en \emph{CPP 2020},
+ACM, 2020, 367--381.
 \end{thebibliography}
 
 \end{document}
