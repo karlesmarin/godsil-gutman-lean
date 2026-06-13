@@ -315,4 +315,30 @@ theorem exists_Iθ_zero_lt_one (B : ℤ) (hB : 1 ≤ B) {θ : ℝ} (h0 : 0 < θ)
   · exact h
   · exfalso; rw [h] at hr0; linarith [hf1, hr0]
 
+/-! ## Phase 4: the B₂/Cl₂ decomposition at roots of unity (O'Sullivan (2.8)+(2.9))
+
+The seed of the asymptotic zero location (O'Sullivan Thm 7.3): the value of the
+dilogarithm at a root of unity splits into the second Bernoulli polynomial (real part)
+and the Clausen function (imaginary part) — our two formalized functions. -/
+
+/-- The second Bernoulli polynomial `B₂(x) = x² − x + 1/6`. -/
+noncomputable def B₂ (x : ℝ) : ℝ := x ^ 2 - x + 1 / 6
+
+/-- **O'Sullivan (2.8)+(2.9)**: at a root of unity `e^{2πix}` (`x ∈ [0,1]`),
+`Li₂(e^{2πix}) = π²·B₂(x) + i·Cl₂(2πx)`. This `B₂`/`Cl₂` decomposition is the first-order
+content of the zero-location asymptotic (Thm 7.3) and the bridge to Rademacher's
+partition asymptotics. -/
+theorem Li₂c_two_pi_mul {x : ℝ} (hx0 : 0 ≤ x) (hx1 : x ≤ 1) :
+    Li₂c (Complex.exp (((2 * π * x : ℝ) : ℂ) * I))
+      = ((π ^ 2 * B₂ x : ℝ) : ℂ) + ((Cl₂ (2 * π * x) : ℝ) : ℂ) * I := by
+  have h0 : 0 ≤ 2 * π * x := mul_nonneg (by positivity) hx0
+  have h2π : 2 * π * x ≤ 2 * π := by nlinarith [Real.pi_pos]
+  apply Complex.ext
+  · simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
+      Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul, sub_zero, add_zero]
+    rw [Li₂c_exp_re h0 h2π, B₂]; ring
+  · simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re,
+      Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_add, zero_mul, add_zero]
+    rw [Li₂c_exp_im]
+
 end Dilog
