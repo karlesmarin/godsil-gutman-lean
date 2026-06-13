@@ -198,6 +198,17 @@ theorem z_mul_deriv_phi (B : ℤ) {z : ℂ} (hslit : z ∈ Complex.slitPlane) :
   have hz0 : z ≠ 0 := by rintro rfl; simp [Complex.mem_slitPlane_iff] at hslit
   field_simp
 
+/-- `Li₂c` is continuous on the closed unit disk (Weierstrass M-test). -/
+theorem continuousOn_Li₂c : ContinuousOn Li₂c (Metric.closedBall 0 1) := by
+  refine continuousOn_tsum (fun n => ?_) (summable_pow_div_add (1 : ℂ) 2 1 (by norm_num))
+    (fun n z hz => ?_)
+  · exact (by fun_prop : Continuous fun z : ℂ => z ^ (n + 1) / ((n : ℂ) + 1) ^ 2).continuousOn
+  · rw [Metric.mem_closedBall, dist_zero_right] at hz
+    simp only [Nat.cast_one]
+    rw [norm_div, norm_div, norm_one, norm_pow]
+    gcongr
+    exact (pow_le_pow_left₀ (norm_nonneg z) hz (n + 1)).trans_eq (one_pow _)
+
 /-! ## Phase 3: sign localization of the imaginary-part zero curve (O'Sullivan §5)
 
 For `B ≥ 1`, the zero `w(A,B)` of `φ_{A,B}` lies on the curve `Im φ_{A,B} = 0`.
