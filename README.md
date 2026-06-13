@@ -99,7 +99,8 @@ A second, **independent strand** (different subject area, same repository) forma
   zeta state (populations `∝ 1/n²` on equally spaced levels) has infinite mean energy and
   infinite variance — both textbook speed limits say nothing — yet never reaches an
   orthogonal state, because its autocorrelation is `(6/π²)·Li₂(e^{−iθ})` and the dilogarithm
-  has no zero on the unit circle. EN + ES. Zenodo DOI pending.
+  has no zero on the unit circle. EN + ES. DOI
+  [10.5281/zenodo.20675271](https://doi.org/10.5281/zenodo.20675271).
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
@@ -413,8 +414,8 @@ Paper II figures and SageMath cross-checks:
 @misc{Marin2026ClockNeverTicks,
   author = {Mar\'in, Carles},
   title  = {The Clock That Never Ticks: A Machine-Checked Path from the Dilogarithm to Quantum Speed Limits in Lean 4},
-  year   = {2026},
-  note   = {Independent strand; Zenodo DOI pending. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+  year   = {2026}, doi = {10.5281/zenodo.20675271},
+  note   = {Independent strand. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
 ```
 
@@ -428,7 +429,7 @@ Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746),
 Jacobi–Newton [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470),
 Part VI [10.5281/zenodo.20648488](https://doi.org/10.5281/zenodo.20648488),
 Applied census [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
-*The Clock That Never Ticks* (dilogarithm + QSL strand): Zenodo DOI pending.
+Clock paper (dilogarithm + QSL strand) [10.5281/zenodo.20675271](https://doi.org/10.5281/zenodo.20675271).
 
 ## Author and license
 
