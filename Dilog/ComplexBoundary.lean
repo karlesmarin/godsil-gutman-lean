@@ -198,4 +198,27 @@ theorem z_mul_deriv_phi (B : ℤ) {z : ℂ} (hslit : z ∈ Complex.slitPlane) :
   have hz0 : z ≠ 0 := by rintro rfl; simp [Complex.mem_slitPlane_iff] at hslit
   field_simp
 
+/-! ## Phase 3: sign localization of the imaginary-part zero curve (O'Sullivan §5)
+
+For `B ≥ 1`, the zero `w(A,B)` of `φ_{A,B}` lies on the curve `Im φ_{A,B} = 0`.
+Along the ray `z = r·e^{iθ}` this imaginary part is
+`I_θ(r) = Im Li₂(r e^{iθ}) + 2πB·log r` (O'Sullivan (5.2), since `Re log z = log r`).
+At the unit circle `r = 1` it reduces to `Cl₂(θ)`; its sign (via our `Cl₂_pos`)
+decides whether the zero sits inside (`Cl₂ > 0`) or outside the disk — the seed of
+O'Sullivan's Proposition 5.3. -/
+
+/-- The imaginary part of `φ_{0,B}` along the ray `r·e^{iθ}` (O'Sullivan (5.2)). -/
+noncomputable def Iθ (B : ℤ) (θ r : ℝ) : ℝ :=
+  (Li₂c ((r : ℂ) * Complex.exp ((θ : ℂ) * I))).im + 2 * π * (B : ℝ) * Real.log r
+
+/-- **O'Sullivan §5, the key identity**: at the unit circle `I_θ(1) = Cl₂(θ)`. -/
+theorem Iθ_one (B : ℤ) (θ : ℝ) : Iθ B θ 1 = Cl₂ θ := by
+  simp only [Iθ, Real.log_one, mul_zero, add_zero, Complex.ofReal_one, one_mul]
+  exact Li₂c_exp_im θ
+
+/-- On the arc `θ ∈ (0,π)` the imaginary-part function is positive at the unit circle —
+the sign that localizes the zero inside the disk (O'Sullivan Prop. 5.3). -/
+theorem Iθ_one_pos (B : ℤ) {θ : ℝ} (h0 : 0 < θ) (hπ : θ < π) : 0 < Iθ B θ 1 := by
+  rw [Iθ_one]; exact Cl₂_pos h0 hπ
+
 end Dilog
