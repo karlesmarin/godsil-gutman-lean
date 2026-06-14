@@ -100,6 +100,43 @@ public theorem realRooted_quadratic_discrim {a b c : ℝ} (ha : a ≠ 0)
   rw [key]
   exact sq_nonneg _
 
+/-- **Real-rootedness is preserved by iterated differentiation** (iterate Rolle). -/
+public theorem RealRooted.iterate_derivative (hp : RealRooted p) (k : ℕ) :
+    RealRooted (Polynomial.derivative^[k] p) := by
+  induction k with
+  | zero => simpa using hp
+  | succ k ih =>
+      rw [Function.iterate_succ_apply']
+      exact RealRooted.derivative ih
+
+/-- **(2′) Base case, coefficient form.** A real-rooted polynomial of `natDegree ≤ 2` satisfies the
+discriminant inequality on its low coefficients: `a₁² ≥ 4 a₂ a₀`. (For `natDegree < 2` the leading
+`a₂ = 0` makes it `a₁² ≥ 0`.) This is the form the reduction below consumes. -/
+public theorem realRooted_discrim_coeff {q : Polynomial ℝ} (hq : RealRooted q)
+    (hdeg : q.natDegree ≤ 2) :
+    q.coeff 1 ^ 2 ≥ 4 * q.coeff 2 * q.coeff 0 := by
+  by_cases hc2 : q.coeff 2 = 0
+  · rw [hc2]; simpa using sq_nonneg (q.coeff 1)
+  · have h2 : q.natDegree = 2 := le_antisymm hdeg (le_natDegree_of_ne_zero hc2)
+    have hq0 : q ≠ 0 := fun h => hc2 (by rw [h]; simp)
+    have hcard : q.roots.card = 2 := by rw [realRooted_iff_card_roots.mp hq, h2]
+    have hne : q.roots ≠ 0 := by
+      intro h0; rw [h0, Multiset.card_zero] at hcard; exact absurd hcard (by decide)
+    obtain ⟨x, hx⟩ := Multiset.exists_mem_of_ne_zero hne
+    have hroot : q.IsRoot x := (mem_roots hq0).mp hx
+    have he : q.coeff 0 + q.coeff 1 * x + q.coeff 2 * x ^ 2 = 0 := by
+      have h3 : q.natDegree < 3 := by omega
+      have hev : q.eval x = 0 := hroot
+      rw [eval_eq_sum_range' h3] at hev
+      simp only [Finset.sum_range_succ, Finset.sum_range_zero, pow_zero, mul_one, pow_one,
+        zero_add] at hev
+      linarith [hev]
+    have key : q.coeff 1 ^ 2 - 4 * q.coeff 2 * q.coeff 0
+        = (2 * q.coeff 2 * x + q.coeff 1) ^ 2
+          - 4 * q.coeff 2 * (q.coeff 0 + q.coeff 1 * x + q.coeff 2 * x ^ 2) := by ring
+    rw [he, mul_zero, sub_zero] at key
+    linarith [sq_nonneg (2 * q.coeff 2 * x + q.coeff 1), key]
+
 /-- **(3) Newton's inequalities.** For a monic real-rooted polynomial of degree `n` with roots
 multiset `s = p.roots`, for `1 ≤ k ≤ n-1`,
 `e_k(s)² · C(n,k-1)·C(n,k+1) ≥ e_{k-1}(s)·e_{k+1}(s) · C(n,k)²`. -/
