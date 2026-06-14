@@ -21,6 +21,7 @@ public import RealStable
 public import Mathlib.Algebra.Polynomial.Derivative
 public import Mathlib.Algebra.Polynomial.Reverse
 public import Mathlib.Algebra.Polynomial.Degree.SmallDegree
+public import Mathlib.Analysis.Calculus.LocalExtr.Polynomial
 public import Mathlib.RingTheory.MvPolynomial.Symmetric.Defs
 
 open Polynomial MSS
@@ -32,7 +33,16 @@ variable {p : Polynomial ℝ}
 /-- **(1) Rolle stone.** The derivative of a real-rooted real polynomial is real-rooted. -/
 public theorem RealRooted.derivative (hp : RealRooted p) :
     RealRooted (Polynomial.derivative p) := by
-  sorry
+  rw [realRooted_iff_card_roots] at hp ⊢
+  -- upper bound: #roots(p') ≤ deg(p');  Rolle bound: #roots(p) ≤ #roots(p') + 1;
+  -- degree drop: deg(p') ≤ deg(p) - 1.  Squeeze with hp (#roots(p) = deg(p)) closes it.
+  have hub : (Polynomial.derivative p).roots.card ≤ (Polynomial.derivative p).natDegree :=
+    card_roots' _
+  have hlb : p.roots.card ≤ (Polynomial.derivative p).roots.card + 1 :=
+    card_roots_le_derivative p
+  have hdle : (Polynomial.derivative p).natDegree ≤ p.natDegree - 1 :=
+    natDegree_derivative_le p
+  omega
 
 /-- Real-rootedness is preserved by the **reversal** `x ↦ 1/x`, for nonzero constant term. -/
 public theorem RealRooted.reverse (hp : RealRooted p) (h0 : p.coeff 0 ≠ 0) :
