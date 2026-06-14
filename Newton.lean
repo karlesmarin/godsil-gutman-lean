@@ -45,9 +45,31 @@ public theorem RealRooted.derivative (hp : RealRooted p) :
   omega
 
 /-- Real-rootedness is preserved by the **reversal** `x ↦ 1/x`, for nonzero constant term. -/
-public theorem RealRooted.reverse (hp : RealRooted p) (h0 : p.coeff 0 ≠ 0) :
+public theorem RealRooted.reverse (hp : RealRooted p) (_h0 : p.coeff 0 ≠ 0) :
     RealRooted p.reverse := by
-  sorry
+  -- helper: the reverse of a product of monic linears is real-rooted (each reverse has degree ≤ 1)
+  have key : ∀ s : Multiset ℝ,
+      RealRooted ((s.map (fun r => X - C r)).prod).reverse := by
+    intro s
+    induction s using Multiset.induction with
+    | empty =>
+      simp only [Multiset.map_zero, Multiset.prod_zero]
+      rw [← C_1, reverse_C]; exact realRooted_C 1
+    | cons r t ih =>
+      rw [Multiset.map_cons, Multiset.prod_cons, reverse_mul_of_domain]
+      refine RealRooted.mul ?_ ih
+      have hd : ((X - C r : Polynomial ℝ).reverse).natDegree ≤ 1 :=
+        le_trans (reverse_natDegree_le _) (by rw [natDegree_X_sub_C])
+      exact Splits.of_natDegree_le_one hd
+  -- p = C lc · ∏ (X - C r); reverse distributes, reverse (C lc) = C lc
+  have hfact : C p.leadingCoeff * (p.roots.map (fun r => X - C r)).prod = p :=
+    C_leadingCoeff_mul_prod_multiset_X_sub_C (realRooted_iff_card_roots.mp hp)
+  have hrev : p.reverse
+      = C p.leadingCoeff * ((p.roots.map (fun r => X - C r)).prod).reverse := by
+    conv_lhs => rw [← hfact]
+    rw [reverse_mul_of_domain, reverse_C]
+  rw [hrev]
+  exact RealRooted.mul (realRooted_C _) (key p.roots)
 
 /-- **(2) Base case.** A real-rooted real quadratic `a x² + b x + c` (a ≠ 0) has `b² - 4ac ≥ 0`. -/
 public theorem realRooted_quadratic_discrim {a b c : ℝ} (ha : a ≠ 0)
