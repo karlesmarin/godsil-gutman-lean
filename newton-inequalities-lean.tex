@@ -68,7 +68,9 @@ reduction made fully rigorous: real-rootedness survives differentiation (Rolle) 
 ($x\mapsto1/x$), so differentiating $i-1$ times, reversing, and differentiating again collapses
 the $k$-th instance to a real-rooted \emph{quadratic}, whose discriminant $b^2-4ac\ge0$ \emph{is}
 the inequality once positive factorials are cleared. I am exact about the boundary: the
-mathematics is entirely classical (Newton, Maclaurin, Sylvester); the contribution is the
+mathematics is entirely classical (Newton, Maclaurin, Sylvester); the machine-checked
+symmetric-function form assumes $p$ \emph{monic} (no loss---scaling fixes the roots, so the $e_k$
+are unchanged---and the coefficient form assumes nothing); the contribution is the
 formalization---together with four reusable building blocks (real-rootedness under
 differentiation, iterated differentiation, and reversal; the coefficient-form discriminant)---and
 the fact that the real-rooted$\Rightarrow$log-concave engine, used informally throughout this
@@ -141,12 +143,17 @@ whole building.
 
 \begin{theorem}[Newton's inequalities, in Lean~4; \lean{Newton.newton\_inequality}]
 \label{thm:newton}
-For a real-rooted real polynomial $p$ of degree $n$ and every $1\le k\le n-1$,
+For a \emph{monic} real-rooted real polynomial $p$ of degree $n$ and every $1\le k\le n-1$,
 \keyeq{e_k^2\,\binom{n}{k-1}\binom{n}{k+1}\;\ge\;e_{k-1}\,e_{k+1}\,\binom{n}{k}^{2}.}
 Equivalently (\lean{newton\_logConcave}) the normalized means $p_k=e_k/\binom{n}{k}$ are
 log-concave, $p_{k-1}\,p_{k+1}\le p_k^2$. Both are \lean{sorry}-free; \lean{\#print axioms} on
 each reports only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 \end{theorem}
+
+The monic hypothesis loses nothing: the $e_k$ are symmetric functions of the roots alone, which
+scaling does not move, so the inequality holds for \emph{every} real-rooted polynomial---and the
+coefficient form \lean{newton\_inequality\_coeff} (Section~\ref{sec:proof}), the workhorse from
+which this is derived, is machine-checked with no normalization at all.
 
 \emph{Hand-checkable case.} Take $p(x)=(x-1)(x-2)(x-4)=x^3-7x^2+14x-8$, so $n=3$ and
 $(e_0,e_1,e_2,e_3)=(1,7,14,8)$ (Figure~\ref{fig:bow}, left). At $k=1$ the theorem reads
@@ -422,25 +429,38 @@ mathematics and the claims are the author's responsibility.
 
 \section{Open questions}\label{sec:questions}
 
-Newton's inequalities are now a theorem in the library. Standing on them, five questions worth the
-next effort.
+Newton's inequalities are now a theorem in the library. The concrete next targets---Maclaurin's
+mean chain, the equality cases, log-concavity of the matching numbers---are named in
+Section~\ref{sec:corollaries}; what follows are the questions I would rather carry away than tick
+off, one per turn of the argument, the last one the one to keep.
 
 \begin{enumerate}
-\item \emph{Maclaurin, mechanically.} Maclaurin's mean chain follows from Newton by a short
-argument. What is the smallest Lean bridge that turns the inequality proved here into the full chain
-$p_1\ge p_2^{1/2}\ge\cdots\ge p_n^{1/n}$?
-\item \emph{The sharp case.} Equality at an interior $k$ forces all roots equal. Formalizing that
-needs the strict version of Rolle and of the discriminant; what is the cleanest route, and does the
-weak-hypothesis base case still help or now get in the way?
-\item \emph{Matching numbers as a corollary.} Composing \lean{newton\_inequality\_coeff} with the
-Heilmann--Lieb real-rootedness of the matching polynomial~\cite{PartII} should print log-concavity
-of the matching numbers in a few lines. How few?
-\item \emph{The closure made explicit.} Differentiation and reversal both preserve real-rootedness.
-What is the largest natural family of coefficient-window operations that do, and is ``enough to
-reach any quadratic window'' a theorem one could state and check?
-\item \emph{Beyond real roots.} The Hodge-theoretic log-concavity results~\cite{AHK2018} hold where
-no real-rooted polynomial exists. Newton is the real-rooted floor; what is the smallest formalized
-fragment of the matroid story that would sit one storey above it?
+\item \emph{Why zeros become magnitudes.} Reality of the roots is a statement about \emph{where} a
+polynomial vanishes; log-concavity is a statement about the \emph{size} of its coefficients. Newton
+is the first and cheapest bridge between the two. What is the deepest reason a constraint on a
+polynomial's zeros should turn, window by window, into a constraint on the magnitude of its
+coefficients?
+\item \emph{The certificate hierarchy.} For a sequence of non-negative reals, real-rootedness of the
+generating polynomial is equivalent to being a P\'olya frequency sequence
+(Aissen--Schoenberg--Whitney), strictly stronger than log-concavity (which is $\mathrm{PF}_2$).
+Newton derives the weak end from the strong. What exactly lives in the gap between the rungs, and is
+there a \emph{cheapest} certificate for each that a proof assistant could be taught to choose?
+\item \emph{The closure, made explicit.} Differentiation and reversal each preserve
+real-rootedness, and that pair alone already exposes any three consecutive coefficients as a
+quadratic. What is the full monoid of real-rootedness-preserving operations on coefficient windows,
+and is ``reaches every quadratic window'' a theorem one could state and check---i.e.\ is the
+sufficiency of \emph{these two} stones itself a theorem?
+\item \emph{Above the real-rooted floor.} Where no real-rooted polynomial exists---matroids---%
+log-concavity needs Hodge theory~\cite{AHK2018}, with Br\"and\'en's Lorentzian polynomials
+interpolating between the two worlds. Is Newton the one-variable shadow of Lorentzian-ness, and what
+is the smallest formalized fragment that would make it one storey of a single building rather than an
+isolated classical fact?
+\item \emph{One to keep.} The only thing formalizing added beyond transcription was that the
+\emph{weakest honest} base-case hypothesis dissolved a case split
+(Section~\ref{sec:caught})---``without loss of generality'' cost nothing, but only once a machine
+made me look. In a theory three centuries old and re-proved many times, how often is the WLOG
+genuinely free, and is ``always reach for the weakest base hypothesis'' a transferable principle of
+machine proof or a happy accident of this one?
 \end{enumerate}
 
 \section*{Reproducing}

@@ -68,7 +68,9 @@ reducci\'on cl\'asica hecha plenamente rigurosa: la real-radicalidad sobrevive a
 nuevo colapsa la instancia $k$-\'esima a una \emph{cu\'adratica} con ra\'ices reales, cuyo
 discriminante $b^2-4ac\ge0$ \emph{es} la desigualdad una vez eliminados factoriales positivos. Soy
 exacto con el l\'imite: las matem\'aticas son enteramente cl\'asicas (Newton, Maclaurin,
-Sylvester); la contribuci\'on es la formalizaci\'on---junto con cuatro bloques reutilizables
+Sylvester); la forma en funciones sim\'etricas verificada por m\'aquina supone $p$ \emph{m\'onico}
+(sin p\'erdida---el escalado fija las ra\'ices, as\'i que las $e_k$ no cambian---y la forma en
+coeficientes no supone nada); la contribuci\'on es la formalizaci\'on---junto con cuatro bloques reutilizables
 (real-radicalidad bajo derivaci\'on, derivaci\'on iterada y reversi\'on; el discriminante en forma
 de coeficientes)---y el hecho de que el motor ra\'ices-reales$\Rightarrow$log-concavidad, usado de
 manera informal a lo largo de esta l\'inea de trabajo, queda ahora certificado. El teorema principal
@@ -141,12 +143,18 @@ con ra\'ices reales, de todo ese edificio.
 
 \begin{theorem}[Desigualdades de Newton, en Lean~4; \lean{Newton.newton\_inequality}]
 \label{thm:newton}
-Para un polinomio real con ra\'ices reales $p$ de grado $n$ y todo $1\le k\le n-1$,
+Para un polinomio real \emph{m\'onico} con ra\'ices reales $p$ de grado $n$ y todo $1\le k\le n-1$,
 \keyeq{e_k^2\,\binom{n}{k-1}\binom{n}{k+1}\;\ge\;e_{k-1}\,e_{k+1}\,\binom{n}{k}^{2}.}
 Equivalentemente (\lean{newton\_logConcave}), las medias normalizadas $p_k=e_k/\binom{n}{k}$ son
 log-c\'oncavas, $p_{k-1}\,p_{k+1}\le p_k^2$. Ambas son libres de \lean{sorry}; \lean{\#print axioms}
 en cada una reporta solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 \end{theorem}
+
+La hip\'otesis m\'onica no pierde nada: las $e_k$ son funciones sim\'etricas solo de las ra\'ices,
+que el escalado no mueve, as\'i que la desigualdad vale para \emph{todo} polinomio con ra\'ices
+reales---y la forma en coeficientes \lean{newton\_inequality\_coeff} (Secci\'on~\ref{sec:proof}), el
+caballo de batalla del que esta se deriva, est\'a verificada por m\'aquina sin normalizaci\'on
+alguna.
 
 \emph{Caso comprobable a mano.} Tomemos $p(x)=(x-1)(x-2)(x-4)=x^3-7x^2+14x-8$, as\'i que $n=3$ y
 $(e_0,e_1,e_2,e_3)=(1,7,14,8)$ (Figura~\ref{fig:bow}, izquierda). En $k=1$ el teorema dice
@@ -433,27 +441,40 @@ son responsabilidad del autor.
 
 \section{Preguntas abiertas}\label{sec:questions}
 
-Las desigualdades de Newton son ya un teorema en la biblioteca. Sobre ellas, cinco preguntas que
-valen el siguiente esfuerzo.
+Las desigualdades de Newton son ya un teorema en la biblioteca. Los objetivos concretos
+siguientes---la cadena de medias de Maclaurin, los casos de igualdad, la log-concavidad de los
+n\'umeros de emparejamientos---est\'an nombrados en la Secci\'on~\ref{sec:corollaries}; lo que sigue
+son las preguntas que prefiero llevarme a marcar como tareas, una por giro del argumento, la \'ultima
+la que me quedar\'ia.
 
 \begin{enumerate}
-\item \emph{Maclaurin, mec\'anicamente.} La cadena de medias de Maclaurin se sigue de Newton por un
-argumento corto. ¿Cu\'al es el puente Lean m\'as peque\~no que convierte la desigualdad probada aqu\'i
-en la cadena completa $p_1\ge p_2^{1/2}\ge\cdots\ge p_n^{1/n}$?
-\item \emph{El caso afilado.} La igualdad en un $k$ interior fuerza que todas las ra\'ices sean
-iguales. Formalizarlo necesita la versi\'on estricta de Rolle y del discriminante; ¿cu\'al es la ruta
-m\'as limpia, y el caso base de hip\'otesis d\'ebil sigue ayudando o ahora estorba?
-\item \emph{N\'umeros de emparejamientos como corolario.} Componer \lean{newton\_inequality\_coeff}
-con la real-radicalidad de Heilmann--Lieb del polinomio de emparejamientos~\cite{PartII} deber\'ia
-imprimir la log-concavidad de los n\'umeros de emparejamientos en pocas l\'ineas. ¿Cu\'antas?
-\item \emph{La clausura, explicitada.} La derivaci\'on y la reversi\'on preservan ambas la
-real-radicalidad. ¿Cu\'al es la mayor familia natural de operaciones sobre ventanas de coeficientes
-que lo hacen, y es ``suficiente para alcanzar cualquier ventana cu\'adratica'' un teorema que se
-pueda enunciar y verificar?
-\item \emph{M\'as all\'a de las ra\'ices reales.} Los resultados de log-concavidad por teor\'ia de
-Hodge~\cite{AHK2018} valen donde no existe polinomio con ra\'ices reales. Newton es el suelo con
-ra\'ices reales; ¿cu\'al es el fragmento formalizado m\'as peque\~no de la historia de matroides que
-se asentar\'ia un piso por encima de \'el?
+\item \emph{Por qu\'e los ceros se vuelven magnitudes.} La realidad de las ra\'ices es un enunciado
+sobre \emph{d\'onde} se anula un polinomio; la log-concavidad, sobre el \emph{tama\~no} de sus
+coeficientes. Newton es el primer puente, y el m\'as barato, entre ambos. ¿Cu\'al es la raz\'on m\'as
+profunda de que una restricci\'on sobre los ceros de un polinomio se convierta, ventana a ventana, en
+una restricci\'on sobre la magnitud de sus coeficientes?
+\item \emph{La jerarqu\'ia de certificados.} Para una sucesi\'on de reales no negativos, la
+real-radicalidad del polinomio generador equivale a ser una sucesi\'on de frecuencia de P\'olya
+(Aissen--Schoenberg--Whitney), estrictamente m\'as fuerte que la log-concavidad (que es
+$\mathrm{PF}_2$). Newton deduce el extremo d\'ebil del fuerte. ¿Qu\'e vive exactamente en la brecha
+entre los pelda\~nos, y hay un certificado \emph{m\'as barato} para cada uno que un asistente de
+pruebas pudiera aprender a elegir?
+\item \emph{La clausura, explicitada.} La derivaci\'on y la reversi\'on preservan cada una la
+real-radicalidad, y ese par ya basta para exponer cualesquiera tres coeficientes consecutivos como
+una cu\'adratica. ¿Cu\'al es el monoide completo de operaciones sobre ventanas de coeficientes que
+preservan la real-radicalidad, y es ``alcanza toda ventana cu\'adratica'' un teorema que se pueda
+enunciar y verificar---esto es, es la suficiencia de \emph{estas dos} piedras un teorema en s\'i?
+\item \emph{Por encima del suelo con ra\'ices reales.} Donde no existe polinomio con ra\'ices
+reales---matroides---la log-concavidad necesita teor\'ia de Hodge~\cite{AHK2018}, con los polinomios
+lorentzianos de Br\"and\'en interpolando entre ambos mundos. ¿Es Newton la sombra en una variable de
+la lorentzianidad, y cu\'al es el fragmento formalizado m\'as peque\~no que lo har\'ia un piso de un
+mismo edificio en vez de un hecho cl\'asico aislado?
+\item \emph{Una para quedarse.} Lo \'unico que la formalizaci\'on a\~nadi\'o m\'as all\'a de la
+transcripci\'on fue que la hip\'otesis de caso base \emph{m\'as d\'ebil y honesta} disolvi\'o un caso
+aparte (Secci\'on~\ref{sec:caught})---el ``sin p\'erdida de generalidad'' no cost\'o nada, pero solo
+una vez que una m\'aquina me hizo mirar. En una teor\'ia de tres siglos y reprobada muchas veces,
+¿con qu\'e frecuencia es gratis ese ``sin p\'erdida'', y es ``busca siempre la hip\'otesis base m\'as
+d\'ebil'' un principio transferible de la prueba mec\'anica o un accidente feliz de esta?
 \end{enumerate}
 
 \section*{Reproducir}
