@@ -20,6 +20,7 @@ Skeleton: statement + key lemmas. Proof strategy:
 public import RealStable
 public import Mathlib.Algebra.Polynomial.Derivative
 public import Mathlib.Algebra.Polynomial.Reverse
+public import Mathlib.Algebra.Polynomial.Degree.SmallDegree
 public import Mathlib.RingTheory.MvPolynomial.Symmetric.Defs
 
 open Polynomial MSS
@@ -42,7 +43,30 @@ public theorem RealRooted.reverse (hp : RealRooted p) (h0 : p.coeff 0 ≠ 0) :
 public theorem realRooted_quadratic_discrim {a b c : ℝ} (ha : a ≠ 0)
     (h : RealRooted (C a * X ^ 2 + C b * X + C c)) :
     b ^ 2 - 4 * a * c ≥ 0 := by
-  sorry
+  set q := C a * X ^ 2 + C b * X + C c with hq
+  -- q has degree 2, hence is nonzero
+  have hdeg : q.degree = 2 := degree_quadratic ha
+  have hq0 : q ≠ 0 := by
+    intro h0; rw [h0, degree_zero] at hdeg; exact absurd hdeg (by decide)
+  have hnat : q.natDegree = 2 := natDegree_eq_of_degree_eq_some hdeg
+  -- real-rootedness ⟹ #roots = natDegree = 2 > 0, so a real root exists
+  have hcard : q.roots.card = q.natDegree := realRooted_iff_card_roots.mp h
+  rw [hnat] at hcard
+  have hne : q.roots ≠ 0 := by
+    intro h0; rw [h0, Multiset.card_zero] at hcard; exact absurd hcard (by decide)
+  obtain ⟨x, hx⟩ := Multiset.exists_mem_of_ne_zero hne
+  have hroot : q.IsRoot x := (mem_roots hq0).mp hx
+  -- evaluate: a x² + b x + c = 0
+  have he : a * x ^ 2 + b * x + c = 0 := by
+    have h2 : q.eval x = 0 := hroot
+    rw [hq] at h2
+    simpa [eval_add, eval_mul, eval_pow, eval_C, eval_X] using h2
+  -- b² − 4ac = (2ax+b)² − 4a·(a x²+b x+c) = (2ax+b)² ≥ 0
+  have key : b ^ 2 - 4 * a * c
+      = (2 * a * x + b) ^ 2 - 4 * a * (a * x ^ 2 + b * x + c) := by ring
+  rw [he, mul_zero, sub_zero] at key
+  rw [key]
+  exact sq_nonneg _
 
 /-- **(3) Newton's inequalities.** For a monic real-rooted polynomial of degree `n` with roots
 multiset `s = p.roots`, for `1 ≤ k ≤ n-1`,
