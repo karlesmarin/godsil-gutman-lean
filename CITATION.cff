@@ -75,3 +75,11 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20629746"
     notes: "Part V — Kirchhoff via Cauchy–Binet + oriented incidence + sorting dichotomy"
+  - type: article
+    title: "The Inward Bow of a Real-Rooted Polynomial: Newton's Inequalities, Machine-Checked in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20693064"
+    notes: "Newton's inequalities (real-rooted ⟹ log-concave); first in any ITP"
