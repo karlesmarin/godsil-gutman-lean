@@ -118,6 +118,21 @@ A second, **independent strand** (different subject area, same repository) forma
   → boundary value. EN + ES. DOI
   [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715) (concept, latest version).
 
+A third strand formalizes the **real-rooted ⇒ log-concave** bridge that underlies the
+matching polynomial (Paper II) and much of modern combinatorics:
+
+- **The Inward Bow of a Real-Rooted Polynomial** ([`newton-inequalities-lean.pdf`](newton-inequalities-lean.pdf)):
+  **Newton's inequalities** (1707) — if a real polynomial of degree `n` has all real roots, its
+  elementary symmetric functions obey `e_k² · C(n,k−1)C(n,k+1) ≥ e_{k−1}e_{k+1} · C(n,k)²`, i.e.
+  the normalized means `p_k = e_k/C(n,k)` are **log-concave**. The classical differentiate–reverse
+  reduction made fully rigorous: real-rootedness survives differentiation (Rolle) and reversal
+  (`x ↦ 1/x`), so a few derivatives and one reversal collapse each index to a real-rooted
+  **quadratic**, whose discriminant `b²−4ac ≥ 0` *is* the inequality once positive factorials are
+  cleared. To our knowledge the **first machine-checked Newton's inequalities in any proof
+  assistant** (`Newton.lean`); the symmetric-function form is checked for monic polynomials (no
+  loss; the coefficient form needs no normalization). EN + ES. DOI
+  [10.5281/zenodo.20693064](https://doi.org/10.5281/zenodo.20693064).
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.
@@ -298,6 +313,23 @@ climbed the golden ladder without it.
 Two hand-checkable instances: `(x,y)=(½,½)` gives `L(¼)+2L(⅓) = π²/6`; `(x,y)=(1/φ,1/φ)`
 collapses all three arguments to `1/φ²`, giving `2L(1/φ) = 3L(1/φ²) = π²/5`.
 
+### Newton's inequalities — *The Inward Bow of a Real-Rooted Polynomial*
+
+The classical **real-rooted ⇒ log-concave** bridge (`Newton.lean`), the engine Paper II uses
+informally, now certified. `sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `newton_inequality` | `e_k² C(n,k−1)C(n,k+1) ≥ e_{k−1}e_{k+1} C(n,k)²` (monic, real-rooted) | `Newton.lean` |
+| `newton_logConcave` | `p_{k−1}p_{k+1} ≤ p_k²` — log-concavity of the normalized means | `Newton.lean` |
+| `newton_inequality_coeff` | coefficient form `a_i² C(n,i−1)C(n,i+1) ≥ a_{i−1}a_{i+1} C(n,i)²` (no monic) | `Newton.lean` |
+| `realRooted_discrim_coeff` | real-rooted, `deg ≤ 2 ⇒ a_1² ≥ 4 a_2 a_0` (the base case) | `Newton.lean` |
+| `RealRooted.derivative`, `.iterate_derivative` | real-rootedness under `D` and `Dᵏ` (Rolle) | `Newton.lean` |
+| `RealRooted.reverse` | real-rootedness under reversal `x ↦ 1/x` | `Newton.lean` |
+
+Worked instance: for `(x−1)(x−2)(x−4)` (so `e = (1,7,14,8)`), `k=1` reads `147 ≥ 126` and `k=2`
+reads `588 ≥ 504`; `(x−1)⁴` saturates every inequality, and `x²+1` (complex roots) fails it.
+
 ### The Ihara side — Jacobi's formula and Newton's identity
 
 The resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
@@ -318,6 +350,7 @@ non-backtracking walk counts (used by Part VI).
 RealStable.lean              RealRooted / BoundedBy predicates + closure algebra
 MatchingPoly.lean            matching polynomial μ_G, matching number, deletion recurrence
 RamanujanBound.lean          the band edge 2√(k−1) (bruhatTitsBound) and its algebra
+Newton.lean                  Newton's inequalities: real-rooted ⇒ log-concave (esymm + coeff form)
 
 # MSS/ — Papers I–II
 MSS/Basic.lean               signed adjacency matrix
@@ -373,6 +406,8 @@ ihara-bass-lean.tex          companion  — Folding Edges into Vertices (Bass)
 jacobi-newton-lean.tex       companion  — What a Determinant's Derivative Knows
 ldpc-census.tex              applied    — Certified Short-Cycle Counts for IEEE 802.11n LDPC
 clock-never-ticks.tex        strand     — The Clock That Never Ticks (dilogarithm → QSL)
+five-term-lean.tex           strand     — The Pentagon, Machine-Checked (Abel's five-term)
+newton-inequalities-lean.tex strand     — The Inward Bow of a Real-Rooted Polynomial (Newton)
 references.bib               bibliography
 figures/                     figure scripts + PDFs + per-paper tables.tex
 research/                    numerical locks, sweeps, the LDPC census pipeline
@@ -480,6 +515,12 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20682715},
   note   = {Sequel to The Clock That Never Ticks (concept DOI, latest version). \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026NewtonInequalitiesLean,
+  author = {Mar\'in, Carles},
+  title  = {The Inward Bow of a Real-Rooted Polynomial: Newton's Inequalities, Machine-Checked in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20693064},
+  note   = {Real-rooted $\Rightarrow$ log-concave; first in any prover. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
@@ -492,7 +533,9 @@ Part V [10.5281/zenodo.20629746](https://doi.org/10.5281/zenodo.20629746),
 Jacobi–Newton [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470),
 Part VI [10.5281/zenodo.20648488](https://doi.org/10.5281/zenodo.20648488),
 Applied census [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
-Clock paper (dilogarithm + QSL strand) [10.5281/zenodo.20675270](https://doi.org/10.5281/zenodo.20675270).
+Clock paper (dilogarithm + QSL strand) [10.5281/zenodo.20675270](https://doi.org/10.5281/zenodo.20675270),
+Pentagon / five-term [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715),
+Newton's inequalities [10.5281/zenodo.20693064](https://doi.org/10.5281/zenodo.20693064).
 
 ## Author and license
 
