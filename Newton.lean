@@ -289,7 +289,45 @@ public theorem newton_inequality (hp : RealRooted p) (hmonic : p.Monic)
     {k : ℕ} (hk : 1 ≤ k) (hk2 : k + 1 ≤ p.natDegree) :
     (p.roots.esymm k) ^ 2 * ((p.natDegree.choose (k - 1) : ℝ) * (p.natDegree.choose (k + 1) : ℝ))
       ≥ (p.roots.esymm (k - 1)) * (p.roots.esymm (k + 1)) * ((p.natDegree.choose k : ℝ)) ^ 2 := by
-  sorry
+  set n := p.natDegree with hn_def
+  have hcard : Multiset.card p.roots = n := realRooted_iff_card_roots.mp hp
+  have hk_le : k ≤ n := by omega
+  -- Vieta: esymm m = (-1)^m · coeff (n-m) for a monic real-rooted polynomial
+  have key : ∀ m, m ≤ n → p.roots.esymm m = (-1 : ℝ) ^ m * p.coeff (n - m) := by
+    intro m hm
+    have h := coeff_eq_esymm_roots_of_card hcard (Nat.sub_le n m)
+    rw [hmonic, show n - (n - m) = m from by omega, one_mul] at h
+    have hsq : ((-1 : ℝ) ^ m) * ((-1 : ℝ) ^ m) = 1 := by
+      rw [← pow_add]; exact Even.neg_one_pow ⟨m, rfl⟩
+    calc p.roots.esymm m = ((-1 : ℝ) ^ m * (-1 : ℝ) ^ m) * p.roots.esymm m := by rw [hsq, one_mul]
+      _ = (-1 : ℝ) ^ m * ((-1 : ℝ) ^ m * p.roots.esymm m) := by ring
+      _ = (-1 : ℝ) ^ m * p.coeff (n - m) := by rw [← h]
+  -- the squared / product esymm terms reduce to coefficients (signs cancel)
+  have sq_k : (p.roots.esymm k) ^ 2 = (p.coeff (n - k)) ^ 2 := by
+    rw [key k hk_le, mul_pow, ← pow_mul, Even.neg_one_pow ⟨k, by ring⟩, one_mul]
+  have prod_pm : (p.roots.esymm (k - 1)) * (p.roots.esymm (k + 1))
+      = p.coeff (n - (k - 1)) * p.coeff (n - (k + 1)) := by
+    rw [key (k - 1) (by omega), key (k + 1) (by omega)]
+    have hs : ((-1 : ℝ) ^ (k - 1)) * ((-1 : ℝ) ^ (k + 1)) = 1 := by
+      rw [← pow_add]; exact Even.neg_one_pow ⟨k, by omega⟩
+    calc (-1 : ℝ) ^ (k - 1) * p.coeff (n - (k - 1))
+          * ((-1 : ℝ) ^ (k + 1) * p.coeff (n - (k + 1)))
+        = ((-1 : ℝ) ^ (k - 1) * (-1 : ℝ) ^ (k + 1))
+          * (p.coeff (n - (k - 1)) * p.coeff (n - (k + 1))) := by ring
+      _ = p.coeff (n - (k - 1)) * p.coeff (n - (k + 1)) := by rw [hs, one_mul]
+  -- reindex binomials and coefficient indices to match the coefficient-form lemma at i = n - k
+  have ci1 : n.choose (k - 1) = n.choose ((n - k) + 1) := by
+    rw [show (n - k) + 1 = n - (k - 1) from by omega]; exact (Nat.choose_symm (by omega)).symm
+  have ci2 : n.choose (k + 1) = n.choose ((n - k) - 1) := by
+    rw [show (n - k) - 1 = n - (k + 1) from by omega]; exact (Nat.choose_symm (by omega)).symm
+  have ci3 : n.choose k = n.choose (n - k) := (Nat.choose_symm hk_le).symm
+  have hidx1 : n - (k - 1) = (n - k) + 1 := by omega
+  have hidx2 : n - (k + 1) = (n - k) - 1 := by omega
+  rw [sq_k, prod_pm, ci1, ci2, ci3, hidx1, hidx2]
+  have H := newton_inequality_coeff hp (i := n - k) (by omega) (by omega)
+  rw [mul_comm (p.coeff ((n - k) + 1)) (p.coeff ((n - k) - 1)),
+    mul_comm ((n.choose ((n - k) + 1) : ℝ)) ((n.choose ((n - k) - 1) : ℝ))]
+  exact H
 
 /-- **Corollary (log-concavity of normalized means).** `p_{k-1} · p_{k+1} ≤ p_k²`. -/
 public theorem newton_logConcave (hp : RealRooted p) (hmonic : p.Monic)
@@ -297,6 +335,12 @@ public theorem newton_logConcave (hp : RealRooted p) (hmonic : p.Monic)
     (p.roots.esymm (k - 1) / (p.natDegree.choose (k - 1) : ℝ)) *
       (p.roots.esymm (k + 1) / (p.natDegree.choose (k + 1) : ℝ))
       ≤ (p.roots.esymm k / (p.natDegree.choose k : ℝ)) ^ 2 := by
-  sorry
+  set n := p.natDegree with hn_def
+  have H := newton_inequality hp hmonic hk hk2
+  have hc1 : (0 : ℝ) < (n.choose (k - 1) : ℝ) := by exact_mod_cast Nat.choose_pos (show k - 1 ≤ n by omega)
+  have hc2 : (0 : ℝ) < (n.choose (k + 1) : ℝ) := by exact_mod_cast Nat.choose_pos (show k + 1 ≤ n by omega)
+  have hck : (0 : ℝ) < (n.choose k : ℝ) := by exact_mod_cast Nat.choose_pos (show k ≤ n by omega)
+  rw [div_mul_div_comm, div_pow, div_le_div_iff₀ (mul_pos hc1 hc2) (pow_pos hck 2)]
+  linarith [H]
 
 end Newton
