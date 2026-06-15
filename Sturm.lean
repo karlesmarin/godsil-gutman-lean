@@ -430,6 +430,23 @@ public theorem signVarAt_remove_middle (pre rest : List (Polynomial ℝ)) (pa pm
   simp only [signVarAt_eq_signChanges, List.map_append, List.map_cons]
   exact signChanges_remove_middle_append ha hb hab _ _
 
+/-- **Middle irrelevance.** Between two nonzero opposite signs, the middle entry's value does not
+affect the count: changing it from `m` to `m'` is invisible (both reduce to the same list with the
+middle deleted). This is the two-point form of interior cancellation — across a critical point an
+interior member changes sign, but its fixed opposite neighbours absorb the change. -/
+public theorem signChanges_middle_irrelevant {a b m m' : SignType}
+    (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) (pre rest : List SignType) :
+    signChanges (pre ++ a :: m :: b :: rest) = signChanges (pre ++ a :: m' :: b :: rest) := by
+  rw [signChanges_remove_middle_append ha hb hab, signChanges_remove_middle_append ha hb hab]
+
+/-- Middle irrelevance at the polynomial level (one interior member, at one point). -/
+public theorem signVarAt_middle_irrelevant (pre rest : List (Polynomial ℝ)) (pa pm pm' pb : Polynomial ℝ)
+    {z : ℝ} (ha : SignType.sign (pa.eval z) ≠ 0) (hb : SignType.sign (pb.eval z) ≠ 0)
+    (hab : SignType.sign (pa.eval z) ≠ SignType.sign (pb.eval z)) :
+    signVarAt (pre ++ pa :: pm :: pb :: rest) z = signVarAt (pre ++ pa :: pm' :: pb :: rest) z := by
+  rw [signVarAt_remove_middle pre rest pa pm pb ha hb hab,
+      signVarAt_remove_middle pre rest pa pm' pb ha hb hab]
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
