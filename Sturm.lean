@@ -14,8 +14,9 @@ Already formalized in Coq (Cohen), Isabelle/HOL (Li–Paulson, Sturm–Tarski) a
 is **first in Lean**, not first in any ITP. Genuine Mathlib gap, our exact domain (real-root
 counting), PR-able.
 
-This file is **P0 of the plan**: the two missing definitions + the main statement (with `sorry`).
-The real work (P1–P5: chain algebra, local constancy, root crossing, assembly) lands incrementally.
+The full theorem is proven sorry-free (3 standard axioms): chain algebra, local constancy, root
+crossing, the chain-walk flank-reduction, the single-critical-point quantum, and the global
+critical-set induction. First Sturm's theorem in Lean.
 
 ## Definitions
 * `Sturm.sturmSeq p` — the signed remainder sequence `p, p', -(p % p'), …` of `p : ℝ[X]`.
@@ -873,17 +874,18 @@ public theorem signVarAt_drop_at_simple_root {p : Polynomial ℝ} {α a b : ℝ}
 section SingleCrit
 attribute [local instance] Classical.propDecidable
 
-/-- **Single-critical-point crossing.** If `c ∈ (a, b)` is the *only* point of `[a, b]` where any
-member of the Sturm sequence of a squarefree `p` vanishes, then `V` drops by `1` if `p(c) = 0` and is
-unchanged otherwise. Both endpoints' sign patterns `FlankReduce` (via `flankReduce_chain_walk`) to the
-*same* chain with interior `c`-vanishers removed; on that reduced chain only the head `p` can cross,
-so the change collapses to a single head-drop. This is the per-point quantum of Sturm's theorem. -/
+/-- **Single-critical-point crossing.** If `c ∈ [a, b]` is the *only* point of `[a, b]` where any
+member of the Sturm sequence of a squarefree `p` vanishes (with `p(a), p(b) ≠ 0`), then `V` drops by
+`1` if `p(c) = 0` and is unchanged otherwise. Both endpoints' sign patterns `FlankReduce` (via
+`flankReduce_chain_walk`) to the *same* chain with the interior `c`-vanishers removed; on that reduced
+chain only the head `p` can cross, so the change collapses to a single head-drop. This is the per-point
+quantum of Sturm's theorem — and it also covers the case `c = a`/`c = b` (a tail member vanishing at an
+endpoint, which then necessarily has `p(c) ≠ 0`) and the degenerate no-critical case. -/
 public theorem signVarAt_drop_at_critical_point {p : Polynomial ℝ} (hp : Squarefree p)
-    {a b c : ℝ} (hac : a < c) (hcb : c < b)
+    {a b c : ℝ} (hab : a ≤ b) (hc : c ∈ Set.Icc a b) (ha : p.eval a ≠ 0) (hb : p.eval b ≠ 0)
     (h_only : ∀ q ∈ sturmSeq p, ∀ z ∈ Set.Icc a b, q.eval z = 0 → z = c) :
     signVarAt (sturmSeq p) a
       = signVarAt (sturmSeq p) b + (if p.eval c = 0 then 1 else 0) := by
-  have hab : a ≤ b := (hac.trans hcb).le
   have hseed : IsCoprime p (derivative p) := isCoprime_self_derivative hp
   -- members nonvanishing at `c` are root-free on `[a,b]`, hence have constant sign there
   have hrootfree : ∀ q ∈ sturmSeq p, q.eval c ≠ 0 → ∀ z ∈ Set.Icc a b, q.eval z ≠ 0 := by
@@ -895,7 +897,7 @@ public theorem signVarAt_drop_at_critical_point {p : Polynomial ℝ} (hp : Squar
     have h1 : SignType.sign (q.eval a) = SignType.sign (q.eval z) :=
       sign_eval_eq_of_no_root hz.1 (fun w hw => hrootfree q hq hqc w ⟨hw.1, hw.2.trans hz.2⟩)
     have h2 : SignType.sign (q.eval a) = SignType.sign (q.eval c) :=
-      sign_eval_eq_of_no_root hac.le (fun w hw => hrootfree q hq hqc w ⟨hw.1, hw.2.trans hcb.le⟩)
+      sign_eval_eq_of_no_root hc.1 (fun w hw => hrootfree q hq hqc w ⟨hw.1, hw.2.trans hc.2⟩)
     rw [← h1, h2]
   -- the three `flankReduce_chain_walk` hypotheses, over `sturmSeq p`
   have hiso : ∀ x y, [x, y] <:+: sturmSeq p → ¬ (x.eval c = 0 ∧ y.eval c = 0) := by
@@ -962,10 +964,12 @@ public theorem signVarAt_drop_at_critical_point {p : Polynomial ℝ} (hp : Squar
   have hpmem : p ∈ sturmSeq p := by rw [hT]; exact List.mem_cons_self ..
   by_cases hpc : p.eval c = 0
   · rw [if_pos hpc]
+    have hac : a < c := hc.1.lt_of_ne (fun h => ha (by rw [h]; exact hpc))
+    have hcb : c < b := hc.2.lt_of_ne (fun h => hb (by rw [← h]; exact hpc))
     have hp'c : (derivative p).eval c ≠ 0 := fun h => not_common_root hseed hpc h
     have hp'ne : derivative p ≠ 0 := fun h => hp'c (by rw [h]; simp)
-    have hpa0 : p.eval a ≠ 0 := fun h => absurd (h_only p hpmem a ⟨le_refl a, hab⟩ h) hac.ne
-    have hpb0 : p.eval b ≠ 0 := fun h => absurd (h_only p hpmem b ⟨hab, le_refl b⟩ h) hcb.ne'
+    have hpa0 : p.eval a ≠ 0 := ha
+    have hpb0 : p.eval b ≠ 0 := hb
     have hpa_sign : SignType.sign (p.eval a) = - SignType.sign ((derivative p).eval c) :=
       sign_eval_eq_neg_sign_deriv_left hpc hp'c hac
         (fun z hz hz0 => h_only p hpmem z ⟨hz.1, hz.2.trans hcb.le⟩ hz0)
@@ -1043,6 +1047,173 @@ public theorem sturm (p : Polynomial ℝ) (hp : Squarefree p) {a b : ℝ} (hab :
     (ha : p.eval a ≠ 0) (hb : p.eval b ≠ 0) :
     signVarAt (sturmSeq p) a - signVarAt (sturmSeq p) b =
       (p.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).card := by
-  sorry
+  have hp0 : p ≠ 0 := hp.ne_zero
+  set Pc := (sturmSeq p).prod with hPc
+  have hPc0 : Pc ≠ 0 := sturmSeq_prod_ne_zero hp0
+  have hpmem : p ∈ sturmSeq p := by
+    rcases h : sturmSeq p with _ | ⟨hd, tl⟩
+    · have := sturmSeq_head? p; rw [h] at this; simp at this
+    · have hh := sturmSeq_head? p
+      rw [h, List.head?_cons, Option.some_inj] at hh
+      rw [← hh]; exact List.mem_cons_self ..
+  -- a root of any chain member is a root of the product (a "critical point")
+  have hcrit : ∀ z, ∀ q ∈ sturmSeq p, q.eval z = 0 → Pc.eval z = 0 := by
+    intro z q hq hqz
+    have hev : ∀ (L : List (Polynomial ℝ)), L.prod.eval z = (L.map (fun r => r.eval z)).prod := by
+      intro L
+      induction L with
+      | nil => simp
+      | cons hd tl ih => rw [List.prod_cons, eval_mul, ih, List.map_cons, List.prod_cons]
+    rw [hPc, hev]
+    exact List.prod_eq_zero (List.mem_map.mpr ⟨q, hq, hqz⟩)
+  -- every p-root is a critical point
+  have pset_sub_cset : ∀ a' b' x, x ∈ p.roots.toFinset.filter (fun y => a' < y ∧ y ≤ b') →
+      x ∈ Pc.roots.toFinset.filter (fun y => a' < y ∧ y ≤ b') := by
+    intro a' b' x hx
+    rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots'] at hx ⊢
+    exact ⟨⟨hPc0, hcrit x p hpmem hx.1.2⟩, hx.2⟩
+  -- half-open interval count splits at an interior point
+  have split : ∀ (Q : Polynomial ℝ) (a' d' b' : ℝ), a' ≤ d' → d' ≤ b' →
+      (Q.roots.toFinset.filter (fun x => a' < x ∧ x ≤ b')).card
+      = (Q.roots.toFinset.filter (fun x => a' < x ∧ x ≤ d')).card
+      + (Q.roots.toFinset.filter (fun x => d' < x ∧ x ≤ b')).card := by
+    intro Q a' d' b' had hdb
+    have hdisj : Disjoint (Q.roots.toFinset.filter (fun x => a' < x ∧ x ≤ d'))
+        (Q.roots.toFinset.filter (fun x => d' < x ∧ x ≤ b')) := by
+      rw [Finset.disjoint_left]; rintro x hx1 hx2
+      rw [Finset.mem_filter] at hx1 hx2
+      exact absurd hx2.2.1 (not_lt.mpr hx1.2.2)
+    rw [← Finset.card_union_of_disjoint hdisj]
+    congr 1
+    ext x
+    simp only [Finset.mem_union, Finset.mem_filter]
+    constructor
+    · rintro ⟨hr, hax, hxb⟩
+      by_cases hxd : x ≤ d'
+      · exact Or.inl ⟨hr, hax, hxd⟩
+      · exact Or.inr ⟨hr, not_le.mp hxd, hxb⟩
+    · rintro (⟨hr, hax, hxd⟩ | ⟨hr, hdx, hxb⟩)
+      · exact ⟨hr, hax, hxd.trans hdb⟩
+      · exact ⟨hr, had.trans_lt hdx, hxb⟩
+  -- main strong induction on the number of critical points in `(a, b]`
+  suffices key : ∀ n, ∀ a b : ℝ, a ≤ b → p.eval a ≠ 0 → p.eval b ≠ 0 →
+      (Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).card = n →
+      signVarAt (sturmSeq p) a = signVarAt (sturmSeq p) b
+        + (p.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).card by
+    have := key _ a b hab.le ha hb rfl
+    omega
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+  intro a b hab ha hb hcard
+  rcases Nat.eq_zero_or_pos n with hn0 | hnpos
+  · -- no critical point in `(a, b]`: V is constant and there are no p-roots
+    subst hn0
+    have hcset : Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b) = ∅ :=
+      Finset.card_eq_zero.mp hcard
+    have hpset0 : (p.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).card = 0 := by
+      rw [Finset.card_eq_zero, Finset.eq_empty_iff_forall_notMem]
+      intro x hx
+      exact (Finset.eq_empty_iff_forall_notMem.mp hcset) x (pset_sub_cset a b x hx)
+    rw [hpset0, Nat.add_zero]
+    have h_only : ∀ q ∈ sturmSeq p, ∀ z ∈ Set.Icc a b, q.eval z = 0 → z = a := by
+      intro q hq z hz hqz
+      by_contra hza
+      have haz : a < z := lt_of_le_of_ne hz.1 (Ne.symm hza)
+      have hmem : z ∈ Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b) := by
+        rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots']
+        exact ⟨⟨hPc0, hcrit z q hq hqz⟩, haz, hz.2⟩
+      rw [hcset] at hmem; exact absurd hmem (Finset.notMem_empty z)
+    have hpt := signVarAt_drop_at_critical_point hp hab ⟨le_refl a, hab⟩ ha hb h_only
+    rw [if_neg ha] at hpt; exact hpt
+  · -- peel the maximum critical point `c`
+    have hne : (Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).Nonempty :=
+      Finset.card_pos.mp (hcard ▸ hnpos)
+    set c := (Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).max' hne with hcdef
+    have hc_mem := Finset.max'_mem _ hne
+    rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots'] at hc_mem
+    obtain ⟨⟨_, hcroot⟩, hac, hcb⟩ := hc_mem
+    have hc_max : ∀ x ∈ Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b), x ≤ c :=
+      fun x hx => Finset.le_max' _ x hx
+    obtain ⟨t, htc, hta, htB⟩ : ∃ t, t < c ∧ a ≤ t ∧
+        (∀ x, Pc.eval x = 0 → a < x → x ≤ b → x < c → x ≤ t) := by
+      set B := (Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ b)).filter (· < c) with hBdef
+      rcases B.eq_empty_or_nonempty with hBe | hBne
+      · refine ⟨a, hac, le_refl a, ?_⟩
+        intro x hx0 hax hxb hxc
+        exfalso
+        have hxB : x ∈ B := by
+          rw [hBdef, Finset.mem_filter, Finset.mem_filter, Multiset.mem_toFinset,
+            Polynomial.mem_roots']
+          exact ⟨⟨⟨hPc0, hx0⟩, hax, hxb⟩, hxc⟩
+        rw [hBe] at hxB; exact absurd hxB (Finset.notMem_empty x)
+      · refine ⟨B.max' hBne, ?_, ?_, ?_⟩
+        · exact (Finset.mem_filter.mp (Finset.max'_mem B hBne)).2
+        · exact ((Finset.mem_filter.mp (Finset.mem_filter.mp (Finset.max'_mem B hBne)).1).2.1).le
+        · intro x hx0 hax hxb hxc
+          apply Finset.le_max'
+          rw [hBdef, Finset.mem_filter, Finset.mem_filter, Multiset.mem_toFinset,
+            Polynomial.mem_roots']
+          exact ⟨⟨⟨hPc0, hx0⟩, hax, hxb⟩, hxc⟩
+    set d := (t + c) / 2 with hddef
+    have htd : t < d := by rw [hddef]; linarith
+    have hdc : d < c := by rw [hddef]; linarith
+    have had : a ≤ d := hta.trans htd.le
+    have hdb : d ≤ b := hdc.le.trans hcb
+    have hPcd : Pc.eval d ≠ 0 := by
+      intro h0
+      have hdt : d ≤ t := htB d h0 (lt_of_le_of_lt hta htd) (hdc.le.trans hcb) hdc
+      linarith
+    have hpd : p.eval d ≠ 0 := fun h => hPcd (hcrit d p hpmem h)
+    -- in `(d, b]` the only critical / only possible p-root is `c`
+    have hdb_eq_c : ∀ (Q : Polynomial ℝ), (∀ z, Q.eval z = 0 → Pc.eval z = 0) →
+        ∀ x ∈ Q.roots.toFinset.filter (fun y => d < y ∧ y ≤ b), x = c := by
+      intro Q hQ x hx
+      rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots'] at hx
+      obtain ⟨⟨_, hxroot⟩, hdx, hxb⟩ := hx
+      have hx0 : Pc.eval x = 0 := hQ x hxroot
+      have hax : a < x := lt_of_le_of_lt had hdx
+      have hxc_le : x ≤ c := hc_max x (by
+        rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots']
+        exact ⟨⟨hPc0, hx0⟩, hax, hxb⟩)
+      rcases lt_or_eq_of_le hxc_le with hlt | heq
+      · exfalso; have := htB x hx0 hax hxb hlt; linarith
+      · exact heq
+    have hcset_db : (Pc.roots.toFinset.filter (fun x => d < x ∧ x ≤ b)).card = 1 := by
+      rw [Finset.card_eq_one]
+      refine ⟨c, Finset.eq_singleton_iff_unique_mem.mpr ⟨?_, fun x hx =>
+        hdb_eq_c Pc (fun z hz => hz) x hx⟩⟩
+      rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots']
+      exact ⟨⟨hPc0, hcroot⟩, hdc, hcb⟩
+    have hpset_db : (p.roots.toFinset.filter (fun x => d < x ∧ x ≤ b)).card
+        = (if p.eval c = 0 then 1 else 0) := by
+      by_cases hpc : p.eval c = 0
+      · rw [if_pos hpc, Finset.card_eq_one]
+        refine ⟨c, Finset.eq_singleton_iff_unique_mem.mpr ⟨?_, fun x hx =>
+          hdb_eq_c p (fun z hz => hcrit z p hpmem hz) x hx⟩⟩
+        rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots']
+        exact ⟨⟨hp0, hpc⟩, hdc, hcb⟩
+      · rw [if_neg hpc, Finset.card_eq_zero, Finset.eq_empty_iff_forall_notMem]
+        intro x hx
+        have hxc := hdb_eq_c p (fun z hz => hcrit z p hpmem hz) x hx
+        rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots'] at hx
+        rw [hxc] at hx; exact hpc hx.1.2
+    have h_only_db : ∀ q ∈ sturmSeq p, ∀ z ∈ Set.Icc d b, q.eval z = 0 → z = c := by
+      intro q hq z hz hqz
+      refine hdb_eq_c Pc (fun w hw => hw) z ?_
+      rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots']
+      refine ⟨⟨hPc0, hcrit z q hq hqz⟩, ?_, hz.2⟩
+      rcases lt_or_eq_of_le hz.1 with h | h
+      · exact h
+      · exfalso; exact hPcd (by rw [h]; exact hcrit z q hq hqz)
+    have hstep := signVarAt_drop_at_critical_point hp hdb ⟨hdc.le, hcb⟩ hpd hb h_only_db
+    have hcard_ad : (Pc.roots.toFinset.filter (fun x => a < x ∧ x ≤ d)).card = n - 1 := by
+      have hsp := split Pc a d b had hdb
+      rw [hcard, hcset_db] at hsp
+      omega
+    have hrec := ih (n - 1) (by omega) a d had ha hpd hcard_ad
+    have hpsplit := split p a d b had hdb
+    rw [hrec, hstep, hpsplit, hpset_db]
+    omega
 
 end Sturm
