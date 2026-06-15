@@ -88,7 +88,7 @@ l\'imites honestos---la hip\'otesis squarefree, el cuerpo base, lo que \emph{no}
 formalizaciones previas en otros sistemas---se exponen sin barniz en la Secci\'on~\ref{sec:boundary};
 y la secci\'on de cierre pregunta, a modo de reflexi\'on, qu\'e le falta todav\'ia a este art\'iculo.
 Si solo lee dos cosas, lea el Teorema~\ref{thm:sturm} y la Figura~\ref{fig:staircase}; lo dem\'as es
-el argumento que los conecta, y el argumento es lo importante.
+el argumento que los conecta.
 
 \begin{figure}[h]
 \centering
@@ -130,8 +130,8 @@ La cerr\'o en 1829 un joven Charles-Fran\c{c}ois Sturm, que anunci\'o---y en 183
 reales distintas en cualquier intervalo, sin aproximaci\'on alguna y sin localizar ra\'ices. El
 m\'etodo fue celebrado de inmediato; es el antepasado del aislamiento de ra\'ices reales, de la
 descomposici\'on cil\'indrica algebraica y de los procedimientos de decisi\'on para la teor\'ia de
-primer orden de los reales que crecieron a partir del trabajo de Tarski. Tres siglos de esfuerzo por
-contar ra\'ices terminan, en efecto, en una resta.
+primer orden de los reales que crecieron a partir del trabajo de Tarski. El problema de
+contar ra\'ices reales de forma exacta qued\'o, en efecto, resuelto por una resta.
 
 El mecanismo es un peque\~no giro sobre algo a\'un m\'as viejo. El algoritmo de Euclides, aplicado a
 $p$ y su derivada $p'$, produce una sucesi\'on de restos; el giro de Sturm es negar cada resto al
@@ -421,7 +421,25 @@ son finitos y los reales son densos; apl\'iquese el cuanto por punto en $[d,b]$,
 \'unico punto cr\'itico; y rec\'urrase en $[a,d]$, que tiene uno menos. El intervalo semiabierto
 $(a,b]$ se parte como $(a,d]\sqcup(d,b]$, el conteo de ra\'ices se suma, y la contribuci\'on por
 punto---uno cuando $p(c)=0$, cero en otro caso---coincide con el n\'umero de ra\'ices de $p$ en el
-trozo retirado. La escalera se ensambla escal\'on a escal\'on.
+trozo retirado. El conteo global se ensambla a partir de los escalones por punto.
+
+\begin{remark}[el patr\'on tras \lean{FlankReduce}]\label{rem:pattern}
+Conviene abstraer \lean{FlankReduce} de su uso aqu\'i. Es una instancia de un esquema recurrente: un
+invariante num\'erico---el conteo de cambios de signo---preservado bajo borrados autorizados por una
+condici\'on lateral puramente \emph{local} (una entrada entre dos signos no nulos opuestos). Podr\'ia
+llamarse un \emph{invariante de conteo bajo poda admisible}. Su valor es justamente el desacoplo
+mostrado arriba: la combinatoria global se reduce a (i)~un lema de preservaci\'on de un paso, sin
+polinomios y probado una vez (\lean{FlankReduce.signChanges\_eq}), y (ii)~un recorrido estructural que
+certifica la condici\'on lateral de cada borrado desde el problema concreto
+(\lean{flankReduce\_chain\_walk}). La misma separaci\'on deber\'ia aplicarse dondequiera que un
+recuento sea invariante bajo borrados localmente justificados---la sucesi\'on de derivadas de
+Budan--Fourier, o en general cualquier sistema de reescritura con un conteo conservado. Pruebo solo la
+instancia que Sturm necesit\'o y no desarrollo la teor\'ia general; pero la forma es general, y
+nombrarla---en vez de incrustar los borrados en la inducci\'on de la cadena---es lo que hizo modular la
+prueba. Si ``invariancia de un recuento bajo borrado localmente autorizado'' merece ser una
+abstracci\'on de Mathlib por derecho propio es la pregunta abierta que m\'as me interesa llevar
+adelante (Secci\'on~\ref{sec:questions}).
+\end{remark}
 
 \section{Q4: \textquestiondown qu\'e queda gratis una vez certificado el teorema?}\label{sec:q4}
 
@@ -550,6 +568,34 @@ de cada entrada son solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sou
 \label{tab:inventory}
 \end{table}
 
+C\'omo dependen unos de otros se ve mejor como \'arbol que como lista (Figura~\ref{fig:deptree}): el
+teorema se divide en el cuanto por punto y la constancia en los huecos, el cuanto en la reducci\'on
+por flancos y la \'unica ca\'ida de cabeza, y la reducci\'on por flancos en su invariancia de conteo
+pura y el hecho de los vecinos antipodales---con los hechos estructurales alimentando la inducci\'on
+global por debajo.
+
+\begin{figure}[h]
+\centering
+\begin{tcolorbox}[colframe=ggteal,colback=ggband!18,arc=2pt,boxrule=0.7pt,left=8pt,right=8pt,
+  top=5pt,bottom=5pt,width=\textwidth]
+\ttfamily\footnotesize
+Sturm.sturm \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (inducci\'on global sobre el conjunto cr\'itico)\\
+\ |-- signVarAt\_drop\_at\_critical\_point \ \ (cuanto por punto, Sec.~\ref{sec:q2})\\
+\ | \ \ \ |-- flankReduce\_chain\_walk \ \ \ \ \ \ (podar c-anuladores interiores)\\
+\ | \ \ \ | \ \ \ |-- FlankReduce.signChanges\_eq \ (conteo invariante)\\
+\ | \ \ \ | \ \ \ `-- sign\_neighbours\_opposite...\ (vecinos antipodales)\\
+\ | \ \ \ |-- signVarAt\_cons\_head\_drop \ \ \ \ \ (la \'unica ca\'ida, p(c)=0)\\
+\ | \ \ \ `-- signVarAt\_eq\_of\_no\_root \ \ \ \ \ \ (sin ca\'ida, p(c)$\neq$0)\\
+\ |-- signVarAt\_eq\_of\_no\_root \ \ \ \ \ \ \ \ \ \ (huecos planos entre cr\'iticos)\\
+\ `-- sturmAux\_consecutive\_\{coprime,succ\} \ (estructura de la cadena)\\
+\ \ \ \ \ \ + sturmAux\_getLast\_isUnit
+\end{tcolorbox}
+\caption{El \'arbol de dependencias de \lean{Sturm.sturm}. Leerlo de arriba abajo es leer las
+Secciones~\ref{sec:q1}--\ref{sec:q3} al rev\'es: la \lean{FlankReduce.signChanges\_eq} pura, sin
+polinomios, abajo; el ensamblaje espec\'ifico de Sturm, arriba.}
+\label{fig:deptree}
+\end{figure}
+
 \subsection*{Coste y reutilizaci\'on}
 
 Como una formalizaci\'on se juzga tanto por su coste como por su conclusi\'on, aqu\'i va el desarrollo
@@ -558,31 +604,34 @@ $1{.}220$ l\'ineas: $54$ lemas y teoremas, $5$ definiciones y una relaci\'on ind
 de Mathlib---doce m\'odulos, listados en la fuente---y de nada de los art\'iculos anteriores de esta
 l\'inea; es autocontenido sobre la biblioteca. Sobre un Mathlib ya construido se comprueba en unos
 nueve segundos (Lean \lean{v4.30.0-rc2}), de modo que el bucle de iteraci\'on durante el desarrollo
-fue \'agil. Aproximadamente la mitad no trata de Sturm en absoluto: la teor\'ia de variaci\'on de
-signo (\lean{signChanges}, \lean{wallCount}, \lean{FlankReduce} y los lemas de cirug\'ia de listas)
-es una capa combinatoria independiente, reutilizable para cualquier argumento de conteo de signos
----como muestra ya su identificaci\'on por \lean{rfl} con el \lean{signVariations} de Descartes
-(Secci\'on~\ref{sec:q4}). El resto, espec\'ifico de Sturm, es la estructura de la sucesi\'on y el
-an\'alisis del cruce de lo local a lo global.
+fue \'agil. La reutilizaci\'on conviene cuantificarla, no estimarla. De las aproximadamente $1{.}165$
+l\'ineas dentro de declaraciones, unas $220$ son combinatoria \emph{pura} de signos/listas que no
+menciona ning\'un polinomio (\lean{signChanges}, \lean{wallCount}, \lean{FlankReduce} y los lemas de
+cirug\'ia de listas)---la capa que se transfiere literalmente a Descartes (Secci\'on~\ref{sec:q4})---y
+otras $\approx 200$ son lemas generales de variaci\'on de signo polin\'omica, reutilizables para
+cualquier argumento de signo sobre ra\'ices reales. El resto, genuinamente espec\'ifico de Sturm, son
+unas $750$ l\'ineas: la estructura de la sucesi\'on y el cruce de lo local a lo global. As\'i que
+aproximadamente un tercio del desarrollo sobrevive a su prop\'osito original.
 
 \begin{table}[h]
 \centering\small
 \rowcolors{2}{ggband!35}{white}
-\begin{tabular}{@{}ll@{}}
+\begin{tabular}{@{}l p{0.6\textwidth}@{}}
 \toprule
 \rowcolor{ggteal!18} medida & valor \\
 \midrule
 fuente Lean & \lean{Sturm.lean}, $\approx 1{.}220$ l\'ineas, un fichero \\
 declaraciones & $54$ lemas/teoremas, $5$ definiciones, $1$ inductivo \\
 dependencias & solo Mathlib ($12$ m\'odulos); ninguna de trabajo previo \\
-tiempo de compilaci\'on & $\approx 9$\,s (solo el fichero, Mathlib precompilado), Lean \lean{v4.30.0-rc2} \\
+tiempo de compilaci\'on & $\approx 9$\,s (solo el fichero, contra un Mathlib precompilado), Lean \lean{v4.30.0-rc2} \\
 axiomas & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
-capa reutilizable & teor\'ia de variaci\'on de signo, $\approx$ mitad del fichero, independiente de Sturm \\
+reparto de l\'ineas & $\approx 220$ combinatoria pura de signos/listas $+$ $\approx 200$ variaci\'on de signo polin\'omica general (ambas reutilizables) $+$ $\approx 750$ espec\'ificas de Sturm \\
 \bottomrule
 \end{tabular}
 \caption{El desarrollo medido. El tiempo de compilaci\'on es el de comprobar \lean{Sturm.lean} contra
 un Mathlib ya construido; construir el propio Mathlib es el coste habitual de una sola vez y no forma
-parte de la contribuci\'on.}
+parte de la contribuci\'on. El reparto de l\'ineas se cuenta de los cuerpos de las declaraciones
+(comentarios y l\'ineas en blanco excluidos).}
 \label{tab:cost}
 \end{table}
 

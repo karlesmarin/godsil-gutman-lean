@@ -85,8 +85,8 @@ bearing lemmas are gathered in one table (Section~\ref{sec:blocks}, Table~\ref{t
 the honest limits---squarefreeness, the ground field, what was \emph{not} proved, and the prior
 formalizations in other systems---are stated without varnish in Section~\ref{sec:boundary}; and
 the closing section asks, by way of reflection, what this paper still lacks. If you read only two
-things, read Theorem~\ref{thm:sturm} and Figure~\ref{fig:staircase}; everything else is the
-argument that connects them, and the argument is the point.
+things, read Theorem~\ref{thm:sturm} and Figure~\ref{fig:staircase}; the rest is the argument that
+connects them.
 
 \begin{figure}[h]
 \centering
@@ -127,8 +127,8 @@ young Charles-Fran\c{c}ois Sturm, who announced---and in 1835 published in full~
 procedure that returns the \emph{exact} number of distinct real roots in any interval, with no
 approximation and no root-finding whatsoever. The method was celebrated at once; it is the
 ancestor of real-root isolation, of cylindrical algebraic decomposition, and of the decision
-procedures for the first-order theory of the reals that grew out of Tarski's work. Three
-centuries of effort to count roots end, in effect, with a subtraction.
+procedures for the first-order theory of the reals that grew out of Tarski's work. The problem of
+counting real roots exactly was, in effect, settled by a subtraction.
 
 The mechanism is a small twist on something even older. Euclid's algorithm, run on $p$ and its
 derivative $p'$, produces a sequence of remainders; Sturm's twist is to negate each remainder as
@@ -416,8 +416,25 @@ $c$; choose a non-critical separator $d$ just below it---one exists because the 
 finite and the reals are dense; apply the per-point quantum on $[d,b]$, where $c$ is the only
 critical point; and recurse on $[a,d]$, which has one fewer. The half-open interval $(a,b]$ splits
 as $(a,d]\sqcup(d,b]$, the root count adds, and the per-point contribution---one when $p(c)=0$,
-zero otherwise---matches the number of $p$-roots in the peeled piece. The staircase is assembled
-one step at a time.
+zero otherwise---matches the number of $p$-roots in the peeled piece. The global count is assembled
+from the per-point steps.
+
+\begin{remark}[the pattern behind \lean{FlankReduce}]\label{rem:pattern}
+\lean{FlankReduce} is worth abstracting from its use here. It is an instance of a recurring schema:
+a numerical invariant---the sign-change count---preserved under deletions that are licensed by a
+purely \emph{local} side-condition (an entry between two opposite nonzero signs). One might call this
+a \emph{count invariant under admissible pruning}. Its value is precisely the decoupling exhibited
+above: the global combinatorics reduces to (i)~a one-step preservation lemma, polynomial-free and
+proved once (\lean{FlankReduce.signChanges\_eq}), and (ii)~a structural walk that certifies each
+deletion's side-condition from the problem at hand (\lean{flankReduce\_chain\_walk}). The same
+separation should apply wherever a tally is invariant under locally-justified removals---the
+derivative sequence of Budan--Fourier, or more generally any rewriting system with a conserved count.
+I prove only the instance Sturm needed and do not develop the general theory; but the shape is
+general, and naming it---rather than inlining the deletions into the chain induction---is what made
+the proof modular. Whether ``invariance of a tally under locally-licensed deletion'' deserves to be
+a Mathlib abstraction in its own right is the open question I find most worth carrying forward
+(Section~\ref{sec:questions}).
+\end{remark}
 
 \section{Q4: what becomes free once the theorem is certified?}\label{sec:q4}
 
@@ -540,6 +557,34 @@ no custom axiom.}
 \label{tab:inventory}
 \end{table}
 
+How those results depend on one another is easier to see as a tree than as a list
+(Figure~\ref{fig:deptree}): the theorem splits into the per-point quantum and the constancy on the
+gaps, the quantum into the flank-reduction and the single head-drop, and the flank-reduction into
+its pure count-invariance and the antipodal-neighbour fact---with the structural facts feeding the
+global induction underneath.
+
+\begin{figure}[h]
+\centering
+\begin{tcolorbox}[colframe=ggteal,colback=ggband!18,arc=2pt,boxrule=0.7pt,left=8pt,right=8pt,
+  top=5pt,bottom=5pt,width=\textwidth]
+\ttfamily\footnotesize
+Sturm.sturm \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (global induction on the critical set)\\
+\ |-- signVarAt\_drop\_at\_critical\_point \ \ (per-point quantum, Sec.~\ref{sec:q2})\\
+\ | \ \ \ |-- flankReduce\_chain\_walk \ \ \ \ \ \ (prune interior c-vanishers)\\
+\ | \ \ \ | \ \ \ |-- FlankReduce.signChanges\_eq \ (count invariant)\\
+\ | \ \ \ | \ \ \ `-- sign\_neighbours\_opposite...\ (antipodal neighbours)\\
+\ | \ \ \ |-- signVarAt\_cons\_head\_drop \ \ \ \ \ (the single step, p(c)=0)\\
+\ | \ \ \ `-- signVarAt\_eq\_of\_no\_root \ \ \ \ \ \ (no step, p(c)$\neq$0)\\
+\ |-- signVarAt\_eq\_of\_no\_root \ \ \ \ \ \ \ \ \ \ (flat gaps between criticals)\\
+\ `-- sturmAux\_consecutive\_\{coprime,succ\} \ (chain structure)\\
+\ \ \ \ \ \ + sturmAux\_getLast\_isUnit
+\end{tcolorbox}
+\caption{The dependency tree of \lean{Sturm.sturm}. Reading top to bottom is reading
+Sections~\ref{sec:q1}--\ref{sec:q3} in reverse: the pure, polynomial-free
+\lean{FlankReduce.signChanges\_eq} at the bottom, the Sturm-specific assembly at the top.}
+\label{fig:deptree}
+\end{figure}
+
 \subsection*{Cost and reuse}
 
 Because a formalization is judged as much by its cost as by its conclusion, here is the
@@ -548,30 +593,33 @@ of about $1{,}220$ lines: $54$ lemmas and theorems, $5$ definitions, and one ind
 It depends on Mathlib alone---twelve modules, listed in the source---and on nothing from the
 earlier papers in this line; it is self-contained over the library. On a pre-built Mathlib it
 checks in about nine seconds (Lean \lean{v4.30.0-rc2}), so the iteration loop during development
-was tight. Roughly half of it is not about Sturm at all: the sign-variation theory
-(\lean{signChanges}, \lean{wallCount}, \lean{FlankReduce}, and the list-surgery lemmas) is a
-free-standing combinatorial layer, reusable for any sign-counting argument---as its \lean{rfl}
-identification with Descartes' \lean{signVariations} (Section~\ref{sec:q4}) already shows. The
-Sturm-specific remainder is the sequence's structure and the local-to-global crossing analysis.
+was tight. The reuse is worth quantifying rather than estimating. Of the roughly $1{,}165$ lines
+inside declarations, about $220$ are \emph{pure} sign/list combinatorics that mention no polynomial
+at all (\lean{signChanges}, \lean{wallCount}, \lean{FlankReduce} and the list-surgery lemmas)---the
+layer that transfers verbatim to Descartes (Section~\ref{sec:q4})---and a further $\approx 200$ are
+general polynomial sign-variation lemmas, reusable for any real-root sign argument. The genuinely
+Sturm-specific remainder is about $750$ lines: the sequence's structure and the local-to-global
+crossing. So roughly a third of the development outlives its original purpose.
 
 \begin{table}[h]
 \centering\small
 \rowcolors{2}{ggband!35}{white}
-\begin{tabular}{@{}ll@{}}
+\begin{tabular}{@{}l p{0.62\textwidth}@{}}
 \toprule
 \rowcolor{ggteal!18} measure & value \\
 \midrule
 Lean source & \lean{Sturm.lean}, $\approx 1{,}220$ lines, one file \\
 declarations & $54$ lemmas/theorems, $5$ definitions, $1$ inductive \\
 dependencies & Mathlib only ($12$ modules); none on prior work \\
-compile time & $\approx 9$\,s (file only, pre-built Mathlib), Lean \lean{v4.30.0-rc2} \\
+compile time & $\approx 9$\,s (file only, against a pre-built Mathlib), Lean \lean{v4.30.0-rc2} \\
 axioms & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
-reusable layer & sign-variation theory, $\approx$ half the file, Sturm-independent \\
+line split & $\approx 220$ pure sign/list combinatorics $+$ $\approx 200$ general polynomial sign-variation (both reusable) $+$ $\approx 750$ Sturm-specific \\
 \bottomrule
 \end{tabular}
 \caption{The development measured. The compile time is for checking \lean{Sturm.lean} against a
 Mathlib that is already built; building Mathlib itself is the usual one-time cost and is not part of
-the contribution.}
+the contribution. The line split is counted from the declaration bodies (comments and blank lines
+excluded).}
 \label{tab:cost}
 \end{table}
 
