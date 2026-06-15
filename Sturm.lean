@@ -308,6 +308,21 @@ public theorem sturmAux_head? (p q : Polynomial ℝ) : (sturmAux p q).head? = so
 public theorem sturmSeq_head? (p : Polynomial ℝ) : (sturmSeq p).head? = some p :=
   sturmAux_head? _ _
 
+/-- Every member of a Sturm chain is nonzero, provided the dividend is. -/
+public theorem sturmAux_mem_ne_zero : ∀ (p q : Polynomial ℝ), p ≠ 0 → ∀ r ∈ sturmAux p q, r ≠ 0 := by
+  intro p q
+  induction p, q using sturmAux.induct with
+  | case1 p =>
+    intro hp r hr
+    rw [sturmAux_zero, List.mem_singleton] at hr
+    subst hr; exact hp
+  | case2 p q hq ih =>
+    intro hp r hr
+    rw [sturmAux_cons hq, List.mem_cons] at hr
+    rcases hr with h | h
+    · subst h; exact hp
+    · exact ih hq r h
+
 /-- **Root-crossing bridge.** If, between two points `x` and `y`, only the head polynomial `p`
 changes sign (the rest of the list keeps its signs), `p` is nonzero at both, and the head sign at
 `y` equals the first surviving sign of the tail, then `V` is exactly one larger at `x`. This lifts
