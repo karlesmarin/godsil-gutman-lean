@@ -447,6 +447,47 @@ nonzero constant)---are reusable for any further work on real-root counting in L
 Budan--Fourier theorem, the Sturm--Tarski count with multiplicity~\cite{libudan}, or a Cauchy-index
 development would draw on the same pieces.
 
+\section{What a certified root count enables}\label{sec:enables}
+
+The mathematics here is two centuries old; the reason to put it in Lean is what it unlocks
+\emph{inside} the library, where a verified, exact root count had simply not existed. It is worth
+being concrete about that, because a foundational lemma is valuable in proportion to what rests on
+it. Four things become reachable that were not before, in rough order of distance from what is
+proved.
+
+\emph{Real-root isolation.} The classical algorithmic use of Sturm's theorem is to isolate each
+real root in an interval as narrow as desired: apply the count to $(a,b]$, bisect, recurse, and
+stop a branch when its count is $0$ (no root) or $1$ (exactly one). Because the count here is
+\emph{exact}, not a bound, the recursion provably terminates with one root per interval. Every
+ingredient is already proved---the count, local constancy, the finiteness of the critical
+set---so what remains is the recursive wrapper and its termination, not new mathematics. This turns
+the theorem from a statement into a certified \emph{procedure}, the form in which Sturm's method is
+actually used.
+
+\emph{The Budan--Fourier theorem.} Budan and Fourier count sign variations in the sequence of
+\emph{derivatives} $p,p',p'',\dots$ and bound (with the right parity) the roots in an interval.
+That is the same sign-variation arithmetic as here, on a different sequence; the toolkit built for
+Sturm---zeros invisible, the head recursion, and in particular the parity lemma
+\lean{wallCount\_even\_iff\_endpoints}---transfers directly. Mathlib already had Descartes' rule
+(\lean{signVariations}); Budan--Fourier sits between Descartes and Sturm, and the pieces to reach
+it are now in place.
+
+\emph{Sturm--Tarski and the Cauchy index.} The sharper Sturm--Tarski theorem counts roots of $p$
+\emph{weighted} by the sign of a second polynomial $q$ on them---the ``Tarski query''---through the
+Cauchy index of $q'p/q$ (or $p'q/p$). This is the engine of root counting \emph{with
+multiplicity}, of the non-squarefree case, and ultimately of Tarski's quantifier elimination for
+the reals. The signed-remainder sequence and the sign-variation count assembled here are precisely
+its substrate; the Isabelle development of Sturm--Tarski~\cite{litarski,libudan} is built on the
+same two objects. A Lean version would extend, not restart, the present file.
+
+\emph{Decision procedures over the reals.} One-dimensional real-root counting and isolation are the
+base case of cylindrical algebraic decomposition and of the decision procedures for the first-order
+theory of real-closed fields (Tarski--Seidenberg). For Lean specifically this is the missing
+foundation under any future \emph{certified} answer to ``does this polynomial have a root in this
+range, and how many''---a checkable certificate a downstream tactic could trust, rather than an
+oracle it must believe. None of these four is done here; the point is that each was blocked, in
+Lean, on exactly the result this paper supplies.
+
 \section{The building blocks}\label{sec:blocks}
 
 The theorem rests on a handful of reusable lemmas, each \lean{sorry}-free with the standard three
@@ -493,10 +534,45 @@ Lemma~\ref{lem:antipodal} and the global induction consume.
 \lean{signVariations\_eq\_signChanges} & $=$ Descartes' count (by \lean{rfl}) & bridge (\S\ref{sec:q4}) \\
 \bottomrule
 \end{tabular}
-\caption{The load-bearing results, all \lean{sorry}-free in \lean{Sturm.lean} of the repository
-(around sixty named lemmas on Mathlib). The axioms of every entry are \lean{propext},
-\lean{Classical.choice}, \lean{Quot.sound} only; no \lean{native\_decide}, no custom axiom.}
+\caption{The load-bearing results, all \lean{sorry}-free in \lean{Sturm.lean}. The axioms of every
+entry are \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} only; no \lean{native\_decide},
+no custom axiom.}
 \label{tab:inventory}
+\end{table}
+
+\subsection*{Cost and reuse}
+
+Because a formalization is judged as much by its cost as by its conclusion, here is the
+development measured (Table~\ref{tab:cost}). The whole proof is a single file, \lean{Sturm.lean},
+of about $1{,}220$ lines: $54$ lemmas and theorems, $5$ definitions, and one inductive relation.
+It depends on Mathlib alone---twelve modules, listed in the source---and on nothing from the
+earlier papers in this line; it is self-contained over the library. On a pre-built Mathlib it
+checks in about nine seconds (Lean \lean{v4.30.0-rc2}), so the iteration loop during development
+was tight. Roughly half of it is not about Sturm at all: the sign-variation theory
+(\lean{signChanges}, \lean{wallCount}, \lean{FlankReduce}, and the list-surgery lemmas) is a
+free-standing combinatorial layer, reusable for any sign-counting argument---as its \lean{rfl}
+identification with Descartes' \lean{signVariations} (Section~\ref{sec:q4}) already shows. The
+Sturm-specific remainder is the sequence's structure and the local-to-global crossing analysis.
+
+\begin{table}[h]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\rowcolor{ggteal!18} measure & value \\
+\midrule
+Lean source & \lean{Sturm.lean}, $\approx 1{,}220$ lines, one file \\
+declarations & $54$ lemmas/theorems, $5$ definitions, $1$ inductive \\
+dependencies & Mathlib only ($12$ modules); none on prior work \\
+compile time & $\approx 9$\,s (file only, pre-built Mathlib), Lean \lean{v4.30.0-rc2} \\
+axioms & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
+reusable layer & sign-variation theory, $\approx$ half the file, Sturm-independent \\
+\bottomrule
+\end{tabular}
+\caption{The development measured. The compile time is for checking \lean{Sturm.lean} against a
+Mathlib that is already built; building Mathlib itself is the usual one-time cost and is not part of
+the contribution.}
+\label{tab:cost}
 \end{table}
 
 \section{The boundary of the contribution}\label{sec:boundary}
@@ -521,14 +597,40 @@ case is handled (Section~\ref{sec:q3}). I count \emph{distinct} roots; for squar
 and with-multiplicity coincide, so no separate multiplicity statement is needed, but neither is the
 Sturm--Tarski count with sign-weighted multiplicities~\cite{litarski,libudan} attempted.
 
-\emph{Prior formalizations.} The priority claim is narrow and rests on a documented search, not a
-feeling. Sturm's theorem has been formalized before: in Coq, within Cohen's real-algebraic-number
-development~\cite{cohen}; in Isabelle/HOL by Eberl~\cite{eberl} and, in the Sturm--Tarski form, by
-Li and Paulson~\cite{litarski,libudan}; and in HOL~Light. What I searched for (June~2026) and did
-not find was any formalization of the Sturm sequence or Sturm's theorem in \emph{Lean}/Mathlib
-(Loogle and \lean{grep}: \lean{Polynomial.signVariations} for Descartes' rule exists; no
-\lean{sturm}, no signed-remainder sequence). The claim is therefore: first in Lean, to the best of
-my knowledge, and not first in any system.
+\emph{Where this sits, as a contribution.} Judged as pure mathematics the novelty is essentially
+nil---Sturm's theorem is from 1829. Judged as a formalization it is, I think, worth recording: a
+foundational classical result genuinely absent from a major library, proved in full with reusable
+infrastructure and one piece of non-obvious engineering. The natural readership is the formalized-
+mathematics and verification community rather than the pure-mathematical one, and I have tried to
+write for it---hence the cost accounting, the reuse analysis, and the comparison that follows.
+
+\emph{Prior formalizations, and what differs across systems.} The priority claim is narrow and
+rests on a documented search, not a feeling. Sturm's theorem has been formalized before: in Coq,
+within Cohen's construction of the real algebraic numbers~\cite{cohen}; in Isabelle/HOL by
+Eberl~\cite{eberl} (a standalone development with an executable \lean{sturm} proof method) and, in
+the sharper Sturm--Tarski form via the Cauchy index, by Li and Paulson~\cite{litarski,libudan}; and
+in HOL~Light. What I searched for (June~2026) and did not find was any formalization of the Sturm
+sequence or Sturm's theorem in \emph{Lean}/Mathlib (Loogle and \lean{grep}:
+\lean{Polynomial.signVariations} for Descartes' rule exists; no \lean{sturm}, no signed-remainder
+sequence). So: first in Lean, to the best of my knowledge; not first in any system.
+
+A word on what the choice of system cost and saved, since that is what a proof-engineering reader
+will want. What Mathlib \emph{gave}, and made several steps almost free: the Euclidean-domain
+identity $p = (p\div q)\,q + (p\bmod q)$ with the degree bound $\deg(p\bmod q)<\deg q$, which makes
+the sequence's definition terminate without a separate measure argument; \lean{Polynomial.Splits},
+\lean{roots} and \lean{mem\_roots'} for the root set; \lean{separable} together with
+\lean{PerfectField.separable\_iff\_squarefree}, which delivers ``squarefree $\Rightarrow$ coprime to
+the derivative'' in one line; the intermediate value theorem (\lean{intermediate\_value\_Icc}); and
+\lean{Finset.max'} with the cardinality lemmas for the global induction. The analytic and algebraic
+substrate, in other words, was already there. What was \emph{absent everywhere in Lean} and had to
+be built is the sign-variation theory and the whole local-to-global crossing argument; and the one
+genuinely fiddly step---independent of the system---was the list-recursion coupling that
+\lean{FlankReduce} resolves (Section~\ref{sec:q3}), not the analysis. I did not port Cohen's or
+Eberl's proofs, so I make no claim about relative proof length or difficulty: a fair comparison
+would mean re-doing the work in each system, which I have not done. What I can say is that the
+approaches differ in setting---Cohen's is embedded in exact-real-arithmetic, Eberl's is executable,
+Li--Paulson's targets the Cauchy index---and that, in Lean, the cost lived in the combinatorics of
+the count, not in the polynomial analysis Mathlib already supports.
 
 \emph{On method.} The formalization was carried out with an AI assistant (Claude, Anthropic), under
 the discipline used throughout this line of work: the worked example verified in exact arithmetic

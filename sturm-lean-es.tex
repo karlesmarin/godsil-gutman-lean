@@ -453,6 +453,49 @@ para cualquier trabajo futuro de conteo de ra\'ices reales en Lean: el teorema d
 conteo de Sturm--Tarski con multiplicidad~\cite{libudan}, o un desarrollo del \'indice de Cauchy
 beber\'ian de las mismas piezas.
 
+\section{Qu\'e habilita un conteo de ra\'ices certificado}\label{sec:enables}
+
+La matem\'atica aqu\'i tiene dos siglos; la raz\'on para ponerla en Lean es lo que desbloquea
+\emph{dentro} de la biblioteca, donde un conteo exacto y verificado de ra\'ices sencillamente no
+exist\'ia. Conviene ser concreto, porque un lema fundamental vale en proporci\'on a lo que se apoya
+en \'el. Cuatro cosas se vuelven alcanzables que antes no lo eran, en orden aproximado de distancia
+a lo que se prueba.
+
+\emph{Aislamiento de ra\'ices reales.} El uso algor\'itmico cl\'asico del teorema de Sturm es aislar
+cada ra\'iz real en un intervalo tan estrecho como se quiera: aplicar el conteo a $(a,b]$, bisecar,
+recurrir, y detener una rama cuando su conteo es $0$ (sin ra\'iz) o $1$ (exactamente una). Como el
+conteo aqu\'i es \emph{exacto}, no una cota, la recursi\'on termina demostrablemente con una ra\'iz
+por intervalo. Todos los ingredientes est\'an ya probados---el conteo, la constancia local, la
+finitud del conjunto cr\'itico---as\'i que lo que queda es la envoltura recursiva y su terminaci\'on,
+no matem\'atica nueva. Esto convierte el teorema de un enunciado en un \emph{procedimiento}
+certificado, la forma en que el m\'etodo de Sturm se usa de verdad.
+
+\emph{El teorema de Budan--Fourier.} Budan y Fourier cuentan variaciones de signo en la sucesi\'on
+de \emph{derivadas} $p,p',p'',\dots$ y acotan (con la paridad correcta) las ra\'ices en un
+intervalo. Es la misma aritm\'etica de variaci\'on de signo que aqu\'i, sobre otra sucesi\'on; el
+instrumental construido para Sturm---ceros invisibles, la recursi\'on por cabeza, y en particular el
+lema de paridad \lean{wallCount\_even\_iff\_endpoints}---se transfiere directamente. Mathlib ya
+ten\'ia la regla de Descartes (\lean{signVariations}); Budan--Fourier se sit\'ua entre Descartes y
+Sturm, y las piezas para alcanzarlo est\'an ahora en su sitio.
+
+\emph{Sturm--Tarski y el \'indice de Cauchy.} El teorema m\'as fino de Sturm--Tarski cuenta ra\'ices
+de $p$ \emph{ponderadas} por el signo de un segundo polinomio $q$ sobre ellas---la ``consulta de
+Tarski''---a trav\'es del \'indice de Cauchy de $q'p/q$. Este es el motor del conteo de ra\'ices
+\emph{con multiplicidad}, del caso no squarefree, y en \'ultima instancia de la eliminaci\'on de
+cuantificadores de Tarski para los reales. La sucesi\'on de restos con signo y el conteo de
+variaci\'on ensamblados aqu\'i son precisamente su sustrato; el desarrollo en Isabelle de
+Sturm--Tarski~\cite{litarski,libudan} se construye sobre los mismos dos objetos. Una versi\'on en
+Lean extender\'ia, no reiniciar\'ia, el presente fichero.
+
+\emph{Procedimientos de decisi\'on sobre los reales.} El conteo y aislamiento de ra\'ices reales en
+una variable son el caso base de la descomposici\'on cil\'indrica algebraica y de los procedimientos
+de decisi\'on para la teor\'ia de primer orden de los cuerpos realmente cerrados
+(Tarski--Seidenberg). Para Lean en concreto, este es el cimiento que faltaba bajo cualquier futura
+respuesta \emph{certificada} a ``\textquestiondown tiene este polinomio una ra\'iz en este rango, y
+cu\'antas?''---un certificado comprobable en el que una t\'actica aguas abajo podr\'ia confiar, en
+vez de un or\'aculo que deba creer. Ninguna de estas cuatro est\'a hecha aqu\'i; el punto es que cada
+una estaba bloqueada, en Lean, exactamente en el resultado que este art\'iculo aporta.
+
 \section{Los bloques de construcci\'on}\label{sec:blocks}
 
 El teorema descansa sobre un pu\~nado de lemas reutilizables, cada uno libre de \lean{sorry} con los
@@ -501,11 +544,46 @@ consumen el Lema~\ref{lem:antipodal} y la inducci\'on global.
 \lean{signVariations\_eq\_signChanges} & $=$ conteo de Descartes (por \lean{rfl}) & puente (\S\ref{sec:q4}) \\
 \bottomrule
 \end{tabular}
-\caption{Los resultados que sostienen todo, libres de \lean{sorry} en \lean{Sturm.lean} del
-repositorio (alrededor de sesenta lemas con nombre sobre Mathlib). Los axiomas de cada entrada son
-solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}; sin \lean{native\_decide}, sin
-axioma propio.}
+\caption{Los resultados que sostienen todo, libres de \lean{sorry} en \lean{Sturm.lean}. Los axiomas
+de cada entrada son solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}; sin
+\lean{native\_decide}, sin axioma propio.}
 \label{tab:inventory}
+\end{table}
+
+\subsection*{Coste y reutilizaci\'on}
+
+Como una formalizaci\'on se juzga tanto por su coste como por su conclusi\'on, aqu\'i va el desarrollo
+medido (Tabla~\ref{tab:cost}). Toda la prueba es un \'unico fichero, \lean{Sturm.lean}, de unas
+$1{.}220$ l\'ineas: $54$ lemas y teoremas, $5$ definiciones y una relaci\'on inductiva. Depende solo
+de Mathlib---doce m\'odulos, listados en la fuente---y de nada de los art\'iculos anteriores de esta
+l\'inea; es autocontenido sobre la biblioteca. Sobre un Mathlib ya construido se comprueba en unos
+nueve segundos (Lean \lean{v4.30.0-rc2}), de modo que el bucle de iteraci\'on durante el desarrollo
+fue \'agil. Aproximadamente la mitad no trata de Sturm en absoluto: la teor\'ia de variaci\'on de
+signo (\lean{signChanges}, \lean{wallCount}, \lean{FlankReduce} y los lemas de cirug\'ia de listas)
+es una capa combinatoria independiente, reutilizable para cualquier argumento de conteo de signos
+---como muestra ya su identificaci\'on por \lean{rfl} con el \lean{signVariations} de Descartes
+(Secci\'on~\ref{sec:q4}). El resto, espec\'ifico de Sturm, es la estructura de la sucesi\'on y el
+an\'alisis del cruce de lo local a lo global.
+
+\begin{table}[h]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\rowcolor{ggteal!18} medida & valor \\
+\midrule
+fuente Lean & \lean{Sturm.lean}, $\approx 1{.}220$ l\'ineas, un fichero \\
+declaraciones & $54$ lemas/teoremas, $5$ definiciones, $1$ inductivo \\
+dependencias & solo Mathlib ($12$ m\'odulos); ninguna de trabajo previo \\
+tiempo de compilaci\'on & $\approx 9$\,s (solo el fichero, Mathlib precompilado), Lean \lean{v4.30.0-rc2} \\
+axiomas & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
+capa reutilizable & teor\'ia de variaci\'on de signo, $\approx$ mitad del fichero, independiente de Sturm \\
+\bottomrule
+\end{tabular}
+\caption{El desarrollo medido. El tiempo de compilaci\'on es el de comprobar \lean{Sturm.lean} contra
+un Mathlib ya construido; construir el propio Mathlib es el coste habitual de una sola vez y no forma
+parte de la contribuci\'on.}
+\label{tab:cost}
 \end{table}
 
 \section{La frontera de la contribuci\'on}\label{sec:boundary}
@@ -531,15 +609,43 @@ caso se trata (Secci\'on~\ref{sec:q3}). Cuento ra\'ices \emph{distintas}; para $
 y con multiplicidad coinciden, as\'i que no hace falta un enunciado de multiplicidad aparte, pero
 tampoco se intenta el conteo de Sturm--Tarski con multiplicidades con signo~\cite{litarski,libudan}.
 
-\emph{Formalizaciones previas.} La reivindicaci\'on de prioridad es estrecha y se apoya en una
-b\'usqueda documentada, no en una corazonada. El teorema de Sturm se ha formalizado antes: en Coq,
-dentro del desarrollo de n\'umeros algebraicos reales de Cohen~\cite{cohen}; en Isabelle/HOL por
-Eberl~\cite{eberl} y, en la forma de Sturm--Tarski, por Li y Paulson~\cite{litarski,libudan}; y en
-HOL~Light. Lo que busqu\'e (junio~2026) y no encontr\'e fue ninguna formalizaci\'on de la sucesi\'on
-de Sturm ni del teorema de Sturm en \emph{Lean}/Mathlib (Loogle y \lean{grep}:
-\lean{Polynomial.signVariations} para la regla de Descartes existe; no hay \lean{sturm}, ni sucesi\'on
-de restos con signo). La afirmaci\'on es por tanto: primero en Lean, hasta donde s\'e, y no primero en
-ning\'un sistema.
+\emph{D\'onde se sit\'ua, como contribuci\'on.} Juzgada como matem\'atica pura, la novedad es
+esencialmente nula---el teorema de Sturm es de 1829. Juzgada como formalizaci\'on, creo que merece
+registrarse: un resultado cl\'asico fundamental genuinamente ausente de una biblioteca importante,
+probado por completo con infraestructura reutilizable y una pieza de ingenier\'ia no trivial. El
+lector natural es la comunidad de matem\'atica formalizada y verificaci\'on m\'as que la de
+matem\'atica pura, y he intentado escribir para ella---de ah\'i la contabilidad de costes, el
+an\'alisis de reutilizaci\'on, y la comparaci\'on que sigue.
+
+\emph{Formalizaciones previas, y qu\'e difiere entre sistemas.} La reivindicaci\'on de prioridad es
+estrecha y se apoya en una b\'usqueda documentada, no en una corazonada. El teorema de Sturm se ha
+formalizado antes: en Coq, dentro de la construcci\'on de los n\'umeros algebraicos reales de
+Cohen~\cite{cohen}; en Isabelle/HOL por Eberl~\cite{eberl} (un desarrollo aut\'onomo con un m\'etodo
+de prueba \lean{sturm} ejecutable) y, en la forma m\'as fina de Sturm--Tarski v\'ia el \'indice de
+Cauchy, por Li y Paulson~\cite{litarski,libudan}; y en HOL~Light. Lo que busqu\'e (junio~2026) y no
+encontr\'e fue ninguna formalizaci\'on de la sucesi\'on de Sturm ni del teorema de Sturm en
+\emph{Lean}/Mathlib (Loogle y \lean{grep}: \lean{Polynomial.signVariations} para la regla de
+Descartes existe; no hay \lean{sturm}, ni sucesi\'on de restos con signo). As\'i: primero en Lean,
+hasta donde s\'e; no primero en ning\'un sistema.
+
+Una palabra sobre lo que el sistema elegido cost\'o y ahorr\'o, que es lo que un lector de
+ingenier\'ia de pruebas querr\'a. Lo que Mathlib \emph{dio}, y volvi\'o casi gratis varios pasos: la
+identidad de dominio eucl\'ideo $p = (p\div q)\,q + (p\bmod q)$ con la cota de grado
+$\deg(p\bmod q)<\deg q$, que hace terminar la definici\'on de la sucesi\'on sin un argumento de medida
+aparte; \lean{Polynomial.Splits}, \lean{roots} y \lean{mem\_roots'} para el conjunto de ra\'ices;
+\lean{separable} junto con \lean{PerfectField.separable\_iff\_squarefree}, que entrega ``squarefree
+$\Rightarrow$ coprimo con la derivada'' en una l\'inea; el teorema del valor intermedio
+(\lean{intermediate\_value\_Icc}); y \lean{Finset.max'} con los lemas de cardinalidad para la
+inducci\'on global. El sustrato anal\'itico y algebraico, en otras palabras, ya estaba ah\'i. Lo que
+estaba \emph{ausente en todo Lean} y hubo que construir es la teor\'ia de variaci\'on de signo y todo
+el argumento de cruce de lo local a lo global; y el \'unico paso genuinamente delicado---independiente
+del sistema---fue el acoplamiento de la recursi\'on sobre listas que resuelve \lean{FlankReduce}
+(Secci\'on~\ref{sec:q3}), no el an\'alisis. No port\'e las pruebas de Cohen ni de Eberl, as\'i que no
+afirmo nada sobre longitud o dificultad relativa: una comparaci\'on justa significar\'ia rehacer el
+trabajo en cada sistema, lo que no he hecho. Lo que s\'i puedo decir es que los enfoques difieren en
+el marco---el de Cohen est\'a embebido en aritm\'etica real exacta, el de Eberl es ejecutable, el de
+Li--Paulson apunta al \'indice de Cauchy---y que, en Lean, el coste vivi\'o en la combinatoria del
+conteo, no en el an\'alisis polin\'omico que Mathlib ya sostiene.
 
 \emph{Sobre el m\'etodo.} La formalizaci\'on se hizo con una asistente de IA (Claude, Anthropic), bajo
 la disciplina usada en toda esta l\'inea de trabajo: el ejemplo trabajado verificado en aritm\'etica
