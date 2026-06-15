@@ -480,6 +480,28 @@ public theorem signChanges_eq_wallCount (s : List SignType) :
     unfold signChanges; rw [List.filter_filter]; simp
   rw [h1, signChanges_eq_wallCount_of_zero_free _ (by simp [List.mem_filter])]
 
+/-- **The ℤ/2 layer of sign variation.** For a zero-free list, `(-1)^(wallCount)` telescopes to the
+product of the endpoint signs: modulo 2, sign variation forgets everything but whether the ends
+disagree. This is the engine behind Descartes' even-difference refinement and the transversality
+(`sign p'`) at a simple root — the single-bit shadow of the count. -/
+public theorem wallCount_neg_one_pow :
+    ∀ (a : SignType) (l : List SignType), (0 : SignType) ∉ a :: l →
+      (-1 : SignType) ^ wallCount (a :: l) = a * (a :: l).getLast (List.cons_ne_nil a l)
+  | a, [], h => by
+      have ha : a ≠ 0 := fun h0 => h (h0 ▸ List.mem_cons_self ..)
+      have key : (1 : SignType) = a * a :=
+        (by decide : ∀ a : SignType, a ≠ 0 → (1 : SignType) = a * a) a ha
+      simpa [wallCount] using key
+  | a, b :: l', h => by
+      have ha : a ≠ 0 := fun h0 => h (h0 ▸ List.mem_cons_self ..)
+      have hb : b ≠ 0 := fun h0 => h (h0 ▸ List.mem_cons_of_mem a (List.mem_cons_self ..))
+      have hbl : (0 : SignType) ∉ b :: l' := fun h0 => h (List.mem_cons_of_mem a h0)
+      have ih := wallCount_neg_one_pow b l' hbl
+      have key : (-1 : SignType) ^ (if a = b then 0 else 1) * b = a :=
+        (by decide : ∀ a b : SignType, a ≠ 0 → b ≠ 0 →
+          (-1 : SignType) ^ (if a = b then 0 else 1) * b = a) a b ha hb
+      rw [wallCount, pow_add, ih, List.getLast_cons (List.cons_ne_nil b l'), ← mul_assoc, key]
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
