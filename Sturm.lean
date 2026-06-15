@@ -254,6 +254,38 @@ public theorem signChanges_cons_of_ne_zero {c d : SignType} (hc : c ≠ 0) {s : 
         exact List.destutter'_ne_nil f' (· ≠ ·)
       omega
 
+/-- The first surviving sign of `c :: t` is `c` when `c ≠ 0`. -/
+public theorem filter_ne_zero_head?_cons {c : SignType} (hc : c ≠ 0) (t : List SignType) :
+    ((c :: t).filter (· ≠ 0)).head? = some c := by
+  rw [List.filter_cons_of_pos (by simpa using hc)]; rfl
+
+/-- **Leading-pair drop.** If the head `c` flips relative to the first surviving sign `c'` of the
+tail (`c ≠ c'`, both nonzero), the count is one more than with head `c'`. With `c = sign p(α⁻)` and
+`c' = sign p'(α) = sign p(α⁺)`, this is the exact `-1` of the `(p, p')` pair across a root. -/
+public theorem signChanges_head_drop {c c' : SignType} (hc : c ≠ 0) (hc' : c' ≠ 0) (hne : c ≠ c')
+    {t : List SignType} (hd : (t.filter (· ≠ 0)).head? = some c') :
+    signChanges (c :: t) = signChanges (c' :: t) + 1 := by
+  rw [signChanges_cons_of_ne_zero hc hd, signChanges_cons_of_ne_zero hc' hd, if_neg hne, if_pos rfl]
+
+/-- **Interior cancellation.** Deleting a middle entry that sits between two nonzero opposite signs
+leaves the count unchanged — whatever the deleted sign is. This is why an interior chain member,
+whose sign may change across `α`, does not move `V` (its neighbours are fixed and opposite). -/
+public theorem signChanges_remove_middle {a b m : SignType} (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b)
+    {rest : List SignType} :
+    signChanges (a :: m :: b :: rest) = signChanges (a :: b :: rest) := by
+  have hbhd : ((b :: rest).filter (· ≠ 0)).head? = some b := filter_ne_zero_head?_cons hb rest
+  rcases eq_or_ne m 0 with hm | hm
+  · subst hm
+    have h0 : ((0 :: b :: rest).filter (· ≠ 0)).head? = some b := by
+      rw [List.filter_cons_of_neg (by simp)]; exact hbhd
+    rw [signChanges_cons_of_ne_zero ha h0, signChanges_cons_zero,
+        signChanges_cons_of_ne_zero ha hbhd]
+  · have hmhd : ((m :: b :: rest).filter (· ≠ 0)).head? = some m :=
+      filter_ne_zero_head?_cons hm (b :: rest)
+    rw [signChanges_cons_of_ne_zero ha hmhd, signChanges_cons_of_ne_zero hm hbhd,
+        signChanges_cons_of_ne_zero ha hbhd]
+    rcases a with _ | _ <;> rcases m with _ | _ <;> rcases b with _ | _ <;> simp_all
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
