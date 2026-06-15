@@ -447,6 +447,29 @@ public theorem signVarAt_middle_irrelevant (pre rest : List (Polynomial ℝ)) (p
   rw [signVarAt_remove_middle pre rest pa pm pb ha hb hab,
       signVarAt_remove_middle pre rest pa pm' pb ha hb hab]
 
+/-! ## The crux: flank-reduction (the decoupled two-point comparison engine)
+
+From the Socratic analysis of a critical point: deleting interior chain members that vanish there
+(each flanked by nonzero opposite neighbours) preserves the sign-variation count. Encode "delete
+flanked middles" as an inductive relation; it preserves `signChanges`. The Sturm chain then only has
+to exhibit the reductions — the combinatorics is decoupled. -/
+
+/-- `xs` reduces to `ys` by deleting middle entries flanked by nonzero opposite signs. -/
+public inductive FlankReduce : List SignType → List SignType → Prop where
+  | refl (l : List SignType) : FlankReduce l l
+  | del (pre : List SignType) (a m b : SignType) (rest : List SignType)
+      (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) {ys : List SignType} :
+      FlankReduce (pre ++ a :: b :: rest) ys →
+      FlankReduce (pre ++ a :: m :: b :: rest) ys
+
+/-- **Flank-reduction preserves the count.** Each deletion is `signChanges_remove_middle_append`. -/
+public theorem FlankReduce.signChanges_eq {xs ys : List SignType} (h : FlankReduce xs ys) :
+    signChanges xs = signChanges ys := by
+  induction h with
+  | refl => rfl
+  | del pre a m b rest ha hb hab _ ih =>
+      rw [signChanges_remove_middle_append ha hb hab]; exact ih
+
 /-! ## Domain-wall view: `signChanges` as a local additive sum (BPR sign-variation theory in Lean)
 
 Following classical real-algebraic-geometry sign-variation theory (Basu–Pollack–Roy; sign-change
