@@ -283,7 +283,7 @@ An independent strand (`Dilog/`, `QSL/`), `sorry`-free (axioms: `propext`,
 | `margolus_levitin` | `π ≤ 2⟨E⟩τ` at orthogonality — first QSL in any prover | `QSL/Basic.lean` |
 | `mandelstam_tamm_L1` | `1 ≤ D₁τ` (`L¹` Mandelstam–Tamm) | `QSL/MandelstamTamm.lean` |
 
-#### Complex dilogarithm and zero localization (`Dilog/ComplexBoundary.lean`)
+### Complex dilogarithm and zero localization (`Dilog/ComplexBoundary.lean`)
 
 A development towards machine-checked **localization of the zeros of the dilogarithm**
 (O'Sullivan, *Zeros of the dilogarithm*, arXiv:1507.07980), built on the real `Cl₂` /
@@ -340,6 +340,26 @@ informally, now certified. `sorry`-free; three standard axioms.
 Worked instance: for `(x−1)(x−2)(x−4)` (so `e = (1,7,14,8)`), `k=1` reads `147 ≥ 126` and `k=2`
 reads `588 ≥ 504`; `(x−1)⁴` saturates every inequality, and `x²+1` (complex roots) fails it.
 
+### Sturm's theorem — *The Staircase of Signs*
+
+Counting the real roots of a polynomial in an interval **without finding a single one** (`Sturm.lean`):
+the drop in sign variations of the Sturm sequence equals the root count. To our knowledge the
+**first Sturm's theorem in Lean** (not first in any system). `sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `Sturm.sturm` | `V(a) − V(b) = #{distinct real roots of p in (a,b]}` (squarefree, `p(a),p(b) ≠ 0`) | `Sturm.lean` |
+| `sturmSeq` | the negated signed-remainder sequence `p, p′, −(p mod p′), …` | `Sturm.lean` |
+| `signVarAt` | sign changes of the list evaluated at `x` (zeros dropped) | `Sturm.lean` |
+| `signVarAt_drop_at_critical_point` | per-point quantum: `ΔV ∈ {0,1}` at an isolated critical point | `Sturm.lean` |
+| `flankReduce_chain_walk` | the chain reduces to its non-vanishers (the coupled-recursion wall) | `Sturm.lean` |
+| `FlankReduce.signChanges_eq` | flank-reduction preserves the sign-change count | `Sturm.lean` |
+| `sign_neighbours_opposite_at_interior_root` | antipodal neighbours at a zero of an interior member | `Sturm.lean` |
+| `signVariations_eq_signChanges` | `=` Descartes' `signVariations` (by `rfl`) | `Sturm.lean` |
+
+Worked instance: for `x³−x` (chain `x³−x, 3x²−1, (2/3)x, 1`), `V(−2)=3` and `V(2)=0`, so there are
+`3` roots in `(−2,2]` — read off the signs, no root computed.
+
 ### The Ihara side — Jacobi's formula and Newton's identity
 
 The resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
@@ -361,6 +381,7 @@ RealStable.lean              RealRooted / BoundedBy predicates + closure algebra
 MatchingPoly.lean            matching polynomial μ_G, matching number, deletion recurrence
 RamanujanBound.lean          the band edge 2√(k−1) (bruhatTitsBound) and its algebra
 Newton.lean                  Newton's inequalities: real-rooted ⇒ log-concave (esymm + coeff form)
+Sturm.lean                   Sturm's theorem: real-root counting via the signed remainder sequence + sign variation
 
 # MSS/ — Papers I–II
 MSS/Basic.lean               signed adjacency matrix
@@ -418,6 +439,7 @@ ldpc-census.tex              applied    — Certified Short-Cycle Counts for IEE
 clock-never-ticks.tex        strand     — The Clock That Never Ticks (dilogarithm → QSL)
 five-term-lean.tex           strand     — The Pentagon, Machine-Checked (Abel's five-term)
 newton-inequalities-lean.tex strand     — The Inward Bow of a Real-Rooted Polynomial (Newton)
+sturm-lean.tex               strand     — The Staircase of Signs (Sturm's theorem)
 references.bib               bibliography
 figures/                     figure scripts + PDFs + per-paper tables.tex
 research/                    numerical locks, sweeps, the LDPC census pipeline
@@ -531,6 +553,12 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20693064},
   note   = {Real-rooted $\Rightarrow$ log-concave; first in any prover. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026SturmLean,
+  author = {Mar\'in, Carles},
+  title  = {The Staircase of Signs: Sturm's Root-Counting Theorem, Machine-Checked in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20707348},
+  note   = {Real-root counting via the signed remainder sequence; first in Lean. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
@@ -545,7 +573,8 @@ Part VI [10.5281/zenodo.20648488](https://doi.org/10.5281/zenodo.20648488),
 Applied census [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056).
 Clock paper (dilogarithm + QSL strand) [10.5281/zenodo.20675270](https://doi.org/10.5281/zenodo.20675270),
 Pentagon / five-term [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715),
-Newton's inequalities [10.5281/zenodo.20693064](https://doi.org/10.5281/zenodo.20693064).
+Newton's inequalities [10.5281/zenodo.20693064](https://doi.org/10.5281/zenodo.20693064),
+Sturm's theorem [10.5281/zenodo.20707348](https://doi.org/10.5281/zenodo.20707348).
 
 ## Author and license
 
