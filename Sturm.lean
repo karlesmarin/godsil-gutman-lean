@@ -323,6 +323,15 @@ public theorem sturmAux_mem_ne_zero : ∀ (p q : Polynomial ℝ), p ≠ 0 → �
     · subst h; exact hp
     · exact ih hq r h
 
+/-- The product of all Sturm-sequence members is nonzero (each member is nonzero in the domain
+`ℝ[X]`). Its roots are exactly the critical points; this makes the critical set finite. -/
+public theorem sturmSeq_prod_ne_zero {p : Polynomial ℝ} (hp : p ≠ 0) :
+    (sturmSeq p).prod ≠ 0 := by
+  rw [Ne, List.prod_eq_zero_iff]
+  intro h0
+  unfold sturmSeq at h0
+  exact sturmAux_mem_ne_zero p (derivative p) hp 0 h0 rfl
+
 /-- **Root-crossing bridge.** If, between two points `x` and `y`, only the head polynomial `p`
 changes sign (the rest of the list keeps its signs), `p` is nonzero at both, and the head sign at
 `y` equals the first surviving sign of the tail, then `V` is exactly one larger at `x`. This lifts
