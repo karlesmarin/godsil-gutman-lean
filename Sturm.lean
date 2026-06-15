@@ -224,6 +224,36 @@ public theorem signChanges_triple {a m b : SignType} (ha : a ≠ 0) (hb : b ≠ 
   revert ha hb hab
   rcases a with _ | _ <;> rcases m with _ | _ <;> rcases b with _ | _ <;> decide
 
+/-- If every entry of `s` is a zero, prepending anything gives no variations. -/
+public theorem signChanges_cons_of_filter_nil {c : SignType} {s : List SignType}
+    (hs : s.filter (· ≠ 0) = []) : signChanges (c :: s) = 0 := by
+  unfold signChanges
+  rcases eq_or_ne c 0 with hc | hc
+  · rw [List.filter_cons_of_neg (by simp [hc]), hs]; simp
+  · rw [List.filter_cons_of_pos (by simpa using hc), hs]; simp
+
+/-- **Head recursion.** Prepending a nonzero sign `c` adds exactly one variation when `c` differs
+from the first surviving (nonzero) sign `d` of `s`, and none when it agrees. This is the leading-pair
+flip in combinatorial form. -/
+public theorem signChanges_cons_of_ne_zero {c d : SignType} (hc : c ≠ 0) {s : List SignType}
+    (hd : (s.filter (· ≠ 0)).head? = some d) :
+    signChanges (c :: s) = signChanges s + (if c = d then 0 else 1) := by
+  unfold signChanges
+  rw [List.filter_cons_of_pos (by simpa using hc)]
+  rcases hfilt : s.filter (· ≠ 0) with _ | ⟨a, f'⟩
+  · rw [hfilt] at hd; simp at hd
+  · rw [hfilt] at hd ⊢
+    rw [List.head?_cons, Option.some.injEq] at hd
+    rw [← hd, List.destutter_cons', List.destutter_cons']
+    by_cases hcd : c = a
+    · subst hcd
+      rw [List.destutter'_cons_neg (h := by simp), if_pos rfl, Nat.add_zero]
+    · rw [List.destutter'_cons_pos (h := hcd), List.length_cons, if_neg hcd]
+      have h1 : (List.destutter' (· ≠ ·) a f').length ≠ 0 := by
+        rw [Ne, List.length_eq_zero_iff]
+        exact List.destutter'_ne_nil f' (· ≠ ·)
+      omega
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
