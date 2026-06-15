@@ -419,6 +419,17 @@ public theorem sign_neighbours_opposite_at_interior_root {a m : Polynomial ℝ} 
   · have hNneg : (-(a % m)).eval c < 0 := by rw [hNval]; linarith
     rw [sign_pos hpos, sign_neg hNneg]; decide
 
+/-- **Surgery atom.** At a point `z` where the two flanking polynomials `pa`, `pb` take nonzero
+opposite signs, the middle polynomial `pm` can be deleted from the list without changing `signVarAt`
+— anywhere in the list. This is `signChanges_remove_middle_append` lifted to evaluated polynomial
+lists; iterating it deletes every interior member that vanishes at a critical point. -/
+public theorem signVarAt_remove_middle (pre rest : List (Polynomial ℝ)) (pa pm pb : Polynomial ℝ)
+    {z : ℝ} (ha : SignType.sign (pa.eval z) ≠ 0) (hb : SignType.sign (pb.eval z) ≠ 0)
+    (hab : SignType.sign (pa.eval z) ≠ SignType.sign (pb.eval z)) :
+    signVarAt (pre ++ pa :: pm :: pb :: rest) z = signVarAt (pre ++ pa :: pb :: rest) z := by
+  simp only [signVarAt_eq_signChanges, List.map_append, List.map_cons]
+  exact signChanges_remove_middle_append ha hb hab _ _
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
