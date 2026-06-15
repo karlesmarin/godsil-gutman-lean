@@ -559,6 +559,34 @@ public theorem wallCount_even_iff_endpoints {a : SignType} {l : List SignType}
   rw [← neg_one_pow_eq_one_iff_even (by decide : (-1 : SignType) ≠ 1), hpow]
   exact (by decide : ∀ a b : SignType, a ≠ 0 → b ≠ 0 → (a * b = 1 ↔ a = b)) _ _ ha hlast
 
+/-! ## Continuity sub-thread: signs are locally constant near a nonzero point -/
+
+/-- **Local sign constancy.** Near a point where `q` is nonzero, `q` keeps its sign (continuity). -/
+public theorem eventually_sign_eval_eq {q : Polynomial ℝ} {c : ℝ} (hc : q.eval c ≠ 0) :
+    ∀ᶠ z in nhds c, SignType.sign (q.eval z) = SignType.sign (q.eval c) := by
+  have hcont : ContinuousAt (fun z => q.eval z) c := (Polynomial.continuous q).continuousAt
+  rcases lt_or_gt_of_ne hc with hneg | hpos
+  · filter_upwards [hcont.eventually_lt continuousAt_const hneg] with z hz
+    rw [sign_neg hz, sign_neg hneg]
+  · filter_upwards [continuousAt_const.eventually_lt hcont hpos] with z hz
+    rw [sign_pos hz, sign_pos hpos]
+
+/-- **Flank-opposite persists near an interior root.** At a root `c` of an interior member `m`
+(coprime to its predecessor `a`), the predecessor and successor `-(a % m)` keep nonzero opposite
+signs at every nearby `z` — exactly the flank hypotheses `flankReduce_eval_step` needs at `c⁻` / `c⁺`
+(not just at `c`). -/
+public theorem eventually_flank_opposite_at_interior_root {a m : Polynomial ℝ} {c : ℝ}
+    (hco : IsCoprime a m) (hm : m.eval c = 0) :
+    ∀ᶠ z in nhds c, SignType.sign (a.eval z) ≠ 0 ∧
+      SignType.sign (a.eval z) ≠ SignType.sign ((-(a % m)).eval z) := by
+  obtain ⟨hsa, hne⟩ := sign_neighbours_opposite_at_interior_root hco hm
+  have ha : a.eval c ≠ 0 := fun h => not_common_root hco h hm
+  have hN : (-(a % m)).eval c ≠ 0 := by
+    have := eval_eq_neg_next_of_root (a := a) hm
+    intro h; rw [h, neg_zero] at this; exact ha this
+  filter_upwards [eventually_sign_eval_eq ha, eventually_sign_eval_eq hN] with z hza hzN
+  rw [hza, hzN]; exact ⟨hsa, hne⟩
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
