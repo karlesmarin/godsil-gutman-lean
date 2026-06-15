@@ -286,6 +286,24 @@ public theorem signChanges_remove_middle {a b m : SignType} (ha : a ≠ 0) (hb :
         signChanges_cons_of_ne_zero ha hbhd]
     rcases a with _ | _ <;> rcases m with _ | _ <;> rcases b with _ | _ <;> simp_all
 
+/-! ## P5 — structural facts about the Sturm sequence (toward assembly) -/
+
+/-- The chain stops at a zero divisor: `sturmAux p 0 = [p]`. -/
+@[simp] public theorem sturmAux_zero (p : Polynomial ℝ) : sturmAux p 0 = [p] := by
+  rw [sturmAux]; simp
+
+/-- One unfolding step of the chain when the divisor is nonzero. -/
+public theorem sturmAux_cons {p q : Polynomial ℝ} (hq : q ≠ 0) :
+    sturmAux p q = p :: sturmAux q (-(p % q)) := by
+  rw [sturmAux]; rw [dif_neg hq]
+
+/-- The Sturm sequence starts with `p`. -/
+public theorem sturmSeq_head? (p : Polynomial ℝ) : (sturmSeq p).head? = some p := by
+  unfold sturmSeq
+  rcases eq_or_ne (derivative p) 0 with h | h
+  · rw [h, sturmAux_zero]; rfl
+  · rw [sturmAux_cons h]; rfl
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
