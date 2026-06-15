@@ -326,6 +326,20 @@ public theorem signVarAt_cons_head_drop {p : Polynomial ℝ} {tail : List (Polyn
     (by rw [Ne, sign_eq_zero_iff]; exact hpx0)
     (by rw [Ne, sign_eq_zero_iff]; exact hpy0) hne hfirst
 
+/-- Tail signs are unchanged on a root-free interval (the `htail` provider for the keystone). -/
+public theorem map_sign_eq_of_no_root {L : List (Polynomial ℝ)} {a b : ℝ} (hab : a ≤ b)
+    (hne : ∀ q ∈ L, ∀ z ∈ Set.Icc a b, q.eval z ≠ 0) :
+    L.map (fun q => SignType.sign (q.eval a)) = L.map (fun q => SignType.sign (q.eval b)) :=
+  List.map_congr_left fun q hq => sign_eval_eq_of_no_root hab (hne q hq)
+
+/-- The first surviving tail sign is the sign of the first (nonzero-valued) member (the `hfirst`
+provider for the keystone). -/
+public theorem filter_map_sign_head?_cons {q : Polynomial ℝ} {rest : List (Polynomial ℝ)} {y : ℝ}
+    (hq : q.eval y ≠ 0) :
+    (((q :: rest).map (fun r => SignType.sign (r.eval y))).filter (· ≠ 0)).head?
+      = some (SignType.sign (q.eval y)) := by
+  rw [List.map_cons, List.filter_cons_of_pos (by simp [sign_eq_zero_iff, hq])]; rfl
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
