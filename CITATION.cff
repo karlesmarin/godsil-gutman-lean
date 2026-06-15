@@ -83,3 +83,11 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20693064"
     notes: "Newton's inequalities (real-rooted ⟹ log-concave); first in any ITP"
+  - type: article
+    title: "The Staircase of Signs: Sturm's Root-Counting Theorem, Machine-Checked in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20707348"
+    notes: "Sturm's theorem (V(a)−V(b) = #distinct real roots in (a,b]); first in Lean"

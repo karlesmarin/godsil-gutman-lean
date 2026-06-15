@@ -132,6 +132,16 @@ matching polynomial (Paper II) and much of modern combinatorics:
   assistant** (`Newton.lean`); the symmetric-function form is checked for monic polynomials (no
   loss; the coefficient form needs no normalization). EN + ES. DOI
   [10.5281/zenodo.20693064](https://doi.org/10.5281/zenodo.20693064).
+- **The Staircase of Signs** ([`sturm-lean.pdf`](sturm-lean.pdf)): **Sturm's theorem** (1829) — for
+  a squarefree `p` with `p(a), p(b) ≠ 0`, the number of *distinct* real roots in `(a, b]` is
+  `V(a) − V(b)`, the drop in sign variations of the **Sturm sequence** `p, p′, −(p mod p′), …`. No
+  root is ever located; two integers are subtracted. The per-point quantum (`ΔV ∈ {0,1}`) is
+  decoupled from the chain's algebra by an inductive **flank-reduction** relation (`FlankReduce`),
+  then summed over the finite critical set. To our knowledge the **first Sturm's theorem in Lean**
+  (not first in any system — prior work in Coq, Isabelle/HOL and HOL Light) (`Sturm.lean`,
+  `sorry`-free, three standard axioms). By-product: the sign-variation count here is, by `rfl`,
+  Mathlib's Descartes `signVariations`. EN + ES. DOI
+  [10.5281/zenodo.20707348](https://doi.org/10.5281/zenodo.20707348).
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
