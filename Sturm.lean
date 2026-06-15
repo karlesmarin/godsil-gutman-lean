@@ -502,6 +502,18 @@ public theorem wallCount_neg_one_pow :
           (-1 : SignType) ^ (if a = b then 0 else 1) * b = a) a b ha hb
       rw [wallCount, pow_add, ih, List.getLast_cons (List.cons_ne_nil b l'), ← mul_assoc, key]
 
+/-- **Parity, clean form.** A zero-free list has an even number of sign changes iff its endpoints
+agree. The `±1` shadow: parity of sign variation = "do the ends match?". -/
+public theorem wallCount_even_iff_endpoints {a : SignType} {l : List SignType}
+    (h : (0 : SignType) ∉ a :: l) :
+    Even (wallCount (a :: l)) ↔ a = (a :: l).getLast (List.cons_ne_nil a l) := by
+  have hpow := wallCount_neg_one_pow a l h
+  have ha : a ≠ 0 := fun h0 => h (h0 ▸ List.mem_cons_self ..)
+  have hlast : (a :: l).getLast (List.cons_ne_nil a l) ≠ 0 :=
+    fun h0 => h (h0 ▸ List.getLast_mem (List.cons_ne_nil a l))
+  rw [← neg_one_pow_eq_one_iff_even (by decide : (-1 : SignType) ≠ 1), hpow]
+  exact (by decide : ∀ a b : SignType, a ≠ 0 → b ≠ 0 → (a * b = 1 ↔ a = b)) _ _ ha hlast
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
