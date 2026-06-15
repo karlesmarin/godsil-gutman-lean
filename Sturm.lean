@@ -470,6 +470,15 @@ public theorem FlankReduce.signChanges_eq {xs ys : List SignType} (h : FlankRedu
   | del pre a m b rest ha hb hab _ ih =>
       rw [signChanges_remove_middle_append ha hb hab]; exact ih
 
+/-- **Lift to evaluated polynomial lists.** If the sign patterns of two polynomial lists at `z` are
+flank-related, their sign variations at `z` agree. This is where the decoupling pays off: the Sturm
+chain only has to exhibit a `FlankReduce` between the `c⁻` and `c⁺` sign patterns. -/
+public theorem signVarAt_eq_of_flankReduce {L₁ L₂ : List (Polynomial ℝ)} {z : ℝ}
+    (h : FlankReduce (L₁.map fun q => SignType.sign (q.eval z))
+                     (L₂.map fun q => SignType.sign (q.eval z))) :
+    signVarAt L₁ z = signVarAt L₂ z := by
+  rw [signVarAt_eq_signChanges, signVarAt_eq_signChanges]; exact h.signChanges_eq
+
 /-! ## Domain-wall view: `signChanges` as a local additive sum (BPR sign-variation theory in Lean)
 
 Following classical real-algebraic-geometry sign-variation theory (Basu–Pollack–Roy; sign-change
