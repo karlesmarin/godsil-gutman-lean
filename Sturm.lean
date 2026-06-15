@@ -868,6 +868,150 @@ public theorem signVarAt_drop_at_simple_root {p : Polynomial ℝ} {α a b : ℝ}
   rw [hseq]
   exact signVarAt_cons_head_drop hpa0 hpb0 hne htaileq hfirst
 
+/-! ## Single critical point: the decoupled crossing (chain-walk + head-drop) -/
+
+section SingleCrit
+attribute [local instance] Classical.propDecidable
+
+/-- **Single-critical-point crossing.** If `c ∈ (a, b)` is the *only* point of `[a, b]` where any
+member of the Sturm sequence of a squarefree `p` vanishes, then `V` drops by `1` if `p(c) = 0` and is
+unchanged otherwise. Both endpoints' sign patterns `FlankReduce` (via `flankReduce_chain_walk`) to the
+*same* chain with interior `c`-vanishers removed; on that reduced chain only the head `p` can cross,
+so the change collapses to a single head-drop. This is the per-point quantum of Sturm's theorem. -/
+public theorem signVarAt_drop_at_critical_point {p : Polynomial ℝ} (hp : Squarefree p)
+    {a b c : ℝ} (hac : a < c) (hcb : c < b)
+    (h_only : ∀ q ∈ sturmSeq p, ∀ z ∈ Set.Icc a b, q.eval z = 0 → z = c) :
+    signVarAt (sturmSeq p) a
+      = signVarAt (sturmSeq p) b + (if p.eval c = 0 then 1 else 0) := by
+  have hab : a ≤ b := (hac.trans hcb).le
+  have hseed : IsCoprime p (derivative p) := isCoprime_self_derivative hp
+  -- members nonvanishing at `c` are root-free on `[a,b]`, hence have constant sign there
+  have hrootfree : ∀ q ∈ sturmSeq p, q.eval c ≠ 0 → ∀ z ∈ Set.Icc a b, q.eval z ≠ 0 := by
+    intro q hq hqc z hz hz0
+    exact hqc (h_only q hq z hz hz0 ▸ hz0)
+  have hsignconst : ∀ q ∈ sturmSeq p, q.eval c ≠ 0 → ∀ z ∈ Set.Icc a b,
+      SignType.sign (q.eval z) = SignType.sign (q.eval c) := by
+    intro q hq hqc z hz
+    have h1 : SignType.sign (q.eval a) = SignType.sign (q.eval z) :=
+      sign_eval_eq_of_no_root hz.1 (fun w hw => hrootfree q hq hqc w ⟨hw.1, hw.2.trans hz.2⟩)
+    have h2 : SignType.sign (q.eval a) = SignType.sign (q.eval c) :=
+      sign_eval_eq_of_no_root hac.le (fun w hw => hrootfree q hq hqc w ⟨hw.1, hw.2.trans hcb.le⟩)
+    rw [← h1, h2]
+  -- the three `flankReduce_chain_walk` hypotheses, over `sturmSeq p`
+  have hiso : ∀ x y, [x, y] <:+: sturmSeq p → ¬ (x.eval c = 0 ∧ y.eval c = 0) := by
+    rintro x y hinf ⟨hx0, hy0⟩
+    exact not_common_root (sturmAux_consecutive_coprime p (derivative p) hseed x y hinf) hx0 hy0
+  have hlast : ∀ g, (sturmSeq p).getLast? = some g → g.eval c ≠ 0 := by
+    intro g hg
+    obtain ⟨r, hr, hCr⟩ := Polynomial.isUnit_iff.mp
+      (sturmAux_getLast_isUnit p (derivative p) hseed g hg)
+    rw [← hCr, eval_C]; exact hr.ne_zero
+  have hflank : ∀ z ∈ Set.Icc a b, ∀ x m y, [x, m, y] <:+: sturmSeq p → m.eval c = 0 →
+      SignType.sign (x.eval z) ≠ 0 ∧ SignType.sign (y.eval z) ≠ 0 ∧
+      SignType.sign (x.eval z) ≠ SignType.sign (y.eval z) := by
+    intro z hz x m y hinf hmc
+    have hxm : [x, m] <:+: sturmSeq p := (show [x, m] <:+: [x, m, y] from ⟨[], [y], rfl⟩).trans hinf
+    have hmy : [m, y] <:+: sturmSeq p := ((List.suffix_cons x [m, y]).isInfix).trans hinf
+    have hcopxm : IsCoprime x m := sturmAux_consecutive_coprime p (derivative p) hseed x m hxm
+    have hcopmy : IsCoprime m y := sturmAux_consecutive_coprime p (derivative p) hseed m y hmy
+    have hxc : x.eval c ≠ 0 := fun h => not_common_root hcopxm h hmc
+    have hyc : y.eval c ≠ 0 := fun h => not_common_root hcopmy hmc h
+    have hsucc : y = -(x % m) := sturmAux_consecutive_succ p (derivative p) x m y hinf
+    obtain ⟨hxc', hopp⟩ := sign_neighbours_opposite_at_interior_root hcopxm hmc
+    have hoppy : SignType.sign (x.eval c) ≠ SignType.sign (y.eval c) := by rw [hsucc]; exact hopp
+    have hxmem : x ∈ sturmSeq p := hxm.subset (by simp)
+    have hymem : y ∈ sturmSeq p := hmy.subset (by simp)
+    have hsx := hsignconst x hxmem hxc z hz
+    have hsy := hsignconst y hymem hyc z hz
+    refine ⟨?_, ?_, ?_⟩
+    · rw [hsx]; exact hxc'
+    · rw [hsy, Ne, sign_eq_zero_iff]; exact hyc
+    · rw [hsx, hsy]; exact hoppy
+  -- split off the head `p :: T`
+  obtain ⟨T, hT⟩ : ∃ T, sturmSeq p = p :: T := by
+    have hh := sturmSeq_head? p
+    rcases h : sturmSeq p with _ | ⟨c0, r⟩
+    · rw [h] at hh; simp at hh
+    · rw [h, List.head?_cons, Option.some_inj] at hh; exact ⟨r, by rw [hh]⟩
+  set KT := T.filter (fun q => decide (q.eval c ≠ 0)) with hKT
+  -- both endpoints reduce to the same kept chain `p :: KT`
+  have hfra : signVarAt (sturmSeq p) a = signVarAt (p :: KT) a := by
+    rw [hT]
+    exact signVarAt_eq_of_flankReduce
+      (flankReduce_chain_walk p T
+        (fun x m y hinf hmc => hflank a ⟨le_refl a, hab⟩ x m y (by rw [hT]; exact hinf) hmc)
+        (fun x y hinf => hiso x y (by rw [hT]; exact hinf))
+        (fun g hg => hlast g (by rw [hT]; exact hg)))
+  have hfrb : signVarAt (sturmSeq p) b = signVarAt (p :: KT) b := by
+    rw [hT]
+    exact signVarAt_eq_of_flankReduce
+      (flankReduce_chain_walk p T
+        (fun x m y hinf hmc => hflank b ⟨hab, le_refl b⟩ x m y (by rw [hT]; exact hinf) hmc)
+        (fun x y hinf => hiso x y (by rw [hT]; exact hinf))
+        (fun g hg => hlast g (by rw [hT]; exact hg)))
+  rw [hfra, hfrb]
+  -- the kept tail is root-free on `[a,b]`
+  have hKTsub : ∀ q ∈ KT, q ∈ sturmSeq p ∧ q.eval c ≠ 0 := by
+    intro q hq
+    rw [hKT, List.mem_filter] at hq
+    exact ⟨by rw [hT]; exact List.mem_cons_of_mem p hq.1, of_decide_eq_true hq.2⟩
+  have hKTrf : ∀ q ∈ KT, ∀ z ∈ Set.Icc a b, q.eval z ≠ 0 := by
+    intro q hq z hz
+    obtain ⟨hmem, hqc⟩ := hKTsub q hq
+    exact hrootfree q hmem hqc z hz
+  have hpmem : p ∈ sturmSeq p := by rw [hT]; exact List.mem_cons_self ..
+  by_cases hpc : p.eval c = 0
+  · rw [if_pos hpc]
+    have hp'c : (derivative p).eval c ≠ 0 := fun h => not_common_root hseed hpc h
+    have hp'ne : derivative p ≠ 0 := fun h => hp'c (by rw [h]; simp)
+    have hpa0 : p.eval a ≠ 0 := fun h => absurd (h_only p hpmem a ⟨le_refl a, hab⟩ h) hac.ne
+    have hpb0 : p.eval b ≠ 0 := fun h => absurd (h_only p hpmem b ⟨hab, le_refl b⟩ h) hcb.ne'
+    have hpa_sign : SignType.sign (p.eval a) = - SignType.sign ((derivative p).eval c) :=
+      sign_eval_eq_neg_sign_deriv_left hpc hp'c hac
+        (fun z hz hz0 => h_only p hpmem z ⟨hz.1, hz.2.trans hcb.le⟩ hz0)
+    have hpb_sign : SignType.sign (p.eval b) = SignType.sign ((derivative p).eval c) :=
+      sign_eval_eq_sign_deriv_right hpc hp'c hcb
+        (fun z hz hz0 => h_only p hpmem z ⟨hac.le.trans hz.1, hz.2⟩ hz0)
+    have hne : SignType.sign (p.eval a) ≠ SignType.sign (p.eval b) := by
+      rw [hpa_sign, hpb_sign]
+      have hc'0 : SignType.sign ((derivative p).eval c) ≠ 0 := by rw [Ne, sign_eq_zero_iff]; exact hp'c
+      exact (by decide : ∀ s : SignType, s ≠ 0 → -s ≠ s) _ hc'0
+    -- `T = p' :: T'`, and `p'` is kept (does not vanish at `c`), so `KT = p' :: …`
+    obtain ⟨T', hT'⟩ : ∃ T', T = derivative p :: T' := by
+      have hsa : sturmSeq p = p :: sturmAux (derivative p) (-(p % derivative p)) := by
+        unfold sturmSeq; rw [sturmAux_cons hp'ne]
+      rw [hT] at hsa
+      injection hsa with _ hTeq
+      have hh := sturmAux_head? (derivative p) (-(p % derivative p))
+      rw [← hTeq] at hh
+      rcases h' : T with _ | ⟨w, r⟩
+      · rw [h'] at hh; simp at hh
+      · rw [h', List.head?_cons, Option.some_inj] at hh; exact ⟨r, by rw [hh]⟩
+    have hp'mem : derivative p ∈ sturmSeq p := by
+      rw [hT, hT']; exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+    have hKThead : KT = derivative p :: T'.filter (fun q => decide (q.eval c ≠ 0)) := by
+      rw [hKT, hT']; simp [hp'c]
+    have hp'b0 : (derivative p).eval b ≠ 0 := hrootfree (derivative p) hp'mem hp'c b ⟨hab, le_refl b⟩
+    have hfirst : ((KT.map (fun q => SignType.sign (q.eval b))).filter (· ≠ 0)).head?
+        = some (SignType.sign (p.eval b)) := by
+      rw [hKThead, filter_map_sign_head?_cons hp'b0]
+      congr 1
+      rw [hsignconst (derivative p) hp'mem hp'c b ⟨hab, le_refl b⟩, ← hpb_sign]
+    have hKTtail : KT.map (fun q => SignType.sign (q.eval a))
+        = KT.map (fun q => SignType.sign (q.eval b)) :=
+      map_sign_eq_of_no_root hab hKTrf
+    exact signVarAt_cons_head_drop hpa0 hpb0 hne hKTtail hfirst
+  · rw [if_neg hpc]
+    have hKrf : ∀ q ∈ (p :: KT), ∀ z ∈ Set.Icc a b, q.eval z ≠ 0 := by
+      intro q hq z hz
+      rcases List.mem_cons.mp hq with h | h
+      · rw [h]; exact hrootfree p hpmem hpc z hz
+      · exact hKTrf q h z hz
+    have := signVarAt_eq_of_no_root hab hKrf
+    omega
+
+end SingleCrit
+
 /-! ## Playground — what else falls out of the machinery -/
 
 /-- **Bolzano, sign form.** A sign change of `p` between `a` and `b` forces a real root in `[a,b]`
