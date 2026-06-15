@@ -63,8 +63,9 @@ are not roots, the number of distinct real roots of $p$ in $(a,b]$ equals
 where $\V(x)$ is the number of sign changes in the \emph{Sturm sequence}
 $p,\,p',\,-(p \bmod p'),\,\dots$ evaluated at $x$ (zeros discarded). No root is ever located;
 two integers are subtracted. The mathematics is entirely classical and the result has been
-formalized before in other systems (Coq, Isabelle/HOL, HOL~Light); to the best of my knowledge
-this is the first proof of Sturm's theorem in Lean. The contribution is therefore the
+formalized before in other systems (Coq, Isabelle/HOL, HOL~Light); to the best of my knowledge---
+based on searches of Loogle and Mathlib in June~2026 (Section~\ref{sec:boundary})---this is the
+first proof of Sturm's theorem in Lean. The contribution is therefore the
 formalization itself and the reusable machinery it required: a small theory of sign variation,
 an inductive ``flank-reduction'' relation that decouples the chain's combinatorics from its
 algebra, and the local-to-global passage from a single root crossing to the interval count. The
@@ -149,8 +150,10 @@ Paulson~\cite{litarski,libudan}; and in HOL~Light. What it had not been, until n
 \emph{Lean}. Mathlib, the library on which a large part of contemporary formalized mathematics is
 built, carries Descartes' rule of signs (the function \lean{Polynomial.signVariations}) but not
 Sturm's sequence and not Sturm's theorem. This paper fills that gap. It is, I want to be exact, a
-first-in-Lean and not a first-in-any-system; the value is in adding a foundational tool to a
-library that lacked it, and in the reusable pieces the proof leaves behind.
+first-in-Lean and not a first-in-any-system;\footnote{Priority claim based on searches of Loogle
+and a \lean{grep} of Mathlib as of June~2026; the prior formalizations in Coq, Isabelle/HOL and
+HOL~Light are credited in Section~\ref{sec:boundary}.} the value is in adding a foundational tool to
+a library that lacked it, and in the reusable pieces the proof leaves behind.
 
 I came to it not by setting out to prove Sturm's theorem but by asking, repeatedly, which
 classical results a mature library is still missing---and Sturm's, sitting squarely in real-root
@@ -666,22 +669,28 @@ sequence or Sturm's theorem in \emph{Lean}/Mathlib (Loogle and \lean{grep}:
 sequence). So: first in Lean, to the best of my knowledge; not first in any system.
 
 A word on what the choice of system cost and saved, since that is what a proof-engineering reader
-will want. What Mathlib \emph{gave}, and made several steps almost free: the Euclidean-domain
+will want.
+
+\emph{What Mathlib already provided}, making several steps almost free: the Euclidean-domain
 identity $p = (p\div q)\,q + (p\bmod q)$ with the degree bound $\deg(p\bmod q)<\deg q$, which makes
 the sequence's definition terminate without a separate measure argument; \lean{Polynomial.Splits},
 \lean{roots} and \lean{mem\_roots'} for the root set; \lean{separable} together with
 \lean{PerfectField.separable\_iff\_squarefree}, which delivers ``squarefree $\Rightarrow$ coprime to
 the derivative'' in one line; the intermediate value theorem (\lean{intermediate\_value\_Icc}); and
 \lean{Finset.max'} with the cardinality lemmas for the global induction. The analytic and algebraic
-substrate, in other words, was already there. What was \emph{absent everywhere in Lean} and had to
-be built is the sign-variation theory and the whole local-to-global crossing argument; and the one
-genuinely fiddly step---independent of the system---was the list-recursion coupling that
-\lean{FlankReduce} resolves (Section~\ref{sec:q3}), not the analysis. I did not port Cohen's or
-Eberl's proofs, so I make no claim about relative proof length or difficulty: a fair comparison
-would mean re-doing the work in each system, which I have not done. What I can say is that the
-approaches differ in setting---Cohen's is embedded in exact-real-arithmetic, Eberl's is executable,
-Li--Paulson's targets the Cauchy index---and that, in Lean, the cost lived in the combinatorics of
-the count, not in the polynomial analysis Mathlib already supports.
+substrate, in other words, was already there.
+
+\emph{What had to be built from scratch.} Absent everywhere in Lean were the sign-variation theory
+and the whole local-to-global crossing argument. The one genuinely fiddly step---independent of the
+system---was the list-recursion coupling that \lean{FlankReduce} resolves (Section~\ref{sec:q3}),
+not the analysis.
+
+\emph{On comparing systems.} I did not port Cohen's or Eberl's proofs, so I make no claim about
+relative proof length or difficulty: a fair comparison would mean re-doing the work in each system,
+which I have not done. What I can say is that the approaches differ in setting---Cohen's is embedded
+in exact real arithmetic, Eberl's is executable, Li--Paulson's targets the Cauchy index---and that,
+in Lean, the cost lived in the combinatorics of the count, not in the polynomial analysis Mathlib
+already supports.
 
 \emph{On method.} The formalization was carried out with an AI assistant (Claude, Anthropic), under
 the discipline used throughout this line of work: the worked example verified in exact arithmetic
@@ -732,7 +741,9 @@ git clone https://github.com/karlesmarin/godsil-gutman-lean
 cd godsil-gutman-lean && lake exe cache get
 lake env lean Sturm.lean
 \end{verbatim}
-Lean \lean{v4.30.0-rc2}, Mathlib pin \lean{701fb6e9}. The theorem is \lean{Sturm.sturm} in
+Lean \lean{v4.30.0-rc2}, Mathlib pin \lean{701fb6e9}. (The repository
+\texttt{godsil-gutman-lean} is the umbrella for this series of Lean formalizations; the present work
+is the single file \lean{Sturm.lean} within it.) The theorem is \lean{Sturm.sturm} in
 \lean{Sturm.lean}; its supports are in Table~\ref{tab:inventory}. It is checked by \lean{\#print
 axioms} to depend only on \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. The
 worked example of Figure~\ref{fig:staircase} is re-derived, and every sign and count asserted

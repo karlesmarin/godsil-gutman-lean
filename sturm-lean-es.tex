@@ -63,7 +63,8 @@ distintas de $p$ en $(a,b]$ es igual a
 donde $\V(x)$ es el n\'umero de cambios de signo en la \emph{sucesi\'on de Sturm}
 $p,\,p',\,-(p \bmod p'),\,\dots$ evaluada en $x$ (descartando los ceros). No se localiza ninguna
 ra\'iz; se restan dos enteros. La matem\'atica es enteramente cl\'asica y el resultado ya se hab\'ia
-formalizado en otros sistemas (Coq, Isabelle/HOL, HOL~Light); hasta donde s\'e, esta es la primera
+formalizado en otros sistemas (Coq, Isabelle/HOL, HOL~Light); hasta donde s\'e---a partir de
+b\'usquedas en Loogle y Mathlib en junio~2026 (Secci\'on~\ref{sec:boundary})---esta es la primera
 prueba del teorema de Sturm en Lean. La contribuci\'on es, por tanto, la formalizaci\'on misma y la
 maquinaria reutilizable que requiri\'o: una peque\~na teor\'ia de variaci\'on de signo, una
 relaci\'on inductiva de ``reducci\'on por flancos'' que desacopla la combinatoria de la cadena de su
@@ -153,8 +154,10 @@ ahora, es en \emph{Lean}. Mathlib, la biblioteca sobre la que se construye buena
 matem\'atica formalizada contempor\'anea, lleva la regla de los signos de Descartes (la funci\'on
 \lean{Polynomial.signVariations}) pero no la sucesi\'on de Sturm ni el teorema de Sturm. Este
 art\'iculo cubre esa carencia. Quiero ser exacto: es un primero-en-Lean y no un primero-en-cualquier
-sistema; el valor est\'a en a\~nadir una herramienta fundamental a una biblioteca que no la ten\'ia,
-y en las piezas reutilizables que la prueba deja tras de s\'i.
+sistema;\footnote{Reivindicaci\'on de prioridad basada en b\'usquedas en Loogle y un \lean{grep} de
+Mathlib a junio~2026; las formalizaciones previas en Coq, Isabelle/HOL y HOL~Light se acreditan en la
+Secci\'on~\ref{sec:boundary}.} el valor est\'a en a\~nadir una herramienta fundamental a una
+biblioteca que no la ten\'ia, y en las piezas reutilizables que la prueba deja tras de s\'i.
 
 No llegu\'e a ello propon\'endome demostrar el teorema de Sturm, sino preguntando, una y otra vez,
 qu\'e resultados cl\'asicos le faltan a\'un a una biblioteca madura---y el de Sturm, situado de lleno
@@ -682,21 +685,26 @@ Descartes existe; no hay \lean{sturm}, ni sucesi\'on de restos con signo). As\'i
 hasta donde s\'e; no primero en ning\'un sistema.
 
 Una palabra sobre lo que el sistema elegido cost\'o y ahorr\'o, que es lo que un lector de
-ingenier\'ia de pruebas querr\'a. Lo que Mathlib \emph{dio}, y volvi\'o casi gratis varios pasos: la
-identidad de dominio eucl\'ideo $p = (p\div q)\,q + (p\bmod q)$ con la cota de grado
-$\deg(p\bmod q)<\deg q$, que hace terminar la definici\'on de la sucesi\'on sin un argumento de medida
-aparte; \lean{Polynomial.Splits}, \lean{roots} y \lean{mem\_roots'} para el conjunto de ra\'ices;
-\lean{separable} junto con \lean{PerfectField.separable\_iff\_squarefree}, que entrega ``squarefree
-$\Rightarrow$ coprimo con la derivada'' en una l\'inea; el teorema del valor intermedio
-(\lean{intermediate\_value\_Icc}); y \lean{Finset.max'} con los lemas de cardinalidad para la
-inducci\'on global. El sustrato anal\'itico y algebraico, en otras palabras, ya estaba ah\'i. Lo que
-estaba \emph{ausente en todo Lean} y hubo que construir es la teor\'ia de variaci\'on de signo y todo
-el argumento de cruce de lo local a lo global; y el \'unico paso genuinamente delicado---independiente
-del sistema---fue el acoplamiento de la recursi\'on sobre listas que resuelve \lean{FlankReduce}
-(Secci\'on~\ref{sec:q3}), no el an\'alisis. No port\'e las pruebas de Cohen ni de Eberl, as\'i que no
-afirmo nada sobre longitud o dificultad relativa: una comparaci\'on justa significar\'ia rehacer el
-trabajo en cada sistema, lo que no he hecho. Lo que s\'i puedo decir es que los enfoques difieren en
-el marco---el de Cohen est\'a embebido en aritm\'etica real exacta, el de Eberl es ejecutable, el de
+ingenier\'ia de pruebas querr\'a.
+
+\emph{Lo que Mathlib ya aportaba}, volviendo casi gratis varios pasos: la identidad de dominio
+eucl\'ideo $p = (p\div q)\,q + (p\bmod q)$ con la cota de grado $\deg(p\bmod q)<\deg q$, que hace
+terminar la definici\'on de la sucesi\'on sin un argumento de medida aparte; \lean{Polynomial.Splits},
+\lean{roots} y \lean{mem\_roots'} para el conjunto de ra\'ices; \lean{separable} junto con
+\lean{PerfectField.separable\_iff\_squarefree}, que entrega ``squarefree $\Rightarrow$ coprimo con la
+derivada'' en una l\'inea; el teorema del valor intermedio (\lean{intermediate\_value\_Icc}); y
+\lean{Finset.max'} con los lemas de cardinalidad para la inducci\'on global. El sustrato anal\'itico y
+algebraico, en otras palabras, ya estaba ah\'i.
+
+\emph{Lo que hubo que construir desde cero.} Ausentes en todo Lean estaban la teor\'ia de variaci\'on
+de signo y todo el argumento de cruce de lo local a lo global. El \'unico paso genuinamente
+delicado---independiente del sistema---fue el acoplamiento de la recursi\'on sobre listas que resuelve
+\lean{FlankReduce} (Secci\'on~\ref{sec:q3}), no el an\'alisis.
+
+\emph{Sobre comparar sistemas.} No port\'e las pruebas de Cohen ni de Eberl, as\'i que no afirmo nada
+sobre longitud o dificultad relativa: una comparaci\'on justa significar\'ia rehacer el trabajo en
+cada sistema, lo que no he hecho. Lo que s\'i puedo decir es que los enfoques difieren en el
+marco---el de Cohen est\'a embebido en aritm\'etica real exacta, el de Eberl es ejecutable, el de
 Li--Paulson apunta al \'indice de Cauchy---y que, en Lean, el coste vivi\'o en la combinatoria del
 conteo, no en el an\'alisis polin\'omico que Mathlib ya sostiene.
 
@@ -751,7 +759,9 @@ git clone https://github.com/karlesmarin/godsil-gutman-lean
 cd godsil-gutman-lean && lake exe cache get
 lake env lean Sturm.lean
 \end{verbatim}
-Lean \lean{v4.30.0-rc2}, Mathlib pin \lean{701fb6e9}. El teorema es \lean{Sturm.sturm} en
+Lean \lean{v4.30.0-rc2}, Mathlib pin \lean{701fb6e9}. (El repositorio
+\texttt{godsil-gutman-lean} es el paraguas de esta serie de formalizaciones en Lean; el presente
+trabajo es el \'unico fichero \lean{Sturm.lean} dentro de \'el.) El teorema es \lean{Sturm.sturm} en
 \lean{Sturm.lean}; sus apoyos est\'an en la Tabla~\ref{tab:inventory}. Se comprueba por \lean{\#print
 axioms} que depende solo de \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. El ejemplo
 trabajado de la Figura~\ref{fig:staircase} se rederiva, y cada signo y conteo se afirma contra
