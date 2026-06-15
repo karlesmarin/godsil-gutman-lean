@@ -479,6 +479,19 @@ public theorem signVarAt_eq_of_flankReduce {L₁ L₂ : List (Polynomial ℝ)} {
     signVarAt L₁ z = signVarAt L₂ z := by
   rw [signVarAt_eq_signChanges, signVarAt_eq_signChanges]; exact h.signChanges_eq
 
+/-- **Chain-level reduction step.** If at `z` the flanking polynomials `pa`, `pb` carry nonzero
+opposite signs, a `FlankReduce` of the list with the middle `pm` deleted extends to one of the full
+list. Iterating this (one per interior vanisher) exhibits the reduction of the chain's sign pattern.
+The flank hypotheses come from `sign_neighbours_opposite_at_interior_root` (chain structure). -/
+public theorem flankReduce_eval_step (pre rest : List (Polynomial ℝ)) (pa pm pb : Polynomial ℝ)
+    {z : ℝ} (ha : SignType.sign (pa.eval z) ≠ 0) (hb : SignType.sign (pb.eval z) ≠ 0)
+    (hab : SignType.sign (pa.eval z) ≠ SignType.sign (pb.eval z))
+    {ys : List SignType}
+    (hrest : FlankReduce ((pre ++ pa :: pb :: rest).map fun q => SignType.sign (q.eval z)) ys) :
+    FlankReduce ((pre ++ pa :: pm :: pb :: rest).map fun q => SignType.sign (q.eval z)) ys := by
+  simp only [List.map_append, List.map_cons] at hrest ⊢
+  exact FlankReduce.del _ _ _ _ _ ha hb hab hrest
+
 /-! ## Domain-wall view: `signChanges` as a local additive sum (BPR sign-variation theory in Lean)
 
 Following classical real-algebraic-geometry sign-variation theory (Basu–Pollack–Roy; sign-change
