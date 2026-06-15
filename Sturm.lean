@@ -340,6 +340,109 @@ public theorem filter_map_sign_head?_cons {q : Polynomial ℝ} {rest : List (Pol
       = some (SignType.sign (q.eval y)) := by
   rw [List.map_cons, List.filter_cons_of_pos (by simp [sign_eq_zero_iff, hq])]; rfl
 
+/-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
+
+/-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
+public theorem sign_eval_eq_sign_deriv_right {p : Polynomial ℝ} {α b : ℝ} (hroot : p.eval α = 0)
+    (hp'0 : (derivative p).eval α ≠ 0) (hαb : α < b)
+    (hp_only : ∀ z ∈ Set.Icc α b, p.eval z = 0 → z = α) :
+    SignType.sign (p.eval b) = SignType.sign ((derivative p).eval α) := by
+  obtain ⟨ε, hε, hball⟩ :=
+    Metric.eventually_nhds_iff.mp (eventually_sign_eval_simple_root hroot hp'0)
+  set δ := min (ε / 2) ((b - α) / 2) with hδdef
+  have hδpos : 0 < δ := lt_min (by linarith) (by linarith)
+  set xR := α + δ with hxR
+  have hxR_gt : α < xR := by rw [hxR]; linarith
+  have hxR_lt : xR < b := by
+    have : δ ≤ (b - α) / 2 := min_le_right _ _
+    rw [hxR]; linarith
+  have hdist : dist xR α < ε := by
+    have hle : δ ≤ ε / 2 := min_le_left _ _
+    rw [hxR, Real.dist_eq, add_sub_cancel_left, abs_of_pos hδpos]; linarith
+  have hsxR : SignType.sign (p.eval xR) = SignType.sign ((derivative p).eval α) := by
+    rw [hball hdist, hxR, add_sub_cancel_left, sign_pos hδpos, one_mul]
+  have hno : ∀ z ∈ Set.Icc xR b, p.eval z ≠ 0 := by
+    intro z hz hz0
+    have hzα : z = α := hp_only z ⟨le_trans hxR_gt.le hz.1, hz.2⟩ hz0
+    rw [hzα] at hz; exact absurd hz.1 (not_le.mpr hxR_gt)
+  rw [← sign_eval_eq_of_no_root hxR_lt.le hno]; exact hsxR
+
+/-- Just to the left of a simple root, `p` carries the opposite sign of `p'(α)`. -/
+public theorem sign_eval_eq_neg_sign_deriv_left {p : Polynomial ℝ} {α a : ℝ} (hroot : p.eval α = 0)
+    (hp'0 : (derivative p).eval α ≠ 0) (haα : a < α)
+    (hp_only : ∀ z ∈ Set.Icc a α, p.eval z = 0 → z = α) :
+    SignType.sign (p.eval a) = - SignType.sign ((derivative p).eval α) := by
+  obtain ⟨ε, hε, hball⟩ :=
+    Metric.eventually_nhds_iff.mp (eventually_sign_eval_simple_root hroot hp'0)
+  set δ := min (ε / 2) ((α - a) / 2) with hδdef
+  have hδpos : 0 < δ := lt_min (by linarith) (by linarith)
+  set xL := α - δ with hxL
+  have hxL_lt : xL < α := by rw [hxL]; linarith
+  have hxL_gt : a < xL := by
+    have : δ ≤ (α - a) / 2 := min_le_right _ _
+    rw [hxL]; linarith
+  have hdist : dist xL α < ε := by
+    have hle : δ ≤ ε / 2 := min_le_left _ _
+    rw [hxL, Real.dist_eq]
+    have : xL - α = -δ := by rw [hxL]; ring
+    rw [this, abs_neg, abs_of_pos hδpos]; linarith
+  have hsxL : SignType.sign (p.eval xL) = - SignType.sign ((derivative p).eval α) := by
+    rw [hball hdist]
+    have : xL - α < 0 := by rw [hxL]; linarith
+    rw [sign_neg this, neg_one_mul]
+  have hno : ∀ z ∈ Set.Icc a xL, p.eval z ≠ 0 := by
+    intro z hz hz0
+    have hzα : z = α := hp_only z ⟨hz.1, le_trans hz.2 hxL_lt.le⟩ hz0
+    rw [hzα] at hz; exact absurd hz.2 (not_le.mpr hxL_lt)
+  rw [sign_eval_eq_of_no_root hxL_gt.le hno]; exact hsxL
+
+/-- **Local root-crossing.** Across a simple root `α` of `p` (generic position: `α` the only root
+of `p` in `[a,α]` and `[α,b]`, and no Sturm-tail member vanishes in `[a,b]`), the sign variations of
+the Sturm sequence drop by exactly one. -/
+public theorem signVarAt_drop_at_simple_root {p : Polynomial ℝ} {α a b : ℝ}
+    (hp'ne : derivative p ≠ 0) (hroot : p.eval α = 0) (hp'0 : (derivative p).eval α ≠ 0)
+    (haα : a < α) (hαb : α < b)
+    (hp_left : ∀ z ∈ Set.Icc a α, p.eval z = 0 → z = α)
+    (hp_right : ∀ z ∈ Set.Icc α b, p.eval z = 0 → z = α)
+    (htail : ∀ q ∈ (sturmSeq p).tail, ∀ z ∈ Set.Icc a b, q.eval z ≠ 0) :
+    signVarAt (sturmSeq p) a = signVarAt (sturmSeq p) b + 1 := by
+  have hab : a ≤ b := le_of_lt (lt_trans haα hαb)
+  have hseq : sturmSeq p = p :: sturmAux (derivative p) (-(p % derivative p)) := by
+    unfold sturmSeq; rw [sturmAux_cons hp'ne]
+  rw [hseq, List.tail_cons] at htail
+  set tail := sturmAux (derivative p) (-(p % derivative p)) with htaildef
+  obtain ⟨rest, hrest⟩ : ∃ rest, tail = derivative p :: rest := by
+    have hh : tail.head? = some (derivative p) := sturmAux_head? _ _
+    rcases hc : tail with _ | ⟨c, r⟩
+    · rw [hc] at hh; simp at hh
+    · rw [hc, List.head?_cons, Option.some.injEq] at hh; exact ⟨r, by rw [hh]⟩
+  have hp'mem : derivative p ∈ tail := by rw [hrest]; exact List.mem_cons_self ..
+  have hp'b : (derivative p).eval b ≠ 0 := htail _ hp'mem b ⟨hab, le_refl b⟩
+  have hpa : SignType.sign (p.eval a) = - SignType.sign ((derivative p).eval α) :=
+    sign_eval_eq_neg_sign_deriv_left hroot hp'0 haα hp_left
+  have hpb : SignType.sign (p.eval b) = SignType.sign ((derivative p).eval α) :=
+    sign_eval_eq_sign_deriv_right hroot hp'0 hαb hp_right
+  have hc'0 : SignType.sign ((derivative p).eval α) ≠ 0 := by
+    rw [Ne, sign_eq_zero_iff]; exact hp'0
+  have hne : SignType.sign (p.eval a) ≠ SignType.sign (p.eval b) := by
+    rw [hpa, hpb]; exact (by decide : ∀ c : SignType, c ≠ 0 → -c ≠ c) _ hc'0
+  have hp'b_eq : SignType.sign ((derivative p).eval b) = SignType.sign (p.eval b) := by
+    rw [hpb]
+    exact (sign_eval_eq_of_no_root hαb.le
+      (fun z hz => htail _ hp'mem z ⟨le_trans haα.le hz.1, hz.2⟩)).symm
+  have hfirst : ((tail.map (fun q => SignType.sign (q.eval b))).filter (· ≠ 0)).head?
+      = some (SignType.sign (p.eval b)) := by
+    rw [hrest, filter_map_sign_head?_cons hp'b, hp'b_eq]
+  have htaileq : tail.map (fun q => SignType.sign (q.eval a))
+      = tail.map (fun q => SignType.sign (q.eval b)) :=
+    map_sign_eq_of_no_root hab htail
+  have hpa0 : p.eval a ≠ 0 := by
+    intro h; have := hp_left a ⟨le_refl a, haα.le⟩ h; linarith
+  have hpb0 : p.eval b ≠ 0 := by
+    intro h; have := hp_right b ⟨hαb.le, le_refl b⟩ h; linarith
+  rw [hseq]
+  exact signVarAt_cons_head_drop hpa0 hpb0 hne htaileq hfirst
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
