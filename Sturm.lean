@@ -389,6 +389,27 @@ public theorem signChanges_remove_middle_append {a b m : SignType}
       simp only [List.cons_append]
       rw [signChanges_cons_of_ne_zero hc hd, signChanges_cons_of_ne_zero hc hd2, ih]
 
+/-! ## Interior-member crossing (piece ii): neighbours are nonzero and opposite -/
+
+/-- **At a root of an interior chain member, its neighbours are nonzero and opposite.** If `a` and
+`m` are coprime (consecutive Sturm members) and `m(c) = 0`, then `a(c)` and the successor
+`(-(a % m))(c)` are both nonzero and carry opposite signs — exactly the configuration that makes
+`signChanges_remove_middle` fire, so the interior root contributes `0` to the variation change. -/
+public theorem sign_neighbours_opposite_at_interior_root {a m : Polynomial ℝ} {c : ℝ}
+    (hco : IsCoprime a m) (hm : m.eval c = 0) :
+    SignType.sign (a.eval c) ≠ 0 ∧
+      SignType.sign (a.eval c) ≠ SignType.sign ((-(a % m)).eval c) := by
+  have ha : a.eval c ≠ 0 := fun h => not_common_root hco h hm
+  have hanti : a.eval c = -((-(a % m)).eval c) := eval_eq_neg_next_of_root hm
+  have hNval : (-(a % m)).eval c = -(a.eval c) := by linarith [hanti]
+  have hsa : SignType.sign (a.eval c) ≠ 0 := by rw [Ne, sign_eq_zero_iff]; exact ha
+  refine ⟨hsa, ?_⟩
+  rcases lt_or_gt_of_ne ha with hneg | hpos
+  · have hNpos : 0 < (-(a % m)).eval c := by rw [hNval]; linarith
+    rw [sign_neg hneg, sign_pos hNpos]; decide
+  · have hNneg : (-(a % m)).eval c < 0 := by rw [hNval]; linarith
+    rw [sign_pos hpos, sign_neg hNneg]; decide
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
