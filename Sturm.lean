@@ -340,6 +340,39 @@ public theorem filter_map_sign_head?_cons {q : Polynomial ℝ} {rest : List (Pol
       = some (SignType.sign (q.eval y)) := by
   rw [List.map_cons, List.filter_cons_of_pos (by simp [sign_eq_zero_iff, hq])]; rfl
 
+/-! ## Interior cancellation at arbitrary position (monolith engine) -/
+
+/-- The first surviving sign of `pre ++ a :: X` does not depend on `X` (the inserted/changed entry
+sits after the nonzero `a`, never becoming the first nonzero). -/
+public theorem filter_append_cons_head?_eq {a : SignType} (ha : a ≠ 0) (pre X Y : List SignType) :
+    ((pre ++ a :: X).filter (· ≠ 0)).head? = ((pre ++ a :: Y).filter (· ≠ 0)).head? := by
+  rw [List.filter_append, List.filter_append,
+      List.filter_cons_of_pos (by simpa using ha), List.filter_cons_of_pos (by simpa using ha)]
+  rcases pre.filter (· ≠ 0) with _ | ⟨h, t⟩ <;> simp
+
+/-- **Interior cancellation, any position.** Deleting a middle entry between two nonzero opposite
+signs leaves the count unchanged, anywhere in the list (induction on the prefix). -/
+public theorem signChanges_remove_middle_append {a b m : SignType}
+    (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) (pre rest : List SignType) :
+    signChanges (pre ++ a :: m :: b :: rest) = signChanges (pre ++ a :: b :: rest) := by
+  induction pre with
+  | nil => exact signChanges_remove_middle ha hb hab
+  | cons c pre' ih =>
+    rcases eq_or_ne c 0 with hc | hc
+    · subst hc
+      simp only [List.cons_append, signChanges_cons_zero]; exact ih
+    · obtain ⟨d, hd⟩ : ∃ d, ((pre' ++ a :: m :: b :: rest).filter (· ≠ 0)).head? = some d := by
+        rcases hq : ((pre' ++ a :: m :: b :: rest).filter (· ≠ 0)).head? with _ | d
+        · exfalso
+          have hmem : a ∈ (pre' ++ a :: m :: b :: rest).filter (· ≠ 0) :=
+            List.mem_filter.mpr ⟨List.mem_append_right _ (List.mem_cons_self ..), by simpa using ha⟩
+          rw [List.head?_eq_none_iff.mp hq] at hmem; simp at hmem
+        · exact ⟨d, hq⟩
+      have hd2 : ((pre' ++ a :: b :: rest).filter (· ≠ 0)).head? = some d := by
+        rw [← filter_append_cons_head?_eq ha pre' (m :: b :: rest) (b :: rest)]; exact hd
+      simp only [List.cons_append]
+      rw [signChanges_cons_of_ne_zero hc hd, signChanges_cons_of_ne_zero hc hd2, ih]
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
