@@ -54,7 +54,7 @@ certifica las pruebas.}\\[3pt]
 
 \begin{abstract}
 Presento una formalizaci\'on completa, libre de \lean{sorry}, en Lean~4 sobre Mathlib, del
-\emph{teorema de Sturm} (1829): para un polinomio real sin factores cuadrados (\emph{squarefree})
+\emph{teorema de Sturm} (1829): para un polinomio real libre de cuadrados (\emph{squarefree})
 $p$ y un intervalo $(a,b]$ cuyos extremos no son ra\'ices, el n\'umero de ra\'ices reales
 distintas de $p$ en $(a,b]$ es igual a
 \[
@@ -133,7 +133,7 @@ descomposici\'on cil\'indrica algebraica y de los procedimientos de decisi\'on p
 primer orden de los reales que crecieron a partir del trabajo de Tarski. El problema de
 contar ra\'ices reales de forma exacta qued\'o, en efecto, resuelto por una resta.
 
-El mecanismo es un peque\~no giro sobre algo a\'un m\'as viejo. El algoritmo de Euclides, aplicado a
+El mecanismo es un peque\~no giro sobre algo a\'un m\'as antiguo. El algoritmo de Euclides, aplicado a
 $p$ y su derivada $p'$, produce una sucesi\'on de restos; el giro de Sturm es negar cada resto al
 formarlo,
 \[
@@ -241,10 +241,10 @@ con la edici\'on inglesa.)}}
 \midrule
 $-2$            & $-$ & $+$ & $-$ & $+$ & $3$ \\
 $-1$ {\scriptsize(ra\'iz)} & $0$ & $+$ & $-$ & $+$ & $2$ \\
-$-\tfrac12$     & $-$ & $-$ & $-$ & $+$ & $2$ \\
-$-\tfrac{1}{\sqrt3}$ {\scriptsize($p_1{=}0$)} & $-$ & $0$ & $-$ & $+$ & $2$ \\
+$-\tfrac12$     & $+$ & $-$ & $-$ & $+$ & $2$ \\
+$-\tfrac{1}{\sqrt3}$ {\scriptsize($p_1{=}0$)} & $+$ & $0$ & $-$ & $+$ & $2$ \\
 $0$ {\scriptsize(ra\'iz)}  & $0$ & $-$ & $0$ & $+$ & $1$ \\
-$\tfrac{1}{\sqrt3}$ {\scriptsize($p_1{=}0$)}  & $+$ & $0$ & $+$ & $+$ & $1$ \\
+$\tfrac{1}{\sqrt3}$ {\scriptsize($p_1{=}0$)}  & $-$ & $0$ & $+$ & $+$ & $1$ \\
 $1$ {\scriptsize(ra\'iz)}  & $0$ & $+$ & $+$ & $+$ & $0$ \\
 $2$             & $+$ & $+$ & $+$ & $+$ & $0$ \\
 \bottomrule
@@ -333,10 +333,12 @@ La separaci\'on es una relaci\'on inductiva. Dir\'e que una lista de signos \emp
 flancos} a otra cuando la segunda se obtiene de la primera borrando repetidamente una entrada situada
 entre dos signos no nulos opuestos:
 \begin{recipebox}{El desacoplo (receta)}
-Def\'inase \lean{FlankReduce} como la relaci\'on reflexiva generada por una regla: de
-$\textit{pre}\mathbin{+\!\!+}[a,b]\mathbin{+\!\!+}\textit{rest}$ se puede pasar a
-$\textit{pre}\mathbin{+\!\!+}[a,m,b]\mathbin{+\!\!+}\textit{rest}$ siempre que $a,b\ne0$ y $a\ne b$.
-Dos hechos reparten entonces el trabajo con limpieza. \emph{Combinatorio:} la reducci\'on por flancos
+\lean{FlankReduce}~$L\;L'$ se cumple cuando $L'$ se obtiene de $L$ borrando entradas atrapadas cada
+una entre dos signos no nulos opuestos: un paso lleva
+$\textit{pre}\mathbin{+\!\!+}[a,m,b]\mathbin{+\!\!+}\textit{rest}$ a
+$\textit{pre}\mathbin{+\!\!+}[a,b]\mathbin{+\!\!+}\textit{rest}$ siempre que $a,b\ne0$ y $a\ne b$, y
+la relaci\'on es el cierre reflexivo de iterarlo. Dos hechos reparten entonces el trabajo con
+limpieza. \emph{Combinatorio:} la reducci\'on por flancos
 preserva el n\'umero de cambios de signo (\lean{FlankReduce.signChanges\_eq})---esto es pura
 \'algebra de listas, sin polinomios. \emph{Estructural:} la lista de signos evaluados de la cadena de
 Sturm en cualquier punto se reduce por flancos a la cadena sin sus anuladores interiores en $c$
@@ -498,8 +500,9 @@ Sturm, y las piezas para alcanzarlo est\'an ahora en su sitio.
 
 \emph{Sturm--Tarski y el \'indice de Cauchy.} El teorema m\'as fino de Sturm--Tarski cuenta ra\'ices
 de $p$ \emph{ponderadas} por el signo de un segundo polinomio $q$ sobre ellas---la ``consulta de
-Tarski''---a trav\'es del \'indice de Cauchy de $q'p/q$. Este es el motor del conteo de ra\'ices
-\emph{con multiplicidad}, del caso no squarefree, y en \'ultima instancia de la eliminaci\'on de
+Tarski'' $\sum_{p(x)=0}\operatorname{sign} q(x)$---que es igual al \'indice de Cauchy de $p'q/p$ (el
+caso b\'asico $q=1$, el \'indice de Cauchy de $p'/p$, es el propio conteo de Sturm). Este es el motor
+del conteo de ra\'ices \emph{con multiplicidad}, del caso no squarefree, y en \'ultima instancia de la eliminaci\'on de
 cuantificadores de Tarski para los reales. La sucesi\'on de restos con signo y el conteo de
 variaci\'on ensamblados aqu\'i son precisamente su sustrato; el desarrollo en Isabelle de
 Sturm--Tarski~\cite{litarski,libudan} se construye sobre los mismos dos objetos. Una versi\'on en

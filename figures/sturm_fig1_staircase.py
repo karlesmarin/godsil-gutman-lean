@@ -50,8 +50,28 @@ assert V(1) == 0 and V(2) == 0                          # one drop at 1
 r3 = sp.Rational(577, 1000)  # ~1/sqrt(3), still strictly between roots
 assert V(-r3) == 2 and V(r3) == 1
 assert V(-2) - V(2) == 3, "Sturm count on (-2,2] must be 3"
+
+# --- exact assertion of the full sign table printed in the paper (tab:signs) ---
+def sgn(v):
+    v = sp.nsimplify(v)
+    return "+" if v > 0 else ("-" if v < 0 else "0")
+table_rows = [
+    ("-2",        sp.Integer(-2),    ["-", "+", "-", "+"], 3),
+    ("-1",        sp.Integer(-1),    ["0", "+", "-", "+"], 2),
+    ("-1/2",      sp.Rational(-1,2), ["+", "-", "-", "+"], 2),
+    ("-1/sqrt3",  -1/sp.sqrt(3),     ["+", "0", "-", "+"], 2),
+    ("0",         sp.Integer(0),     ["0", "-", "0", "+"], 1),
+    ("1/sqrt3",   1/sp.sqrt(3),      ["-", "0", "+", "+"], 1),
+    ("1",         sp.Integer(1),     ["0", "+", "+", "+"], 0),
+    ("2",         sp.Integer(2),     ["+", "+", "+", "+"], 0),
+]
+for name, t, expected_signs, expected_V in table_rows:
+    got = [sgn(s.as_expr().subs(x, t)) for s in seq]
+    assert got == expected_signs, f"signs at {name}: {got} != {expected_signs}"
+    assert V(t) == expected_V, f"V at {name}: {V(t)} != {expected_V}"
 print("chain:", seq_exprs)
 print("V(-2)=%d, V(2)=%d  ->  %d roots in (-2,2]" % (V(-2), V(2), V(-2) - V(2)))
+print("full sign table (tab:signs) verified in exact arithmetic")
 
 # --- draw ---
 fig, (axp, axv) = plt.subplots(
