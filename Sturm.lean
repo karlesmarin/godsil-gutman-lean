@@ -332,6 +332,84 @@ public theorem sturmSeq_prod_ne_zero {p : Polynomial ℝ} (hp : p ≠ 0) :
   unfold sturmSeq at h0
   exact sturmAux_mem_ne_zero p (derivative p) hp 0 h0 rfl
 
+/-- **Consecutive members of a signed-remainder chain are coprime** (with a coprime seed). Each step
+preserves coprimality (`isCoprime_step`), so every adjacent pair `[x, m]` appearing in the chain is
+coprime — the source of `hiso` (no two adjacent members vanish at a common point). -/
+public theorem sturmAux_consecutive_coprime :
+    ∀ (p q : Polynomial ℝ), IsCoprime p q →
+      ∀ x m, [x, m] <:+: sturmAux p q → IsCoprime x m := by
+  intro p q
+  induction p, q using sturmAux.induct with
+  | case1 p =>
+    intro _ x m hinf
+    rw [sturmAux_zero, List.infix_singleton_iff] at hinf
+    rcases hinf with h | h <;> simp at h
+  | case2 p q hq ih =>
+    intro hcop x m hinf
+    rw [sturmAux_cons hq] at hinf
+    rcases List.infix_cons_iff.mp hinf with hpre | hsuf
+    · obtain ⟨hx, hpre2⟩ := List.cons_prefix_cons.mp hpre
+      obtain ⟨t, ht⟩ := hpre2
+      have hhead : (sturmAux q (-(p % q))).head? = some m := by rw [← ht]; rfl
+      have h2 := sturmAux_head? q (-(p % q))
+      rw [hhead, Option.some_inj] at h2
+      rw [hx, h2]; exact hcop
+    · exact ih (isCoprime_step hcop) x m hsuf
+
+/-- **The successor of a chain triple is the signed remainder.** For any three consecutive members
+`[x, m, y]` of a signed-remainder chain, `y = -(x % m)` — the chain's defining relation, surfaced as
+a fact about adjacent triples. Together with `eval_eq_neg_next_of_root` this gives the antipodal
+flank behaviour at an interior root (the source of `hflank`). -/
+public theorem sturmAux_consecutive_succ :
+    ∀ (p q : Polynomial ℝ), ∀ x m y, [x, m, y] <:+: sturmAux p q → y = -(x % m) := by
+  intro p q
+  induction p, q using sturmAux.induct with
+  | case1 p =>
+    intro x m y hinf
+    rw [sturmAux_zero, List.infix_singleton_iff] at hinf
+    rcases hinf with h | h <;> simp at h
+  | case2 p q hq ih =>
+    intro x m y hinf
+    rw [sturmAux_cons hq] at hinf
+    rcases List.infix_cons_iff.mp hinf with hpre | hsuf
+    · obtain ⟨hx, hpre2⟩ := List.cons_prefix_cons.mp hpre
+      by_cases hq2 : (-(p % q)) = 0
+      · rw [hq2, sturmAux_zero] at hpre2
+        obtain ⟨_, hpre3⟩ := List.cons_prefix_cons.mp hpre2
+        simp at hpre3
+      · rw [sturmAux_cons hq2] at hpre2
+        obtain ⟨hm, hpre3⟩ := List.cons_prefix_cons.mp hpre2
+        obtain ⟨t, ht⟩ := hpre3
+        have hhead : (sturmAux (-(p % q)) (-(q % -(p % q)))).head? = some y := by rw [← ht]; rfl
+        have h2 := sturmAux_head? (-(p % q)) (-(q % -(p % q)))
+        rw [hhead, Option.some_inj] at h2
+        rw [hx, hm]; exact h2
+    · exact ih x m y hsuf
+
+/-- **The last member of a coprime-seeded chain is a unit.** The chain ends at the last nonzero
+remainder — the gcd — which for a coprime seed is a unit (`IsCoprime p 0 ↔ IsUnit p` at the base).
+Hence the final Sturm member is a nonzero constant, never vanishing (the source of `hlast`). -/
+public theorem sturmAux_getLast_isUnit :
+    ∀ (p q : Polynomial ℝ), IsCoprime p q → ∀ g, (sturmAux p q).getLast? = some g → IsUnit g := by
+  intro p q
+  induction p, q using sturmAux.induct with
+  | case1 p =>
+    intro hcop g hg
+    rw [sturmAux_zero] at hg
+    rw [List.getLast?_singleton, Option.some_inj] at hg
+    rw [← hg]
+    exact isCoprime_zero_right.mp hcop
+  | case2 p q hq ih =>
+    intro hcop g hg
+    rw [sturmAux_cons hq] at hg
+    obtain ⟨L', hL'⟩ : ∃ L', sturmAux q (-(p % q)) = q :: L' := by
+      have hh := sturmAux_head? q (-(p % q))
+      rcases h : sturmAux q (-(p % q)) with _ | ⟨c, r⟩
+      · rw [h] at hh; simp at hh
+      · rw [h, List.head?_cons, Option.some_inj] at hh; exact ⟨r, by rw [hh]⟩
+    rw [hL', List.getLast?_cons_cons, ← hL'] at hg
+    exact ih (isCoprime_step hcop) g hg
+
 /-- **Root-crossing bridge.** If, between two points `x` and `y`, only the head polynomial `p`
 changes sign (the rest of the list keeps its signs), `p` is nonzero at both, and the head sign at
 `y` equals the first surviving sign of the tail, then `V` is exactly one larger at `x`. This lifts
