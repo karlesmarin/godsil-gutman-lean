@@ -154,6 +154,46 @@ public theorem signVarAt_eq_of_no_root {L : List (Polynomial ℝ)} {a b : ℝ} (
   unfold signVarAt
   rw [hmap]
 
+/-! ## P3 — behaviour at a root of `p` (analytic core)
+
+At a simple root `α` of `p` (so `p'(α) ≠ 0`), write `p = (X - α)·g`; then `g(α) = p'(α) ≠ 0`, and
+near `α`, `sign(p(x)) = sign(x - α)·sign(p'(α))`: `p` flips sign, with orientation fixed by `p'`.
+This is the analytic engine behind "the leading pair `(p, p')` loses exactly one sign variation as
+`x` crosses `α`". The remaining combinatorial accounting (full V-drop over the list) is P3'/P5. -/
+
+/-- At a root `α` of `p`, the cofactor `p /ₘ (X - α)` evaluates to `p'(α)`. -/
+public theorem eval_divByMonic_eq_derivative_at_root {p : Polynomial ℝ} {α : ℝ}
+    (hp0 : p.eval α = 0) :
+    (p /ₘ (X - C α)).eval α = (derivative p).eval α := by
+  set g := p /ₘ (X - C α) with hg
+  have hfac : (X - C α) * g = p := mul_divByMonic_eq_iff_isRoot.2 hp0
+  have hd : derivative p = g + (X - C α) * derivative g := by
+    rw [← hfac, derivative_mul, derivative_sub, derivative_X, derivative_C, sub_zero, one_mul]
+  rw [hd]
+  simp [eval_add, eval_mul, eval_sub, eval_X, eval_C]
+
+/-- **Sign flip at a simple root.** Near a simple root `α` of `p`,
+`sign(p(x)) = sign(x - α) · sign(p'(α))`. -/
+public theorem eventually_sign_eval_simple_root {p : Polynomial ℝ} {α : ℝ}
+    (hp0 : p.eval α = 0) (hp' : (derivative p).eval α ≠ 0) :
+    ∀ᶠ x in nhds α, SignType.sign (p.eval x)
+      = SignType.sign (x - α) * SignType.sign ((derivative p).eval α) := by
+  set g := p /ₘ (X - C α) with hg
+  have hfac : (X - C α) * g = p := mul_divByMonic_eq_iff_isRoot.2 hp0
+  have hgα : g.eval α = (derivative p).eval α := eval_divByMonic_eq_derivative_at_root hp0
+  have hgα0 : g.eval α ≠ 0 := by rw [hgα]; exact hp'
+  have hgcont : ContinuousAt (fun x => g.eval x) α := (Polynomial.continuous g).continuousAt
+  have hsign_g : ∀ᶠ x in nhds α, SignType.sign (g.eval x) = SignType.sign (g.eval α) := by
+    rcases lt_or_gt_of_ne hgα0 with hneg | hpos
+    · filter_upwards [hgcont.eventually_lt continuousAt_const hneg] with x hx
+      rw [sign_neg hx, sign_neg hneg]
+    · filter_upwards [continuousAt_const.eventually_lt hgcont hpos] with x hx
+      rw [sign_pos hx, sign_pos hpos]
+  filter_upwards [hsign_g] with x hx
+  have hpx : p.eval x = (x - α) * g.eval x := by
+    rw [← hfac]; simp [eval_mul, eval_sub, eval_X, eval_C]
+  rw [hpx, sign_mul, hx, hgα]
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
