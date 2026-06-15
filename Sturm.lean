@@ -492,6 +492,106 @@ public theorem flankReduce_eval_step (pre rest : List (Polynomial ℝ)) (pa pm p
   simp only [List.map_append, List.map_cons] at hrest ⊢
   exact FlankReduce.del _ _ _ _ _ ha hb hab hrest
 
+/-- **`FlankReduce` is closed under consing.** Prepending the same head to both sides preserves the
+relation (every deletion's prefix just grows by one). Lets the chain-walk keep a fixed head while
+reducing the tail. -/
+public theorem FlankReduce.cons (s : SignType) {xs ys : List SignType} (h : FlankReduce xs ys) :
+    FlankReduce (s :: xs) (s :: ys) := by
+  induction h with
+  | refl l => exact .refl _
+  | del pre a m b rest ha hb hab _ ih =>
+      have hstep := FlankReduce.del (s :: pre) a m b rest ha hb hab
+        (by rw [List.cons_append]; exact ih)
+      rw [List.cons_append] at hstep
+      exact hstep
+
+section ChainWalk
+attribute [local instance] Classical.propDecidable
+
+/-- **Chain-walk reduction (the decoupled wall).** Walking a polynomial chain `a :: tail`, every
+*interior* member that vanishes at `c` — flanked (`hflank`) by neighbours of nonzero opposite sign
+at the evaluation point `z` — is deleted: the sign pattern at `z` `FlankReduce`s to that of the chain
+with those interior vanishers removed (the head is always kept). `hiso` records that no two
+consecutive members both vanish at `c` (Sturm chains satisfy this by consecutive coprimality);
+`hlast` records that the final member does not vanish at `c` (Sturm's last member is a nonzero
+constant). With these, the chain's `c⁻`/`c⁺` sign patterns both reduce to the *same* kept chain. -/
+public theorem flankReduce_chain_walk {c z : ℝ} :
+    ∀ (a : Polynomial ℝ) (tail : List (Polynomial ℝ)),
+    (∀ x m y, [x, m, y] <:+: (a :: tail) → m.eval c = 0 →
+        SignType.sign (x.eval z) ≠ 0 ∧ SignType.sign (y.eval z) ≠ 0 ∧
+        SignType.sign (x.eval z) ≠ SignType.sign (y.eval z)) →
+    (∀ x y, [x, y] <:+: (a :: tail) → ¬ (x.eval c = 0 ∧ y.eval c = 0)) →
+    (∀ q, (a :: tail).getLast? = some q → q.eval c ≠ 0) →
+    FlankReduce ((a :: tail).map (fun q => SignType.sign (q.eval z)))
+      ((a :: tail.filter (fun q => decide (q.eval c ≠ 0))).map
+        (fun q => SignType.sign (q.eval z))) := by
+  intro a tail
+  induction tail generalizing a with
+  | nil => intro _ _ _; simpa using FlankReduce.refl _
+  | cons m rest ih =>
+    intro hflank hiso hlast
+    by_cases hm : m.eval c = 0
+    · -- m vanishes: an interior vanisher (`rest ≠ []` since the last member never vanishes)
+      have hrest_ne : rest ≠ [] := by
+        rintro rfl
+        exact hlast m (by simp) hm
+      obtain ⟨b, rest', rfl⟩ := List.exists_cons_of_ne_nil hrest_ne
+      -- `b` is the right neighbour of the vanisher `m`; by `hiso` it does not vanish at `c`
+      have hbne : b.eval c ≠ 0 := by
+        intro hb0
+        exact hiso m b (by exact ⟨[a], rest', rfl⟩) ⟨hm, hb0⟩
+      -- flank signs at `z` from `hflank` on the triple `[a, m, b]`
+      obtain ⟨ha, hb, hab⟩ := hflank a m b ⟨[], rest', rfl⟩ hm
+      -- the kept list drops `m`
+      have hfilter : (m :: b :: rest').filter (fun q => decide (q.eval c ≠ 0))
+          = (b :: rest').filter (fun q => decide (q.eval c ≠ 0)) := by
+        simp [hm]
+      rw [hfilter]
+      -- hypotheses transfer to the reduced chain `a :: b :: rest'`
+      have hflank' : ∀ x mm y, [x, mm, y] <:+: (a :: b :: rest') → mm.eval c = 0 →
+          SignType.sign (x.eval z) ≠ 0 ∧ SignType.sign (y.eval z) ≠ 0 ∧
+          SignType.sign (x.eval z) ≠ SignType.sign (y.eval z) := by
+        intro x mm y hinf hmm0
+        rcases List.infix_cons_iff.mp hinf with hpre | hsuf
+        · -- prefix: x = a, mm = b — but `b` does not vanish, contradiction
+          obtain ⟨rfl, hpre2⟩ := List.cons_prefix_cons.mp hpre
+          obtain ⟨rfl, _⟩ := List.cons_prefix_cons.mp hpre2
+          exact absurd hmm0 hbne
+        · exact hflank x mm y (List.infix_cons_iff.mpr (Or.inr (List.infix_cons_iff.mpr (Or.inr hsuf)))) hmm0
+      have hiso' : ∀ x y, [x, y] <:+: (a :: b :: rest') → ¬ (x.eval c = 0 ∧ y.eval c = 0) := by
+        intro x y hinf
+        rcases List.infix_cons_iff.mp hinf with hpre | hsuf
+        · obtain ⟨rfl, hpre2⟩ := List.cons_prefix_cons.mp hpre
+          obtain ⟨rfl, _⟩ := List.cons_prefix_cons.mp hpre2
+          exact fun ⟨_, hb0⟩ => hbne hb0
+        · exact hiso x y (List.infix_cons_iff.mpr (Or.inr (List.infix_cons_iff.mpr (Or.inr hsuf))))
+      have hlast' : ∀ q, (a :: b :: rest').getLast? = some q → q.eval c ≠ 0 := by
+        intro q hq
+        apply hlast q
+        rw [List.getLast?_cons_cons, List.getLast?_cons_cons]
+        rw [List.getLast?_cons_cons] at hq
+        exact hq
+      exact flankReduce_eval_step [] rest' a m b ha hb hab (ih a hflank' hiso' hlast')
+    · -- m does not vanish: kept; recurse on `(m, rest)` and re-cons `a`
+      have hfilter : (m :: rest).filter (fun q => decide (q.eval c ≠ 0))
+          = m :: rest.filter (fun q => decide (q.eval c ≠ 0)) := by
+        simp [hm]
+      rw [hfilter]
+      have hflank' : ∀ x mm y, [x, mm, y] <:+: (m :: rest) → mm.eval c = 0 →
+          SignType.sign (x.eval z) ≠ 0 ∧ SignType.sign (y.eval z) ≠ 0 ∧
+          SignType.sign (x.eval z) ≠ SignType.sign (y.eval z) :=
+        fun x mm y hinf => hflank x mm y (List.infix_cons_iff.mpr (Or.inr hinf))
+      have hiso' : ∀ x y, [x, y] <:+: (m :: rest) → ¬ (x.eval c = 0 ∧ y.eval c = 0) :=
+        fun x y hinf => hiso x y (List.infix_cons_iff.mpr (Or.inr hinf))
+      have hlast' : ∀ q, (m :: rest).getLast? = some q → q.eval c ≠ 0 := by
+        intro q hq
+        apply hlast q
+        rw [List.getLast?_cons_cons]
+        exact hq
+      simpa [List.map_cons] using FlankReduce.cons (SignType.sign (a.eval z)) (ih m hflank' hiso' hlast')
+
+end ChainWalk
+
 /-! ## Domain-wall view: `signChanges` as a local additive sum (BPR sign-variation theory in Lean)
 
 Following classical real-algebraic-geometry sign-variation theory (Basu–Pollack–Roy; sign-change
