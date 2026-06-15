@@ -541,8 +541,9 @@ Estos tres hechos, probados por inducci\'on sobre la recursi\'on definitoria, so
 consumen el Lema~\ref{lem:antipodal} y la inducci\'on global.
 
 \begin{table}[h]
-\centering\small
+\centering
 \rowcolors{2}{ggband!35}{white}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
 \rowcolor{ggteal!18} nombre Lean & enunciado & papel \\
@@ -561,7 +562,7 @@ consumen el Lema~\ref{lem:antipodal} y la inducci\'on global.
 \lean{sturmAux\_getLast\_isUnit} & \'ultimo miembro constante no nula & estructura \\
 \lean{signVariations\_eq\_signChanges} & $=$ conteo de Descartes (por \lean{rfl}) & puente (\S\ref{sec:q4}) \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{Los resultados que sostienen todo, libres de \lean{sorry} en \lean{Sturm.lean}. Los axiomas
 de cada entrada son solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}; sin
 \lean{native\_decide}, sin axioma propio.}

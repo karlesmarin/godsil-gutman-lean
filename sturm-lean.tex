@@ -530,8 +530,9 @@ These three facts, proved by induction on the defining recursion, are exactly wh
 Lemma~\ref{lem:antipodal} and the global induction consume.
 
 \begin{table}[h]
-\centering\small
+\centering
 \rowcolors{2}{ggband!35}{white}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
 \rowcolor{ggteal!18} Lean name & statement & role \\
@@ -550,7 +551,7 @@ Lemma~\ref{lem:antipodal} and the global induction consume.
 \lean{sturmAux\_getLast\_isUnit} & last member a nonzero constant & structure \\
 \lean{signVariations\_eq\_signChanges} & $=$ Descartes' count (by \lean{rfl}) & bridge (\S\ref{sec:q4}) \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{The load-bearing results, all \lean{sorry}-free in \lean{Sturm.lean}. The axioms of every
 entry are \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} only; no \lean{native\_decide},
 no custom axiom.}
