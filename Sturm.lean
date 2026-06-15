@@ -194,6 +194,36 @@ public theorem eventually_sign_eval_simple_root {p : Polynomial ℝ} {α : ℝ}
     rw [← hfac]; simp [eval_mul, eval_sub, eval_X, eval_C]
   rw [hpx, sign_mul, hx, hgα]
 
+/-! ## P3' — sign-variation combinatorics (toward the V-drop)
+
+Factor `signVarAt` through a pure `signChanges : List SignType → ℕ` and prove the bookkeeping
+facts the V-drop needs: zeros are invisible, and a three-term window with opposite nonzero ends
+always shows exactly one variation regardless of its middle (the interior-root cancellation from
+P1's antipodal property, in combinatorial form). -/
+
+/-- Sign changes in a raw list of signs: drop the zeros, then count adjacent differences. -/
+public def signChanges (s : List SignType) : ℕ :=
+  ((s.filter (· ≠ 0)).destutter (· ≠ ·)).length - 1
+
+/-- `signVarAt` is `signChanges` of the evaluated sign pattern. -/
+public theorem signVarAt_eq_signChanges (L : List (Polynomial ℝ)) (x : ℝ) :
+    signVarAt L x = signChanges (L.map fun p => SignType.sign (p.eval x)) := by
+  unfold signVarAt signChanges
+  rfl
+
+/-- A leading zero is invisible to `signChanges`. -/
+@[simp] public theorem signChanges_cons_zero (s : List SignType) :
+    signChanges (0 :: s) = signChanges s := by
+  unfold signChanges
+  rw [List.filter_cons_of_neg (by decide)]
+
+/-- **Interior cancellation, combinatorial form.** A three-term window whose ends are nonzero and
+opposite shows exactly one sign change, whatever its middle term is. -/
+public theorem signChanges_triple {a m b : SignType} (ha : a ≠ 0) (hb : b ≠ 0) (hab : a ≠ b) :
+    signChanges [a, m, b] = 1 := by
+  revert ha hb hab
+  rcases a with _ | _ <;> rcases m with _ | _ <;> rcases b with _ | _ <;> decide
+
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
 -/
