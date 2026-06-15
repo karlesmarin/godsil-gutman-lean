@@ -36,6 +36,7 @@ public import RealStable
 public import Mathlib.Algebra.Polynomial.Derivative
 public import Mathlib.Algebra.Polynomial.FieldDivision
 public import Mathlib.Algebra.Polynomial.Roots
+public import Mathlib.Algebra.Polynomial.RuleOfSigns
 public import Mathlib.Algebra.Squarefree.Basic
 public import Mathlib.FieldTheory.Separable
 public import Mathlib.FieldTheory.Perfect
@@ -475,6 +476,30 @@ public theorem signVarAt_drop_at_simple_root {p : Polynomial ℝ} {α a b : ℝ}
     intro h; have := hp_right b ⟨hαb.le, le_refl b⟩ h; linarith
   rw [hseq]
   exact signVarAt_cons_head_drop hpa0 hpb0 hne htaileq hfirst
+
+/-! ## Playground — what else falls out of the machinery -/
+
+/-- **Bolzano, sign form.** A sign change of `p` between `a` and `b` forces a real root in `[a,b]`
+(contrapositive of local constancy). -/
+public theorem exists_root_of_sign_ne {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
+    (h : SignType.sign (p.eval a) ≠ SignType.sign (p.eval b)) :
+    ∃ x ∈ Set.Icc a b, p.eval x = 0 := by
+  by_contra hcon
+  exact h (sign_eval_eq_of_no_root hab (fun x hx hx0 => hcon ⟨x, hx, hx0⟩))
+
+/-- **Bridge to Descartes' rule of signs.** Mathlib's `signVariations` (sign changes of the
+coefficient list) is exactly our `signChanges` of the mapped coefficient signs — so the whole
+`signChanges` toolkit (zeros invisible, interior cancellation, head recursion) transfers to it. -/
+public theorem signVariations_eq_signChanges (P : Polynomial ℝ) :
+    P.signVariations = signChanges (P.coeffList.map SignType.sign) := by
+  unfold Polynomial.signVariations signChanges
+  rfl
+
+/-- A simple corollary of the bridge: the sign-variation count of the coefficients is invariant
+under prepending a zero sign (the `signChanges` lemma, now visible for Descartes). -/
+public theorem signChanges_coeff_cons_zero (P : Polynomial ℝ) :
+    signChanges (0 :: P.coeffList.map SignType.sign) = P.signVariations := by
+  rw [signChanges_cons_zero, signVariations_eq_signChanges]
 
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
