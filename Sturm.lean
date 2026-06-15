@@ -447,6 +447,39 @@ public theorem signVarAt_middle_irrelevant (pre rest : List (Polynomial ℝ)) (p
   rw [signVarAt_remove_middle pre rest pa pm pb ha hb hab,
       signVarAt_remove_middle pre rest pa pm' pb ha hb hab]
 
+/-! ## Domain-wall view: `signChanges` as a local additive sum (BPR sign-variation theory in Lean)
+
+Following classical real-algebraic-geometry sign-variation theory (Basu–Pollack–Roy; sign-change
+decomposition formalized in Coq, "Theorem of three circles") — first in Lean. On a zero-free list,
+`signChanges` equals the local count of adjacent disagreements (`wallCount`), an additive sum that
+makes the two-point comparison decouple. -/
+
+/-- The local count of adjacent disagreements (`±1` domain walls; no zeros dropped). -/
+public def wallCount : List SignType → ℕ
+  | [] => 0
+  | [_] => 0
+  | a :: b :: t => (if a = b then 0 else 1) + wallCount (b :: t)
+
+/-- On a **zero-free** list, `signChanges` is the local additive `wallCount` (head recursion). -/
+public theorem signChanges_eq_wallCount_of_zero_free :
+    ∀ f : List SignType, (0 : SignType) ∉ f → signChanges f = wallCount f
+  | [], _ => by simp [signChanges, wallCount]
+  | [a], _ => by rcases eq_or_ne a 0 with h | h <;> simp [signChanges, wallCount, h]
+  | a :: b :: t, hf => by
+      have ha : a ≠ 0 := fun h => hf (h ▸ List.mem_cons_self ..)
+      have hb : b ≠ 0 := fun h => hf (h ▸ List.mem_cons_of_mem a (List.mem_cons_self ..))
+      have hbt : (0 : SignType) ∉ (b :: t) := fun h => hf (List.mem_cons_of_mem a h)
+      have ih := signChanges_eq_wallCount_of_zero_free (b :: t) hbt
+      rw [signChanges_cons_of_ne_zero ha (filter_ne_zero_head?_cons hb t), wallCount, ih,
+        Nat.add_comm]
+
+/-- **The additive bridge.** `signChanges s = wallCount (nonzero filtrate of s)`. -/
+public theorem signChanges_eq_wallCount (s : List SignType) :
+    signChanges s = wallCount (s.filter (· ≠ 0)) := by
+  have h1 : signChanges s = signChanges (s.filter (· ≠ 0)) := by
+    unfold signChanges; rw [List.filter_filter]; simp
+  rw [h1, signChanges_eq_wallCount_of_zero_free _ (by simp [List.mem_filter])]
+
 /-! ## Local root-crossing (closing P3 for one simple root, generic position) -/
 
 /-- Just to the right of a simple root, `p` carries the sign of `p'(α)`. -/
