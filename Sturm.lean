@@ -297,12 +297,34 @@ public theorem sturmAux_cons {p q : Polynomial ℝ} (hq : q ≠ 0) :
     sturmAux p q = p :: sturmAux q (-(p % q)) := by
   rw [sturmAux]; rw [dif_neg hq]
 
-/-- The Sturm sequence starts with `p`. -/
-public theorem sturmSeq_head? (p : Polynomial ℝ) : (sturmSeq p).head? = some p := by
-  unfold sturmSeq
-  rcases eq_or_ne (derivative p) 0 with h | h
+/-- Every chain `sturmAux p q` starts with `p`. -/
+public theorem sturmAux_head? (p q : Polynomial ℝ) : (sturmAux p q).head? = some p := by
+  rcases eq_or_ne q 0 with h | h
   · rw [h, sturmAux_zero]; rfl
   · rw [sturmAux_cons h]; rfl
+
+/-- The Sturm sequence starts with `p`. -/
+public theorem sturmSeq_head? (p : Polynomial ℝ) : (sturmSeq p).head? = some p :=
+  sturmAux_head? _ _
+
+/-- **Root-crossing bridge.** If, between two points `x` and `y`, only the head polynomial `p`
+changes sign (the rest of the list keeps its signs), `p` is nonzero at both, and the head sign at
+`y` equals the first surviving sign of the tail, then `V` is exactly one larger at `x`. This lifts
+the combinatorial `signChanges_head_drop` to the evaluated sign lists — the `-1` of `V` across a
+simple root of `p`, in generic position. -/
+public theorem signVarAt_cons_head_drop {p : Polynomial ℝ} {tail : List (Polynomial ℝ)} {x y : ℝ}
+    (hpx0 : p.eval x ≠ 0) (hpy0 : p.eval y ≠ 0)
+    (hne : SignType.sign (p.eval x) ≠ SignType.sign (p.eval y))
+    (htail : tail.map (fun q => SignType.sign (q.eval x))
+           = tail.map (fun q => SignType.sign (q.eval y)))
+    (hfirst : ((tail.map (fun q => SignType.sign (q.eval y))).filter (· ≠ 0)).head?
+                = some (SignType.sign (p.eval y))) :
+    signVarAt (p :: tail) x = signVarAt (p :: tail) y + 1 := by
+  simp only [signVarAt_eq_signChanges, List.map_cons]
+  rw [htail]
+  exact signChanges_head_drop
+    (by rw [Ne, sign_eq_zero_iff]; exact hpx0)
+    (by rw [Ne, sign_eq_zero_iff]; exact hpy0) hne hfirst
 
 /-- **Sturm's theorem.** For squarefree `p` and `a < b` with neither endpoint a root of `p`, the
 drop in sign variations of the Sturm sequence equals the number of distinct real roots in `(a, b]`.
