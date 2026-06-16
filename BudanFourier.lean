@@ -50,7 +50,7 @@ open Polynomial
 namespace BudanFourier
 
 /-- The **Fourier sequence** (derivative tower) of `p`: `p, p', p'', …, p^(deg p)`. -/
-public noncomputable def fourierSeq (p : Polynomial ℝ) : List (Polynomial ℝ) :=
+@[expose] public noncomputable def fourierSeq (p : Polynomial ℝ) : List (Polynomial ℝ) :=
   (List.range (p.natDegree + 1)).map (fun k => (derivative^[k]) p)
 
 /-- The Fourier sequence has `deg p + 1` entries. -/
