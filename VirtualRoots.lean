@@ -38,6 +38,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Polynomial
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 public import Mathlib.Topology.Algebra.Polynomial
 public import Mathlib.Topology.Order.Compact
+public import Mathlib.Topology.Order.IntermediateValue
 -- (`BudanFourier` will be imported at the exact-count milestone, for `fourierVar`.)
 
 open Polynomial
@@ -119,6 +120,27 @@ public theorem R_eval_eq_zero_of_exists {p : Polynomial ℝ} {a b : ℝ} (hab : 
   have hle : |p.eval (R p a b)| ≤ |p.eval z| := (isMinOn_iff.mp (R_isMinOn (p := p) hab)) z hz
   rw [hpz, abs_zero] at hle
   exact abs_eq_zero.mp (le_antisymm hle (abs_nonneg _))
+
+/-! ## The root case of `ℛ_d` (milestone 1, brick 3a)
+
+When `P` changes sign across the interval, `ℛ_d(a,b,P)` is an actual root of `P`. This is the case
+that makes a virtual root coincide with a real root, and it is what the recursive `ρ` produces on each
+`P'`-monotone interval on which `P` crosses zero. It follows from the intermediate value theorem
+(existence of a root) and `R_eval_eq_zero_of_exists`. -/
+
+/-- If `P(a) ≤ 0 ≤ P(b)` on `[a,b]`, then `ℛ_d(a,b,P)` is a root of `P`. -/
+public theorem R_eval_eq_zero_of_le_zero_le {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
+    (ha : p.eval a ≤ 0) (hb : 0 ≤ p.eval b) : p.eval (R p a b) = 0 := by
+  have hcont : ContinuousOn (fun x => p.eval x) (Set.Icc a b) := p.continuous.continuousOn
+  obtain ⟨c, hc, hpc⟩ := intermediate_value_Icc hab hcont ⟨ha, hb⟩
+  exact R_eval_eq_zero_of_exists hab ⟨c, hc, hpc⟩
+
+/-- If `P(b) ≤ 0 ≤ P(a)` on `[a,b]`, then `ℛ_d(a,b,P)` is a root of `P`. -/
+public theorem R_eval_eq_zero_of_ge_zero_ge {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
+    (ha : 0 ≤ p.eval a) (hb : p.eval b ≤ 0) : p.eval (R p a b) = 0 := by
+  have hcont : ContinuousOn (fun x => p.eval x) (Set.Icc a b) := p.continuous.continuousOn
+  obtain ⟨c, hc, hpc⟩ := intermediate_value_Icc' hab hcont ⟨hb, ha⟩
+  exact R_eval_eq_zero_of_exists hab ⟨c, hc, hpc⟩
 
 /-! ## Roadmap (next milestones)
 
