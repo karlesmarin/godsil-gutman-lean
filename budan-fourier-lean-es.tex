@@ -645,16 +645,17 @@ Akritas~\cite{vincent,collinsakritas} querr\'ia el puente honesto?
 \item \emph{Portar la unificaci\'on conocida, no atribu\'irsela.} Que los recuentos de Descartes,
 Budan--Fourier y Sturm son facetas de un \'unico principio de variaci\'on de signo es cl\'asico, no
 m\'io---lo dicen sin rodeos Akritas~\cite{akritas} y Basu--Pollack--Roy~\cite{bpr}---y el invariante
-unificador profundo, el \emph{\'indice de Cauchy}, est\'a axiomatizado mediante \emph{cadenas de Sturm}
-abstractas por Eisermann~\cite{eisermann} y \emph{ya} se ha verificado por m\'aquina, en Isabelle/HOL,
-por Li y Paulson~\cite{liCauchy}. Lo que falta es una formalizaci\'on en \emph{Lean} de ese marco. Una
-sub-pregunta, eso s\'i, queda genuinamente abierta y es propia de este trabajo: los \emph{bloques que se
-anulan} de la torre rompen la coprimalidad en que se apoyan los axiomas cl\'asicos de cadena de
-Sturm---¿los satisfacen igual, o fuerzan un conjunto estrictamente m\'as d\'ebil en el que el
-colapso/alternancia de la Secci\'on~\ref{sec:q2} sea la ley local general (de modo que
-\lean{Rseq}/\lean{Lseq} sean lo primitivo y \lean{FlankReduce} un caso degenerado)? El objetivo honesto
-es llevar una unificaci\'on conocida a Mathlib, y hallar los axiomas m\'as d\'ebiles que la torre
-fuerza.
+profundo, el \emph{\'indice de Cauchy}, est\'a axiomatizado mediante \emph{cadenas de Sturm} abstractas
+por Eisermann~\cite{eisermann} y \emph{ya} se ha verificado por m\'aquina, en Isabelle/HOL, por Li y
+Paulson~\cite{liCauchy}. Lo que falta es una formalizaci\'on en \emph{Lean}. Y aqu\'i la torre no es solo
+una instancia m\'as: el axioma de cadena de Sturm de Eisermann (su Def.~3.10) exige que cuando un
+miembro \emph{interior} se anula, sus vecinos sean estrictamente opuestos, $S_{k-1}\,S_{k+1}<0$---de modo
+que no se anulen dos miembros consecutivos a la vez. La torre de derivadas \emph{viola} esto en toda
+ra\'iz m\'ultiple, donde $p$ y $p'$ se anulan a la vez; no es una cadena de Sturm en el sentido
+cl\'asico. La pregunta abierta honesta es entonces precisa: ¿cu\'al es el axioma m\'as d\'ebil que a\'un
+fuerza la ca\'ida local, con el colapso/alternancia de bloque de la Secci\'on~\ref{sec:q2} (los lemas
+\lean{Rseq\_spec}/\lean{Lseq\_spec}) como ley local general y la condici\'on antipodal de Eisermann como
+su caso especial no degenerado?
 
 \item \emph{Qu\'e es realmente el desacoplamiento.} \lean{Rseq}/\lean{Lseq} separaron la combinatoria de
 reescribir una lista de signos del \'algebra que licencia cada reescritura, exactamente como

@@ -627,16 +627,18 @@ continued-fraction machinery of Vincent and Akritas~\cite{vincent,collinsakritas
 bridge want?
 
 \item \emph{Porting the known unification, not claiming it.} That Descartes', Budan--Fourier's and
-Sturm's counts are facets of one sign-variation principle is classical, not mine---it is said plainly by
-Akritas~\cite{akritas} and Basu--Pollack--Roy~\cite{bpr}---and the deeper unifying invariant, the
-\emph{Cauchy index}, is axiomatised through abstract \emph{Sturm chains} by Eisermann~\cite{eisermann}
-and has \emph{already} been machine-checked, in Isabelle/HOL, by Li and Paulson~\cite{liCauchy}. What is
-missing is a \emph{Lean} formalisation of that framework. One sub-question, though, is genuinely open and
-specific to this work: the derivative tower's \emph{vanishing blocks} break the coprimality the classical
-Sturm-chain axioms lean on---do they still satisfy those axioms, or do they force a strictly weaker
-axiom set in which the collapse/alternation of Section~\ref{sec:q2} is the general local law (so that
-\lean{Rseq}/\lean{Lseq} are the primitive and \lean{FlankReduce} a degenerate case)? The honest target
-is to carry a known unification into Mathlib, and to find the weakest axioms the tower forces.
+Sturm's counts are facets of one sign-variation principle is classical, not mine---said plainly by
+Akritas~\cite{akritas} and Basu--Pollack--Roy~\cite{bpr}---and the deeper invariant, the \emph{Cauchy
+index}, is axiomatised through abstract \emph{Sturm chains} by Eisermann~\cite{eisermann} and has
+\emph{already} been machine-checked, in Isabelle/HOL, by Li and Paulson~\cite{liCauchy}. What is missing
+is a \emph{Lean} formalisation. And here the tower is not merely one more instance: Eisermann's
+Sturm-chain axiom (his Def.~3.10) demands that whenever an \emph{interior} member vanishes, its
+neighbours be strictly opposite, $S_{k-1}\,S_{k+1}<0$---so no two consecutive members may vanish
+together. The derivative tower \emph{violates} this at every multiple root, where $p$ and $p'$ vanish
+at once; it is not a Sturm chain in the classical sense. The honest open question is then sharp: what is
+the weakest axiom that still forces the local drop, with the block collapse/alternation of
+Section~\ref{sec:q2} (the lemmas \lean{Rseq\_spec}/\lean{Lseq\_spec}) as the general local law and
+Eisermann's antipodal condition as its non-degenerate special case?
 
 \item \emph{What the decoupling really is.} \lean{Rseq}/\lean{Lseq} separated the combinatorics of
 rewriting a sign list from the algebra licensing each rewrite, exactly as \lean{FlankReduce} did for
