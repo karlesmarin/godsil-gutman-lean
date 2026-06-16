@@ -491,7 +491,18 @@ are the foundation on which the same could be built over Mathlib. Nothing in thi
 isolator---that is named honestly among the open questions---but the load-bearing lemma it would
 stand on is now in the library.
 
-\begin{table}[htbp]
+\section{The building blocks}\label{sec:blocks}
+
+Table~\ref{tab:results} gathers the load-bearing results, all \lean{sorry}-free in
+\lean{BudanFourier.lean}; Table~\ref{tab:signsB} reads Example B off its tower, the smallest witness of
+the even surplus; Table~\ref{tab:metrics} measures the development. The dependency runs as the
+reader's map (Figure~\ref{fig:readermap}): the two monotonicity bricks feed the per-member sign
+recursions, which feed \lean{signs\_right\_eq\_Rseq}/\lean{signs\_left\_eq\_Lseq}; these, with the
+pure-list \lean{Rseq\_spec}/\lean{Lseq\_spec} and the multiplicity identification, give the local
+drop \lean{fourierVar\_drop\_at\_critical\_point}; and the global induction over critical points
+assembles \lean{budan\_fourier}.
+
+\begin{table}[H]
   \centering\small
   \arrayrulecolor{ggteal}
   \caption{The load-bearing results, all \lean{sorry}-free in \lean{BudanFourier.lean} (Lean~4 /
@@ -521,18 +532,7 @@ stand on is now in the library.
   \arrayrulecolor{black}
 \end{table}
 
-\section{The building blocks}\label{sec:blocks}
-
-Table~\ref{tab:results} gathers the load-bearing results, all \lean{sorry}-free in
-\lean{BudanFourier.lean}; Table~\ref{tab:signsB} reads Example B off its tower, the smallest witness of
-the even surplus; Table~\ref{tab:metrics} measures the development. The dependency runs as the
-reader's map (Figure~\ref{fig:readermap}): the two monotonicity bricks feed the per-member sign
-recursions, which feed \lean{signs\_right\_eq\_Rseq}/\lean{signs\_left\_eq\_Lseq}; these, with the
-pure-list \lean{Rseq\_spec}/\lean{Lseq\_spec} and the multiplicity identification, give the local
-drop \lean{fourierVar\_drop\_at\_critical\_point}; and the global induction over critical points
-assembles \lean{budan\_fourier}.
-
-\begin{table}[htbp]
+\begin{table}[H]
 \centering\small
 \rowcolors{2}{ggband!35}{white}
 \begin{tabular}{@{}rcccr@{}}
@@ -554,7 +554,7 @@ and the surplus is even: the signature of a conjugate pair, and exactly the
 \label{tab:signsB}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[H]
   \centering\small
   \arrayrulecolor{ggteal}
   \caption{The development measured. Compile time is for checking \lean{BudanFourier.lean} against a
