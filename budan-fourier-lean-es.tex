@@ -431,6 +431,20 @@ constante no nula, de modo que la racha siempre termina. \emph{Tercera}, una tra
 de Lean: reescribir bajo \lean{List.getLast}, cuyo valor carga una prueba de que la lista es no vac\'ia,
 no es un \lean{rw} sin m\'as; la dependencia obliga a \lean{simp} o a una congruencia expl\'icita.
 
+\begin{remark}[la torre no es una cadena de Sturm]\label{rem:notsturm}
+Conviene precisar cu\'anto dista la torre del marco cl\'asico. La \emph{cadena de Sturm} abstracta de
+Eisermann~\cite{eisermann} debe satisfacer un axioma (su Def.~3.10): siempre que un miembro
+\emph{interior} $S_k$ se anula en un punto, sus vecinos son estrictamente opuestos all\'i,
+$S_{k-1}\,S_{k+1}<0$---de modo que no hay dos miembros consecutivos que se anulen a la vez. La torre de
+derivadas lo incumple en cada ra\'iz m\'ultiple. Para $p_A=(x-1)^2(x+1)$ el miembro interior $p_A'$ se
+anula en $x=1$, pero $p_A(1)\,p_A''(1)=0\not<0$, porque $p_A$ y $p_A'$ se anulan all\'i \emph{a la vez}.
+As\'i que la torre no es una cadena de Sturm; la ca\'ida de cabeza de un solo par que prueba el teorema
+de Sturm no aplica; y el colapso/alternancia por bloques de la Secci\'on~\ref{sec:q2}---\lean{Rseq}/%
+\lean{Lseq}---es exactamente la ley local que toma el relevo una vez que se permite degenerar la
+condici\'on antipodal de Eisermann. Este es el sentido preciso en que difieren los an\'alisis locales de
+los dos papers, y el punto de partida de la pregunta abierta de la Secci\'on~\ref{sec:questions}.
+\end{remark}
+
 \emph{Lo que la m\'aquina me oblig\'o a enunciar bien.} Como con Sturm, formalizar prohibi\'o el gesto
 de genericidad---``desliza los extremos a puntos no cr\'iticos''---y premi\'o enunciar la ca\'ida local
 al nivel m\'as d\'ebil honesto. \lean{fourierVar\_drop\_at\_critical\_point} se prueba para un punto
@@ -509,6 +523,17 @@ de Lean de aqu\'i son el cimiento sobre el que lo mismo podr\'ia construirse sob
 paper construye el aislador---eso se nombra honestamente entre las preguntas abiertas---pero el lema que
 soportar\'ia su peso est\'a ya en la biblioteca.
 
+\section{Las piezas}\label{sec:blocks}
+
+La Tabla~\ref{tab:results} re\'une los resultados que soportan el peso, todos \lean{sorry}-free en
+\lean{BudanFourier.lean}; la Tabla~\ref{tab:signsB} lee el Ejemplo B sobre su torre, el testigo m\'as
+peque\~no del excedente par; la Tabla~\ref{tab:metrics} mide el desarrollo. La dependencia corre como el
+mapa del lector (Figura~\ref{fig:readermap}): los dos ladrillos de monoton\'ia alimentan las
+recursiones de signo por miembro, que alimentan \lean{signs\_right\_eq\_Rseq}/\lean{signs\_left\_eq\_Lseq};
+estas, con las puras \lean{Rseq\_spec}/\lean{Lseq\_spec} y la identificaci\'on de la multiplicidad, dan
+la ca\'ida local \lean{fourierVar\_drop\_at\_critical\_point}; y la inducci\'on global sobre los puntos
+cr\'iticos ensambla \lean{budan\_fourier}.
+
 \begin{table}[H]
   \centering\small
   \arrayrulecolor{ggteal}
@@ -538,17 +563,6 @@ soportar\'ia su peso est\'a ya en la biblioteca.
   teorema de Budan--Fourier en Lean.}
   \label{tab:results}
 \end{table}
-
-\section{Las piezas}\label{sec:blocks}
-
-La Tabla~\ref{tab:results} re\'une los resultados que soportan el peso, todos \lean{sorry}-free en
-\lean{BudanFourier.lean}; la Tabla~\ref{tab:signsB} lee el Ejemplo B sobre su torre, el testigo m\'as
-peque\~no del excedente par; la Tabla~\ref{tab:metrics} mide el desarrollo. La dependencia corre como el
-mapa del lector (Figura~\ref{fig:readermap}): los dos ladrillos de monoton\'ia alimentan las
-recursiones de signo por miembro, que alimentan \lean{signs\_right\_eq\_Rseq}/\lean{signs\_left\_eq\_Lseq};
-estas, con las puras \lean{Rseq\_spec}/\lean{Lseq\_spec} y la identificaci\'on de la multiplicidad, dan
-la ca\'ida local \lean{fourierVar\_drop\_at\_critical\_point}; y la inducci\'on global sobre los puntos
-cr\'iticos ensambla \lean{budan\_fourier}.
 
 \begin{table}[H]
 \centering\small
