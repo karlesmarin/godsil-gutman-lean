@@ -65,7 +65,7 @@ public noncomputable def sturmSeq (p : Polynomial ℝ) : List (Polynomial ℝ) :
 
 /-- Sign variations of a list of polynomials **evaluated** at `x`: count sign changes in
 `L.map (eval x)`, ignoring zeros. Eval-analogue of `Polynomial.signVariations`. -/
-public noncomputable def signVarAt (L : List (Polynomial ℝ)) (x : ℝ) : ℕ :=
+@[expose] public noncomputable def signVarAt (L : List (Polynomial ℝ)) (x : ℝ) : ℕ :=
   (((L.map (fun p => SignType.sign (p.eval x))).filter (· ≠ 0)).destutter (· ≠ ·)).length - 1
 
 /-! ## P1 — chain algebra

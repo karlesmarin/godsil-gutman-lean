@@ -15,6 +15,12 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4" @ "701fb6e9c3b9285968b375d19886bfc5ca134840"
 
 @[default_target]
+lean_lib «Sturm» where
+  -- Sturm's theorem (real-root counting via the signed-remainder chain). First in Lean.
+  -- Exposes the reusable sign-variation toolkit (signVarAt, signChanges, wallCount) that the
+  -- Budan–Fourier development imports and reuses on the derivative tower.
+
+@[default_target]
 lean_lib «RealStable» where
   -- RealRooted predicate + closure algebra + Interlaces (pencil form).
   -- Foundation toward Heilmann–Lieb (real-rootedness), used by MatchingPoly.
