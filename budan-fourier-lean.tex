@@ -422,6 +422,20 @@ run always terminates. \emph{Third}, a small but real Lean trap: rewriting under
 whose value carries a proof that the list is nonempty, is not a plain \lean{rw}; the dependency forces
 \lean{simp} or an explicit congruence.
 
+\begin{remark}[the tower is not a Sturm chain]\label{rem:notsturm}
+It is worth pinning down how far the tower sits from the classical setting. Eisermann's abstract
+\emph{Sturm chain}~\cite{eisermann} must satisfy one axiom (his Def.~3.10): whenever an \emph{interior}
+member $S_k$ vanishes at a point, its neighbours are strictly opposite there, $S_{k-1}\,S_{k+1}<0$---so
+no two consecutive members vanish together. The derivative tower fails this at every multiple root. For
+$p_A=(x-1)^2(x+1)$ the interior member $p_A'$ vanishes at $x=1$, yet $p_A(1)\,p_A''(1)=0\not<0$, because
+$p_A$ and $p_A'$ vanish there \emph{at once}. So the tower is not a Sturm chain; the single-pair
+head-drop that proves Sturm's theorem does not apply; and the block collapse/alternation of
+Section~\ref{sec:q2}---\lean{Rseq}/\lean{Lseq}---is exactly the local law that takes over once
+Eisermann's antipodal condition is allowed to degenerate. This is the precise sense in which the two
+papers' local analyses differ, and the starting point of the open question in
+Section~\ref{sec:questions}.
+\end{remark}
+
 \emph{What the machine made me state correctly.} As with Sturm, formalizing forbade the genericity
 hand-wave---``slide the endpoints to non-critical points''---and rewarded stating the local drop at
 the weakest honest level. \lean{fourierVar\_drop\_at\_critical\_point} is proved for a critical point
