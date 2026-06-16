@@ -90,32 +90,6 @@ teor\'ia certificada---el entrelazado de Rolle, y el camino al recuento exacto
 Secci\'on~\ref{sec:boundary}; y el cierre plantea las preguntas que vale la pena llevarse. Si solo lees
 dos cosas, lee el entrelazado (Teorema~\ref{thm:interlace}) y la Figura~\ref{fig:fillin}.
 
-\begin{figure}[htbp]
-\centering
-\begin{tikzpicture}[
-  obj/.style={draw=ggteal,thick,rounded corners=2pt,fill=ggband!40,align=center,
-    font=\small,inner sep=4pt,minimum height=11mm,text width=24mm},
-  q/.style={font=\scriptsize\itshape,text=ggamber!80!black,align=center,fill=white,inner sep=1pt},
-  arr/.style={-{Stealth[length=2.4mm]},thick,ggteal}]
-  \node[obj] (def) {¿qu\'e es una\\ra\'iz virtual?};
-  \node[obj,right=33mm of def] (build) {constr\'uyela:\\recursi\'on $\Rd_d$};
-  \node[obj,right=33mm of build] (resist) {¿qu\'e se\\resiste?};
-  \node[obj,below=15mm of resist] (give) {entrelazado\\de Rolle};
-  \node[obj,left=33mm of give] (next) {recuento\\exacto (luego)};
-  \node[obj,left=33mm of next,fill=ggamber!25,draw=ggamber] (done)
-    {\textbf{$d$ ra\'ices,}\\\textbf{ordenadas,}\\\textbf{verificadas}};
-  \draw[arr] (def) -- node[q,above=2pt] {P1:\\¿exact.\,$d$?} (build);
-  \draw[arr] (build) -- node[q,above=2pt] {P2:\\¿c\'omo?} (resist);
-  \draw[arr] (resist) -- node[q,right=2pt,fill=none] {P3:\\¿resiste?} (give);
-  \draw[arr] (give) -- node[q,above=2pt] {P4:\\¿luego?} (next);
-  \draw[arr] (next) -- (done);
-\end{tikzpicture}
-\caption{El mapa del lector. De la definici\'on de ra\'iz virtual a una familia certificada y ordenada
-de exactamente $d$ con el entrelazado de Rolle; el recuento exacto de Budan--Fourier es la cuenta que
-se entrega a la secuela. Cada nodo sombreado es un bloque de Lean \lean{sorry}-free.}
-\label{fig:readermap}
-\end{figure}
-
 \section{La pregunta que lo inicia}\label{sec:intro}
 
 \emph{Cuenta hist\'orica.} Budan~\cite{budan} y Fourier~\cite{fourier} sab\'ian acotar el n\'umero de
@@ -144,6 +118,7 @@ concreta como para que un asistente de pruebas la acepte, y por qu\'e siempre ha
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[scale=0.95]
+  \useasboundingbox (-2.9,-0.95) rectangle (2.9,3.1);
   \draw[->,thick] (-2.6,0) -- (2.6,0) node[right,font=\small] {$x$};
   \draw[->,thick] (0,-0.4) -- (0,3.0) node[above,font=\small] {$y$};
   \draw[ggteal,very thick,domain=-1.55:1.55,samples=80] plot (\x,{\x*\x+1});
@@ -331,7 +306,7 @@ ladrillos de monoton\'ia dan la existencia y las dos propiedades de $\Rd_d$; la 
 \lean{vroots\_chain\_mem} prueba orden y rango a la vez; y la localizaci\'on por \'indice da el
 entrelazado.
 
-\begin{table}[H]
+\begin{table}[htbp]
   \centering\small
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}llc@{}}
@@ -362,7 +337,7 @@ entrelazado.
   \label{tab:results}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
   \centering\small
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}lc@{}}
