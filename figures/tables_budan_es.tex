@@ -1,0 +1,114 @@
+% Tablas para el artículo de formalización de Budan--Fourier.
+% Requiere \usepackage{booktabs,amsmath,amssymb} y \usepackage[table]{xcolor}
+% en el preámbulo, con los colores ggteal / ggband definidos, y
+%   \newcommand{\V}{\mathrm{V}}  \newcommand{\lean}[1]{\texttt{#1}}
+
+% ---------- Tabla 1: resultados formalizados ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{Los resultados que soportan el peso, todos \lean{sorry}-free en \lean{BudanFourier.lean}
+  (Lean~4 / Mathlib). \lean{\#print axioms BudanFourier.budan\_fourier} reporta solo
+  \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. Hasta donde sabemos, es la primera
+  formalización del teorema de Budan--Fourier en Lean.}
+  \label{tab:results}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Nombre Lean}} & \textcolor{white}{\textbf{Enunciado}} & \textcolor{white}{\textbf{Estado}} \\
+    \midrule
+    \rowcolor{ggband}
+    \lean{budan\_fourier} & $\#\text{raíces}(a,b]\le \V(a){-}\V(b)$ y $\V(a){-}\V(b){-}\#\text{raíces}$ par & probado \\
+    \lean{fourierVar\_drop\_at\_critical\_point} & $\exists e,\ \V(a)=\V(b)+\#\text{raíces}(a,b]+2e$ (núcleo local) & probado \\
+    \rowcolor{ggband}
+    \lean{fourierVar\_eq\_signVarAt} & $\V_p(x)=\lean{signVarAt}\,(\lean{fourierSeq}\,p)\,x$ (puente, \lean{rfl}) & probado \\
+    \lean{signs\_right\_eq\_Rseq} & signos en $b$ $=\lean{Rseq}$ de los signos en $c$ (la derecha colapsa) & probado \\
+    \rowcolor{ggband}
+    \lean{signs\_left\_eq\_Lseq} & signos en $a$ $=\lean{Lseq}$ de los signos en $c$ (la izquierda alterna) & probado \\
+    \lean{Rseq\_spec} / \lean{Lseq\_spec} & $\V(c^+){=}\V(c)$;\ $\V(c^-){=}\V(c^+){+}m{+}2g$ (combinatoria) & probado \\
+    \rowcolor{ggband}
+    \lean{fourierSeq\_isChain} & la torre es una cadena de derivadas $p^{(k+1)}=(p^{(k)})'$ & probado \\
+    \lean{sign\_eval\_\{right,left\}\_vanish} & los dos ladrillos de monotonía (signo justo fuera de una raíz) & probado \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+% ---------- Tabla 2a: ejemplo A, el caso ajustado por multiplicidad ----------
+\begin{table}[t]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}rccccr@{}}
+\toprule
+\rowcolor{ggteal!18}
+$x$ & $p_A$ & $p_A'$ & $p_A''$ & $p_A'''$ & $\V(x)$ \\
+    & {\scriptsize$x^3{-}x^2{-}x{+}1$} & {\scriptsize$3x^2{-}2x{-}1$} & {\scriptsize$6x{-}2$} & {\scriptsize$6$} & \\
+\midrule
+$-2$            & $-$ & $+$ & $-$ & $+$ & $3$ \\
+$-\tfrac32$     & $-$ & $+$ & $-$ & $+$ & $3$ \\
+$-1$ {\scriptsize(raíz)}        & $0$ & $+$ & $-$ & $+$ & $2$ \\
+$0$             & $+$ & $-$ & $-$ & $+$ & $2$ \\
+$\tfrac12$      & $+$ & $-$ & $+$ & $+$ & $2$ \\
+$1$ {\scriptsize(raíz doble)}   & $0$ & $0$ & $+$ & $+$ & $0$ \\
+$2$             & $+$ & $+$ & $+$ & $+$ & $0$ \\
+\bottomrule
+\end{tabular}
+\caption{Ejemplo A, $p_A=(x-1)^2(x+1)$, leído sobre la torre de derivadas. $\V$ cae en $1$ en la
+raíz simple $x=-1$ y en $2$ en la raíz doble $x=1$: la caída cuenta multiplicidad. En $(-2,2]$,
+$\V(-2)-\V(2)=3$ es el número de raíces con multiplicidad, así que aquí la desigualdad de
+Budan--Fourier es ajustada. La tabla entera se regenera y se comprueba en aritmética exacta con
+\lean{budan\_fig1\_tower.py}.}
+\label{tab:signsA}
+\end{table}
+
+% ---------- Tabla 2b: ejemplo B, el excedente par ----------
+\begin{table}[t]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}rcccr@{}}
+\toprule
+\rowcolor{ggteal!18}
+$x$ & $p_B=x^2{+}1$ & $p_B'=2x$ & $p_B''=2$ & $\V(x)$ \\
+\midrule
+$-2$            & $+$ & $-$ & $+$ & $2$ \\
+$-1$            & $+$ & $-$ & $+$ & $2$ \\
+$0$ {\scriptsize($p_B'{=}0$, no raíz)} & $+$ & $0$ & $+$ & $0$ \\
+$1$             & $+$ & $+$ & $+$ & $0$ \\
+$2$             & $+$ & $+$ & $+$ & $0$ \\
+\bottomrule
+\end{tabular}
+\caption{Ejemplo B, $p_B=x^2+1$, sin raíces reales. $\V$ cae en $2$ en $x=0$---un cero del miembro
+interior $p_B'$, \emph{no} una raíz de $p_B$. Así $\#\text{raíces}(-2,2]=0<\V(-2)-\V(2)=2$ y el
+excedente es par: la firma de un par conjugado, y exactamente el caso
+\lean{fourierVar\_drop\_at\_critical\_point} con testigo $e=1$.}
+\label{tab:signsB}
+\end{table}
+
+% ---------- Tabla 3: el desarrollo, medido ----------
+\begin{table}[h]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{El desarrollo, medido. El tiempo de compilación es para verificar
+  \lean{BudanFourier.lean} contra una Mathlib precompilada y la librería \lean{Sturm} importada
+  (cuyo instrumental de variación de signo se reutiliza).}
+  \label{tab:metrics}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Cantidad}} & \textcolor{white}{\textbf{Valor}} \\
+    \midrule
+    \rowcolor{ggband}
+    Líneas en \lean{BudanFourier.lean} & $940$ \\
+    Teoremas / definiciones & $28$ \\
+    \rowcolor{ggband}
+    \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
+    Axiomas más allá del núcleo de Lean & $0$ \\
+    \rowcolor{ggband}
+    Reutilizado de \lean{Sturm.lean} & instrumental de variación (\lean{signVarAt}, \lean{signChanges}) \\
+    Tiempo de compilación (Mathlib en caliente) & ${\approx}\,8$\,s \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}

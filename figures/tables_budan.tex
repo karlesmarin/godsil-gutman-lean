@@ -1,0 +1,112 @@
+% Tables for the Budan--Fourier formalization paper.
+% Requires \usepackage{booktabs,amsmath,amssymb} and \usepackage[table]{xcolor}
+% in the main preamble, plus colors ggteal / ggband defined there, and
+%   \newcommand{\V}{\mathrm{V}}  \newcommand{\lean}[1]{\texttt{#1}}
+
+% ---------- Table 1: formalised results ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{The load-bearing results, all \lean{sorry}-free in \lean{BudanFourier.lean}
+  (Lean~4 / Mathlib). \lean{\#print axioms BudanFourier.budan\_fourier} reports only
+  \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. To the best of our knowledge this
+  is the first formalization of the Budan--Fourier theorem in Lean.}
+  \label{tab:results}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Lean name}} & \textcolor{white}{\textbf{Statement}} & \textcolor{white}{\textbf{Status}} \\
+    \midrule
+    \rowcolor{ggband}
+    \lean{budan\_fourier} & $\#\mathrm{roots}(a,b]\le \V(a){-}\V(b)$ and $\V(a){-}\V(b){-}\#\mathrm{roots}$ even & proven \\
+    \lean{fourierVar\_drop\_at\_critical\_point} & $\exists e,\ \V(a)=\V(b)+\#\mathrm{roots}(a,b]+2e$ (local core) & proven \\
+    \rowcolor{ggband}
+    \lean{fourierVar\_eq\_signVarAt} & $\V_p(x)=\lean{signVarAt}\,(\lean{fourierSeq}\,p)\,x$ (bridge, \lean{rfl}) & proven \\
+    \lean{signs\_right\_eq\_Rseq} & signs at $b$ $=\lean{Rseq}$ of signs at $c$ (right collapses) & proven \\
+    \rowcolor{ggband}
+    \lean{signs\_left\_eq\_Lseq} & signs at $a$ $=\lean{Lseq}$ of signs at $c$ (left alternates) & proven \\
+    \lean{Rseq\_spec} / \lean{Lseq\_spec} & $\V(c^+){=}\V(c)$;\ $\V(c^-){=}\V(c^+){+}m{+}2g$ (combinatorial) & proven \\
+    \rowcolor{ggband}
+    \lean{fourierSeq\_isChain} & the tower is a derivative chain $p^{(k+1)}=(p^{(k)})'$ & proven \\
+    \lean{sign\_eval\_\{right,left\}\_vanish} & the two monotonicity bricks (sign just off a root) & proven \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+% ---------- Table 2a: example A, the multiplicity-sharp case ----------
+\begin{table}[t]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}rccccr@{}}
+\toprule
+\rowcolor{ggteal!18}
+$x$ & $p_A$ & $p_A'$ & $p_A''$ & $p_A'''$ & $\V(x)$ \\
+    & {\scriptsize$x^3{-}x^2{-}x{+}1$} & {\scriptsize$3x^2{-}2x{-}1$} & {\scriptsize$6x{-}2$} & {\scriptsize$6$} & \\
+\midrule
+$-2$            & $-$ & $+$ & $-$ & $+$ & $3$ \\
+$-\tfrac32$     & $-$ & $+$ & $-$ & $+$ & $3$ \\
+$-1$ {\scriptsize(root)}        & $0$ & $+$ & $-$ & $+$ & $2$ \\
+$0$             & $+$ & $-$ & $-$ & $+$ & $2$ \\
+$\tfrac12$      & $+$ & $-$ & $+$ & $+$ & $2$ \\
+$1$ {\scriptsize(double root)}  & $0$ & $0$ & $+$ & $+$ & $0$ \\
+$2$             & $+$ & $+$ & $+$ & $+$ & $0$ \\
+\bottomrule
+\end{tabular}
+\caption{Example A, $p_A=(x-1)^2(x+1)$, read off the derivative tower. $\V$ falls by $1$ at the
+simple root $x=-1$ and by $2$ at the double root $x=1$: the drop counts multiplicity. On $(-2,2]$,
+$\V(-2)-\V(2)=3$ equals the root count with multiplicity, so the Budan--Fourier inequality is sharp
+here. The whole table is regenerated and checked in exact arithmetic by \lean{budan\_fig1\_tower.py}.}
+\label{tab:signsA}
+\end{table}
+
+% ---------- Table 2b: example B, the even surplus ----------
+\begin{table}[t]
+\centering\small
+\rowcolors{2}{ggband!35}{white}
+\begin{tabular}{@{}rcccr@{}}
+\toprule
+\rowcolor{ggteal!18}
+$x$ & $p_B=x^2{+}1$ & $p_B'=2x$ & $p_B''=2$ & $\V(x)$ \\
+\midrule
+$-2$            & $+$ & $-$ & $+$ & $2$ \\
+$-1$            & $+$ & $-$ & $+$ & $2$ \\
+$0$ {\scriptsize($p_B'{=}0$, not a root)} & $+$ & $0$ & $+$ & $0$ \\
+$1$             & $+$ & $+$ & $+$ & $0$ \\
+$2$             & $+$ & $+$ & $+$ & $0$ \\
+\bottomrule
+\end{tabular}
+\caption{Example B, $p_B=x^2+1$, with no real root. $\V$ drops by $2$ at $x=0$---a zero of the
+interior member $p_B'$, \emph{not} a root of $p_B$. Thus $\#\mathrm{roots}(-2,2]=0<\V(-2)-\V(2)=2$
+and the surplus is even: the signature of a conjugate pair, and exactly the
+\lean{fourierVar\_drop\_at\_critical\_point} case with witness $e=1$.}
+\label{tab:signsB}
+\end{table}
+
+% ---------- Table 3: development measured ----------
+\begin{table}[h]
+  \centering
+  \small
+  \arrayrulecolor{ggteal}
+  \caption{The development measured. Compile time is for checking \lean{BudanFourier.lean} against a
+  prebuilt Mathlib and the imported \lean{Sturm} library (whose sign-variation toolkit is reused).}
+  \label{tab:metrics}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    \rowcolor{ggteal}
+    \textcolor{white}{\textbf{Quantity}} & \textcolor{white}{\textbf{Value}} \\
+    \midrule
+    \rowcolor{ggband}
+    Lines in \lean{BudanFourier.lean} & $940$ \\
+    Theorems / definitions & $28$ \\
+    \rowcolor{ggband}
+    \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
+    Axioms beyond Lean's core & $0$ \\
+    \rowcolor{ggband}
+    Reused from \lean{Sturm.lean} & sign-variation toolkit (\lean{signVarAt}, \lean{signChanges}) \\
+    Compile time (warm Mathlib) & ${\approx}\,8$\,s \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
