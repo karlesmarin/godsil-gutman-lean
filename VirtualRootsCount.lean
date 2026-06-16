@@ -73,6 +73,78 @@ theorem fourierVar_succ_ne {p : Polynomial ℝ} (hp : 0 < p.natDegree) {x : ℝ}
     List.map_cons]
   exact Sturm.signChanges_cons_of_ne_zero (by rw [ne_eq, sign_eq_zero_iff]; exact hx) hd
 
+/-- **Count-above is monotone under a pointwise `≤`.** If `L[i] ≤ M[i]` entrywise, then at most as many
+of `L` exceed `x` as of `M`. The signless engine of the vroots-side recursion. -/
+theorem countP_gt_le_of_forall₂ (x : ℝ) {L M : List ℝ} (h : List.Forall₂ (· ≤ ·) L M) :
+    L.countP (fun r => decide (x < r)) ≤ M.countP (fun r => decide (x < r)) := by
+  induction h with
+  | nil => simp
+  | @cons a b L M hab _ ih =>
+    rw [List.countP_cons, List.countP_cons]
+    refine Nat.add_le_add ih ?_
+    by_cases h1 : x < a
+    · rw [if_pos (show decide (x < b) = true by simpa using lt_of_lt_of_le h1 hab)]
+      split_ifs <;> omega
+    · rw [if_neg (show ¬ decide (x < a) = true by simpa using h1)]
+      exact Nat.zero_le _
+
+/-- Bridge: the Multiset-card form of `N(x)` equals the `List.countP` form the engine uses. -/
+theorem card_filter_gt_eq_countP (x : ℝ) (L : List ℝ) :
+    ((L : Multiset ℝ).filter (fun r => x < r)).card = L.countP (fun r => decide (x < r)) := by
+  rw [← Multiset.countP_eq_card_filter, Multiset.coe_countP]
+
+/-- The derivative drops the degree by exactly one (characteristic zero), even at degree `0`. -/
+theorem natDegree_derivative_eq' (p : Polynomial ℝ) :
+    (derivative p).natDegree = p.natDegree - 1 := by
+  rcases Nat.eq_zero_or_pos p.natDegree with h | h
+  · have := Polynomial.natDegree_derivative_le p
+    rw [h]; omega
+  · exact natDegree_derivative_eq h
+
+/-- **Lower bound of the vroots-side recursion.** `N_{p'}(x) ≤ N_p(x)`: each virtual root of `p'` above
+`x` is matched by one of `p` above `x` (the right half of the interlacing). -/
+theorem N_deriv_le_N {lo hi : ℝ} (hab : lo ≤ hi) (p : Polynomial ℝ) (x : ℝ) :
+    ((vroots lo hi (derivative p) : Multiset ℝ).filter (fun r => x < r)).card
+      ≤ ((vroots lo hi p : Multiset ℝ).filter (fun r => x < r)).card := by
+  rw [card_filter_gt_eq_countP, card_filter_gt_eq_countP]
+  have hforall : List.Forall₂ (· ≤ ·) (vroots lo hi (derivative p)) ((vroots lo hi p).tail) := by
+    rw [List.forall₂_iff_get]
+    refine ⟨?_, fun i h1 h2 => ?_⟩
+    · rw [List.length_tail, vroots_length, vroots_length, natDegree_derivative_eq']
+    · rw [List.get_eq_getElem, List.get_eq_getElem, List.getElem_tail]
+      have hrp : i + 1 < (vroots lo hi p).length := by
+        rw [List.length_tail] at h2; omega
+      exact (vroots_interlacing lo hi hab p i h1 hrp).2
+  calc (vroots lo hi (derivative p)).countP (fun r => decide (x < r))
+      ≤ ((vroots lo hi p).tail).countP (fun r => decide (x < r)) :=
+        countP_gt_le_of_forall₂ x hforall
+    _ ≤ (vroots lo hi p).countP (fun r => decide (x < r)) :=
+        (List.tail_sublist _).countP_le
+
+/-- **Upper bound of the vroots-side recursion.** `N_p(x) ≤ N_{p'}(x) + 1`: dropping the top virtual
+root of `p`, the rest are dominated by those of `p'` (the left half of the interlacing). -/
+theorem N_le_N_deriv_succ {lo hi : ℝ} (hab : lo ≤ hi) (p : Polynomial ℝ) (x : ℝ) :
+    ((vroots lo hi p : Multiset ℝ).filter (fun r => x < r)).card
+      ≤ ((vroots lo hi (derivative p) : Multiset ℝ).filter (fun r => x < r)).card + 1 := by
+  rw [card_filter_gt_eq_countP, card_filter_gt_eq_countP]
+  have hforall : List.Forall₂ (· ≤ ·) ((vroots lo hi p).dropLast) (vroots lo hi (derivative p)) := by
+    rw [List.forall₂_iff_get]
+    refine ⟨?_, fun i h1 h2 => ?_⟩
+    · rw [List.length_dropLast, vroots_length, vroots_length, natDegree_derivative_eq']
+    · rw [List.get_eq_getElem, List.get_eq_getElem, List.getElem_dropLast]
+      have hrp : i + 1 < (vroots lo hi p).length := by
+        rw [List.length_dropLast] at h1; omega
+      exact (vroots_interlacing lo hi hab p i h2 hrp).1
+  have hdrop : (vroots lo hi p).countP (fun r => decide (x < r))
+      ≤ (vroots lo hi p).dropLast.countP (fun r => decide (x < r)) + 1 := by
+    have hle := (List.dropLast_sublist (vroots lo hi p)).le_countP (fun r => decide (x < r))
+    rw [List.length_dropLast] at hle
+    omega
+  calc (vroots lo hi p).countP (fun r => decide (x < r))
+      ≤ (vroots lo hi p).dropLast.countP (fun r => decide (x < r)) + 1 := hdrop
+    _ ≤ (vroots lo hi (derivative p)).countP (fun r => decide (x < r)) + 1 :=
+        Nat.add_le_add_right (countP_gt_le_of_forall₂ x hforall) 1
+
 /-- **Core reformulation (WIP).** The Budan–Fourier count at `x` equals the number of virtual roots of
 `p` strictly above `x`. Everything else is bookkeeping around this. -/
 public theorem fourierVar_eq_card_vroots_gt {lo hi : ℝ} {p : Polynomial ℝ} (hp : p ≠ 0)
