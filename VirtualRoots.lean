@@ -84,6 +84,42 @@ public theorem exists_isMinOn_abs_eval {p : Polynomial ℝ} {a b : ℝ} (hab : a
   obtain ⟨z, hz, hmin⟩ := hcompact.exists_isMinOn hne hcont
   exact ⟨z, hz, hmin⟩
 
+/-! ## The choice operator `ℛ_d` (milestone 1, brick 2)
+
+`R p a b` is Coste's `ℛ_d(a,b,P)`: a point of `[a,b]` minimising `|P|`. On an interval where `P'`
+keeps a constant sign (so `P` is strictly monotone, by the bedrock above) this minimiser is unique,
+and equals the unique root of `P` there when one exists, otherwise the nearer endpoint. We define it
+by choosing a minimiser (which exists by `exists_isMinOn_abs_eval`) and prove the two properties that
+matter downstream: it **lands in `[a,b]`** (the engine of the Rolle interlacing) and it **is a root of
+`P` whenever `P` has one in `[a,b]`** (so virtual roots extend actual roots, Coste's Prop. 2.2). -/
+
+/-- **The choice operator `ℛ_d(a,b,P)`**: a minimiser of `|P|` on `[a,b]` (junk value `a` if `b<a`). -/
+public noncomputable def R (p : Polynomial ℝ) (a b : ℝ) : ℝ :=
+  if hab : a ≤ b then (exists_isMinOn_abs_eval (p := p) hab).choose else a
+
+/-- `ℛ_d(a,b,P)` lands in `[a,b]`. This single fact yields the Rolle interlacing of virtual roots,
+since `ρ_{d,j}(P) = ℛ_d(ρ_{d-1,j-1}(P'),ρ_{d-1,j}(P'),P)` then lies between consecutive virtual roots
+of `P'`. -/
+public theorem R_mem {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b) : R p a b ∈ Set.Icc a b := by
+  rw [R, dif_pos hab]
+  exact (exists_isMinOn_abs_eval (p := p) hab).choose_spec.1
+
+/-- `ℛ_d(a,b,P)` minimises `|P|` on `[a,b]`. -/
+public theorem R_isMinOn {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b) :
+    IsMinOn (fun x => |p.eval x|) (Set.Icc a b) (R p a b) := by
+  rw [R, dif_pos hab]
+  exact (exists_isMinOn_abs_eval (p := p) hab).choose_spec.2
+
+/-- **`ℛ_d` captures actual roots.** If `P` vanishes somewhere in `[a,b]`, then `ℛ_d(a,b,P)` is a root
+of `P`: the minimum of `|P|` is then `0`, so the minimiser is a zero. (No monotonicity needed; this is
+the half of Coste's Prop. 2.2 saying virtual roots extend the actual ones.) -/
+public theorem R_eval_eq_zero_of_exists {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
+    (h : ∃ z ∈ Set.Icc a b, p.eval z = 0) : p.eval (R p a b) = 0 := by
+  obtain ⟨z, hz, hpz⟩ := h
+  have hle : |p.eval (R p a b)| ≤ |p.eval z| := (isMinOn_iff.mp (R_isMinOn (p := p) hab)) z hz
+  rw [hpz, abs_zero] at hle
+  exact abs_eq_zero.mp (le_antisymm hle (abs_nonneg _))
+
 /-! ## Roadmap (next milestones)
 
 The remaining development, to be built on the bedrock above:
