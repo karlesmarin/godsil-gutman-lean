@@ -27,12 +27,13 @@ else the nearer endpoint). They satisfy a Rolle-type interlacing
 Budan–Fourier drop `V(a) − V(b)` (`fourierVar`, from `BudanFourier.lean`) — turning that inequality
 into an equality.
 
-## Status (milestone 1, in progress)
-This file lays the **analytic bedrock** on which `ℛ_d` rests, sorry-free: where the derivative keeps a
-constant nonzero sign, the polynomial is strictly monotone (so `|P|` has a single well of a minimum),
-and a continuous function attains its minimum on the compact interval. The recursive `ρ`, the
-interlacing, and the exact Budan–Fourier count are the next milestones; their statements are recorded
-below as the roadmap.
+## Status
+The structural theory of the `ℛ_d` virtual roots is complete and sorry-free: existence and the count
+(`= degree`), sortedness, containment in `[lo,hi]`, the localization of each root between its
+breakpoints, and the Rolle interlacing `ρ_{d,r}(P) ≤ ρ_{d-1,r}(P') ≤ ρ_{d,r+1}(P)` (Coste, Prop. 2.3).
+The exact Budan–Fourier count (number of virtual roots in `(a,b]` `= V(a) - V(b)`), which fuses this
+construction with the `fourierVar` of `BudanFourier.lean`, is the natural sequel and is left as future
+work; see the closing note.
 -/
 public import Mathlib.Analysis.Calculus.Deriv.Polynomial
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
@@ -346,22 +347,23 @@ public theorem vroots_interlacing (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomia
   · rw [← hbeq]; exact hL.2
   · rw [← hbeq]; exact hR.1
 
-/-! ## Roadmap (next milestones)
+/-! ## What is established here, and what comes next
 
-The remaining development, to be built on the bedrock above:
+**Established (sorry-free, this file):** the virtual roots of a real polynomial as the recursive
+`ℛ_d`-construction of Coste, with their structural theory.
+* `R` (`ℛ_d`) and its bedrock: `exists_isMinOn_abs_eval`, `R_mem`, `R_isMinOn`,
+  `R_eval_eq_zero_of_exists`, `R_eval_eq_zero_of_le_zero_le` / `_ge_zero_ge` — the minimiser exists,
+  lands in `[a,b]`, and is an actual root of `P` whenever `P` has one there (Coste Prop. 2.2, cell form).
+* `vroots` and `vroots_length` — a degree-`d` polynomial has **exactly `d`** virtual roots
+  (the fundamental count: real roots are `≤ d`, virtual roots are always `d`).
+* `vroots_isChain`, `vroots_subset_Icc` — the `d` virtual roots are sorted and lie in `[lo,hi]`.
+* `vroots_getElem_mem`, `vroots_interlacing` — each lands between its two breakpoints, giving the
+  **Rolle interlacing** `ρ_{d,r}(P) ≤ ρ_{d-1,r}(P') ≤ ρ_{d,r+1}(P)` (Coste, Prop. 2.3).
 
-* `R d a b P` — the choice `ℛ_d`: on `[a,b]` with `(derivative P)` of constant sign, the unique
-  minimiser of `|P|` (root if `P` changes sign, else the nearer endpoint). Existence is
-  `exists_isMinOn_abs_eval`; uniqueness is `eval_strictMonoOn_of_derivative_pos` /
-  `eval_strictAntiOn_of_derivative_neg`. Extend to semi-infinite intervals via `cauchy bound`.
-* `virtualRoot d j P` — the recursive `ρ_{d,j}` (`j ≤ 0 ↦ -∞`, `j > d ↦ +∞`, base `ρ_{1,1}(X-a)=a`).
-* `virtualRoot_interlacing` — `ρ_{d,r}(P) ≤ ρ_{d-1,r}(P') ≤ ρ_{d,r+1}(P)` (Coste, Prop. 2.3): the
-  Rolle interlacing, and the bridge to the interlacing line (Newton, Heilmann–Lieb).
-* `isRoot_iff_eq_virtualRoot` — every actual root of `P` is some `ρ_{d,j}(P)` (Coste, Prop. 2.2).
-* `card_virtualRoot_eq_fourierVar` — the exact Budan–Fourier count: the number of virtual roots in
-  `(a,b]` (with multiplicity) equals `fourierVar P a - fourierVar P b`, turning the inequality of
-  `BudanFourier.budan_fourier` into an equality. This is where `fourierVar`, `Rseq`/`Lseq` and the
-  monotonicity of `fourierVar` feed in.
--/
+**Next (future work, the BudanFourier bridge):** `card_virtualRoot_eq_fourierVar` — the exact count,
+that the number of virtual roots in `(a,b]` equals `fourierVar P a - fourierVar P b`, turning the
+inequality of `BudanFourier.budan_fourier` into an equality. This fuses two independent recursive
+constructions (the `ℛ_d` minimiser here and the sign-variation `fourierVar` of `BudanFourier.lean`)
+and is a development in its own right; it is the natural sequel to this file. -/
 
 end VirtualRoots
