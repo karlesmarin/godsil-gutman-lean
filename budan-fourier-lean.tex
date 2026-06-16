@@ -505,11 +505,6 @@ assembles \lean{budan\_fourier}.
 \begin{table}[H]
   \centering\small
   \arrayrulecolor{ggteal}
-  \caption{The load-bearing results, all \lean{sorry}-free in \lean{BudanFourier.lean} (Lean~4 /
-  Mathlib). \lean{\#print axioms BudanFourier.budan\_fourier} reports only \lean{propext},
-  \lean{Classical.choice}, \lean{Quot.sound}. To the best of my knowledge this is the first
-  formalization of the Budan--Fourier theorem in Lean.}
-  \label{tab:results}
   \begin{tabular}{@{}llc@{}}
     \toprule
     \rowcolor{ggteal}
@@ -530,6 +525,11 @@ assembles \lean{budan\_fourier}.
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
+  \caption{The load-bearing results, all \lean{sorry}-free in \lean{BudanFourier.lean} (Lean~4 /
+  Mathlib). \lean{\#print axioms BudanFourier.budan\_fourier} reports only \lean{propext},
+  \lean{Classical.choice}, \lean{Quot.sound}. To the best of my knowledge this is the first
+  formalization of the Budan--Fourier theorem in Lean.}
+  \label{tab:results}
 \end{table}
 
 \begin{table}[H]
@@ -557,9 +557,6 @@ and the surplus is even: the signature of a conjugate pair, and exactly the
 \begin{table}[H]
   \centering\small
   \arrayrulecolor{ggteal}
-  \caption{The development measured. Compile time is for checking \lean{BudanFourier.lean} against a
-  prebuilt Mathlib and the imported \lean{Sturm} library, whose sign-variation toolkit is reused.}
-  \label{tab:metrics}
   \begin{tabular}{@{}lr@{}}
     \toprule
     \rowcolor{ggteal}
@@ -577,6 +574,9 @@ and the surplus is even: the signature of a conjugate pair, and exactly the
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
+  \caption{The development measured. Compile time is for checking \lean{BudanFourier.lean} against a
+  prebuilt Mathlib and the imported \lean{Sturm} library, whose sign-variation toolkit is reused.}
+  \label{tab:metrics}
 \end{table}
 
 \section{The boundary of the contribution}\label{sec:boundary}
