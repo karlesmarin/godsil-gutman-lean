@@ -179,6 +179,30 @@ public theorem vroots_length (lo hi : ℝ) (p : Polynomial ℝ) :
     rw [ih, natDegree_derivative_eq (Nat.pos_of_ne_zero h)]
     omega
 
+/-- **Virtual roots come out sorted (combinatorial core of the interlacing).** If the breakpoints are
+sorted, the `ℛ_d`-values between consecutive ones are sorted too: each `R p bps[j] bps[j+1]` lies in
+`[bps[j], bps[j+1]]` (by `R_mem`), and consecutive values are separated by the shared breakpoint
+`bps[j+1]` — exactly the Rolle interlacing `ρ_{d,j} ≤ bps[j+1] ≤ ρ_{d,j+1}`. -/
+public theorem isChain_zipWith_R (p : Polynomial ℝ) : ∀ (bps : List ℝ),
+    List.IsChain (· ≤ ·) bps → List.IsChain (· ≤ ·) (List.zipWith (R p) bps bps.tail)
+  | [], _ => by simp
+  | [_], _ => by simp
+  | x :: y :: l, h => by
+    obtain ⟨hxy, hrest⟩ := List.isChain_cons_cons.mp h
+    have ih := isChain_zipWith_R p (y :: l) hrest
+    cases l with
+    | nil => simp
+    | cons z l' =>
+      obtain ⟨hyz, _⟩ := List.isChain_cons_cons.mp hrest
+      have hbound : R p x y ≤ R p y z :=
+        le_trans (Set.mem_Icc.mp (R_mem hxy)).2 (Set.mem_Icc.mp (R_mem hyz)).1
+      have hgoal : List.zipWith (R p) (x :: y :: z :: l') (x :: y :: z :: l').tail
+          = R p x y :: R p y z :: List.zipWith (R p) (z :: l') (z :: l').tail := by
+        simp [List.zipWith_cons_cons]
+      rw [hgoal, List.isChain_cons_cons]
+      refine ⟨hbound, ?_⟩
+      simpa [List.zipWith_cons_cons] using ih
+
 /-! ## Roadmap (next milestones)
 
 The remaining development, to be built on the bedrock above:
