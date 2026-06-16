@@ -289,6 +289,63 @@ public theorem vroots_subset_Icc (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomial
     ∀ x ∈ vroots lo hi p, x ∈ Set.Icc lo hi :=
   (vroots_chain_mem lo hi hab p).2
 
+/-! ## The index-form interlacing (milestone 1, brick 5: Coste Prop. 2.3)
+
+The sorted invariant says the virtual roots are ordered; the sharper statement is *where* each one
+sits. With `bps = lo :: (vroots lo hi P' ++ [hi])` the breakpoints cutting `[lo,hi]` for `P`, the
+`r`-th virtual root of `P` lands in `[bps[r], bps[r+1]]` — that is `ℛ_d` landing in its own interval,
+read index by index. Since the interior breakpoints `bps[r+1]` are exactly the virtual roots of `P'`,
+this is the Rolle interlacing `ρ_{d,r}(P) ≤ ρ_{d-1,r}(P') ≤ ρ_{d,r+1}(P)`. -/
+
+/-- **Each virtual root lies between its two breakpoints** (Coste's localization of `ρ_{d,r}`): for
+`bps = lo :: (vroots lo hi P' ++ [hi])`, one has `bps[r] ≤ (vroots lo hi P)[r] ≤ bps[r+1]`. -/
+public theorem vroots_getElem_mem (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomial ℝ)
+    (r : ℕ) (hr : r < (vroots lo hi p).length)
+    (hb : r + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length) :
+    (lo :: (vroots lo hi (derivative p) ++ [hi]))[r]'(Nat.lt_of_succ_lt hb) ≤ (vroots lo hi p)[r]
+      ∧ (vroots lo hi p)[r] ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[r + 1]'hb := by
+  have hd : p.natDegree ≠ 0 := by
+    intro h0; rw [vroots_length, h0] at hr; exact absurd hr (Nat.not_lt_zero r)
+  have hvr : vroots lo hi p
+      = List.zipWith (R p) (lo :: (vroots lo hi (derivative p) ++ [hi]))
+          (lo :: (vroots lo hi (derivative p) ++ [hi])).tail := by
+    rw [vroots, dif_neg hd]
+  have hchain : List.IsChain (· ≤ ·) (lo :: (vroots lo hi (derivative p) ++ [hi])) :=
+    vroots_isChain lo hi hab (derivative p)
+  set bps := lo :: (vroots lo hi (derivative p) ++ [hi]) with hbps
+  have hadj : bps[r]'(Nat.lt_of_succ_lt hb) ≤ bps[r + 1]'hb := hchain.getElem r hb
+  have hzip : (vroots lo hi p)[r] = R p (bps[r]'(Nat.lt_of_succ_lt hb)) (bps[r + 1]'hb) := by
+    simp only [hvr, List.getElem_zipWith, List.getElem_tail]
+  have hmem := Set.mem_Icc.mp (R_mem (p := p) hadj)
+  rw [← hzip] at hmem
+  exact hmem
+
+/-- **The Rolle interlacing of virtual roots** (Coste, Prop. 2.3), in list/index form:
+`ρ_{d,r}(P) ≤ ρ_{d-1,r}(P') ≤ ρ_{d,r+1}(P)`. Each virtual root of `P'` is wedged between two
+consecutive virtual roots of `P`, because the `P'`-roots are exactly the interior breakpoints that
+`ℛ_d` interpolates. -/
+public theorem vroots_interlacing (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomial ℝ)
+    (r : ℕ) (hr' : r < (vroots lo hi (derivative p)).length)
+    (hrp : r + 1 < (vroots lo hi p).length) :
+    (vroots lo hi p)[r]'(Nat.lt_of_succ_lt hrp) ≤ (vroots lo hi (derivative p))[r]'hr'
+      ∧ (vroots lo hi (derivative p))[r]'hr' ≤ (vroots lo hi p)[r + 1]'hrp := by
+  have hlenbps : (lo :: (vroots lo hi (derivative p) ++ [hi])).length
+      = (vroots lo hi (derivative p)).length + 2 := by
+    simp [List.length_append]
+  have hb : r + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+    rw [hlenbps]; omega
+  have hb2 : r + 1 + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+    rw [hlenbps]; omega
+  have hL := vroots_getElem_mem lo hi hab p r (Nat.lt_of_succ_lt hrp) hb
+  have hR := vroots_getElem_mem lo hi hab p (r + 1) hrp hb2
+  have hbeq : (lo :: (vroots lo hi (derivative p) ++ [hi]))[r + 1]'hb
+      = (vroots lo hi (derivative p))[r]'hr' := by
+    simp [List.getElem_append]
+    exact dif_pos hr'
+  refine ⟨?_, ?_⟩
+  · rw [← hbeq]; exact hL.2
+  · rw [← hbeq]; exact hR.1
+
 /-! ## Roadmap (next milestones)
 
 The remaining development, to be built on the bedrock above:
