@@ -35,6 +35,8 @@
 \newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
   arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
 \newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+\newtcolorbox{recipebox}[1]{colframe=ggamber,colback=ggamber!8,arc=3pt,boxrule=0.8pt,
+  title=\textbf{#1},coltitle=white,colbacktitle=ggamber}
 
 \title{\bf Ra\'ices que siempre est\'an ah\'i\\[4pt]
   \large\normalfont Las ra\'ices virtuales de un polinomio real, verificadas por m\'aquina en Lean~4}
@@ -79,55 +81,55 @@ aqu\'i depende solo de los tres axiomas est\'andar \lean{propext}, \lean{Classic
 \end{abstract}
 
 \medskip
-\noindent\emph{Qu\'e encontrar\'as aqu\'i.} Un recorrido breve, montado como una sarta de cuentas:
-cada secci\'on termina con la pregunta que responde la siguiente. La primera pregunta qu\'e \emph{es}
-una ra\'iz virtual, y por qu\'e siempre hay exactamente $d$ (Secci\'on~\ref{sec:q1}); la segunda,
-c\'omo construirlas para que una m\'aquina acepte la construcci\'on (Secci\'on~\ref{sec:q2}); la
-tercera, d\'onde se resiste la formalizaci\'on (Secci\'on~\ref{sec:q3}); la cuarta, qu\'e da la
-teor\'ia certificada---el entrelazado de Rolle, y el camino al recuento exacto
-(Secci\'on~\ref{sec:q4}). Los lemas que soportan el peso est\'an en una tabla
-(Secci\'on~\ref{sec:blocks}); los l\'imites honestos, incluido el recuento diferido, en la
-Secci\'on~\ref{sec:boundary}; y el cierre plantea las preguntas que vale la pena llevarse. Si solo lees
-dos cosas, lee el entrelazado (Teorema~\ref{thm:interlace}) y la Figura~\ref{fig:fillin}.
+\noindent El desarrollo es un \'unico fichero Lean, \lean{VirtualRoots.lean}; sus lemas que soportan el
+peso est\'an reunidos en la Secci\'on~\ref{sec:blocks}, y sus l\'imites---sobre todo el recuento exacto
+diferido---se enuncian en la Secci\'on~\ref{sec:boundary}. Si solo lees dos cosas, lee el entrelazado
+(Teorema~\ref{thm:interlace}) y la Figura~\ref{fig:fillin}.
 
-\section{La pregunta que lo inicia}\label{sec:intro}
+\section{Un recuento que no tiembla}\label{sec:intro}
 
-\emph{Cuenta hist\'orica.} Budan~\cite{budan} y Fourier~\cite{fourier} sab\'ian acotar el n\'umero de
-ra\'ices reales de un polinomio en un intervalo por una diferencia de recuentos de signos, pero la cota
-es solo una desigualdad: el excedente, siempre par, es el precio de las ra\'ices que no llegan a ser reales.
-Durante dos siglos ese excedente fue un t\'ermino de error. En 1998 Gonz\'alez-Vega, Lombardi y
-Mah\'e~\cite{glm} lo convirtieron en un objeto. Observaron que un polinomio de grado $d$, tenga o no
-todas sus ra\'ices reales, carga $d$ n\'umeros reales can\'onicos---las \emph{ra\'ices
-virtuales}---que var\'ian de forma continua con los coeficientes, se reducen a las ra\'ices genuinas
-cuando estas existen, y dan cuenta \emph{exacta} del recuento de Budan--Fourier. Coste, Lajous,
-Lombardi y Roy convirtieron despu\'es ese recuento en igualdad a trav\'es de ellas~\cite{coste}.
+¿Cu\'antas ra\'ices tiene un polinomio? La respuesta honesta tiembla. Un polinomio real de grado $d$
+tiene \emph{entre $0$ y $d$} ra\'ices reales, y el n\'umero da bandazos al mover los coeficientes:
+$x^2-t$ tiene dos ra\'ices reales, luego una, luego ninguna a medida que $t$ cae por debajo de cero,
+mientras su grado nunca cambia. Un recuento que salta cuando nada esencial lo ha hecho es un mal
+recuento. \textbf{Hay uno mejor: un polinomio de grado $d$ tiene siempre exactamente $d$ \emph{ra\'ices
+virtuales}}---n\'umeros reales $\rho_{d,1}(p)\le\cdots\le\rho_{d,d}(p)$ que coinciden con las ra\'ices
+genuinas cuando existen y, si no, se sit\'uan donde el polinomio m\'as se acerca a anularse. No saltan,
+no desaparecen y var\'ian de forma continua con los coeficientes. Este paper verifica por m\'aquina la
+teor\'ia estructural de ese recuento mejor.
 
 La imagen que conviene retener es la m\'as simple no trivial. El polinomio $p=x^2+1$ no tiene ra\'iz
 real, pero su gr\'afica baja a un \'unico acercamiento m\'aximo en $x=0$. Las ra\'ices virtuales ven
-ese acercamiento: $p$ tiene la ra\'iz virtual doble $\rho_{2,1}=\rho_{2,2}=0$. Donde habr\'ia una
-ra\'iz real, hay una virtual; donde se esconden dos ra\'ices conjugadas, las dos ra\'ices virtuales
-colisionan en el fondo de la hondonada (Figura~\ref{fig:fillin}). Nada se inventa---la construcci\'on
-es expl\'icita y semialgebraica---y nada se pierde: el recuento siempre es $d$.
+ese acercamiento: $p$ tiene la ra\'iz virtual doble $\rho_{2,1}=\rho_{2,2}=0$
+(Figura~\ref{fig:fillin}). Donde habr\'ia una ra\'iz real, hay una virtual; donde se esconden dos
+ra\'ices conjugadas, las dos ra\'ices virtuales colisionan en el fondo de la hondonada en vez de
+desaparecer. Nada se inventa---la construcci\'on es expl\'icita y semialgebraica---y nada se pierde:
+\textbf{el recuento siempre es $d$}. El hilo conductor del paper es ese contraste: las ra\'ices reales
+son un recuento que tiembla y las virtuales son la familia estable de $d$ elementos por debajo, y la
+estabilidad no se afirma sino que se \emph{construye}, lo bastante concreta como para que un n\'ucleo
+la verifique.
 
-Este paper formaliza la parte estructural de esa historia: la construcci\'on, el recuento, el orden y
-el entrelazado. La igualdad aritm\'etica con la ca\'ida de variaciones de signo---la parte que gana el
-nombre ``Budan--Fourier''---es la secuela, y la Secci\'on~\ref{sec:boundary} dice exactamente por
-qu\'e se retiene. Lo que lo inicia es la pregunta: \emph{¿qu\'e es una ra\'iz virtual, lo bastante
-concreta como para que un asistente de pruebas la acepte, y por qu\'e siempre hay $d$?}
+El objeto es de Gonz\'alez-Vega, Lombardi y Mah\'e~\cite{glm}, y es el portador natural del recuento de
+Budan--Fourier, vuelto igualdad a trav\'es de \'el por Coste, Lajous, Lombardi y Roy~\cite{coste}. Este
+paper formaliza la parte estructural de esa historia---la construcci\'on, el recuento, el orden y el
+entrelazado de Rolle---y es honesto, en la Secci\'on~\ref{sec:boundary}, sobre el recuento aritm\'etico
+que deja a la secuela. Llegu\'e a \'el como llegu\'e a Sturm~\cite{sturmlean} y a
+Budan--Fourier~\cite{bflean}: preguntando qu\'e resultados cl\'asicos de recuento de ra\'ices le faltan
+a una biblioteca madura, y hallando las ra\'ices virtuales ausentes de todo asistente que pude buscar.
 
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[scale=0.95]
-  \useasboundingbox (-2.9,-0.95) rectangle (2.9,3.1);
+  \useasboundingbox (-2.9,-0.6) rectangle (2.9,3.15);
   \draw[->,thick] (-2.6,0) -- (2.6,0) node[right,font=\small] {$x$};
-  \draw[->,thick] (0,-0.4) -- (0,3.0) node[above,font=\small] {$y$};
+  \draw[->,thick] (0,0) -- (0,3.0) node[above,font=\small] {$y$};
   \draw[ggteal,very thick,domain=-1.55:1.55,samples=80] plot (\x,{\x*\x+1});
-  \node[ggteal,font=\small] at (1.7,2.7) {$p=x^2+1$};
+  \node[ggteal,font=\small] at (1.75,2.7) {$p=x^2+1$};
   \filldraw[ggamber] (0,1) circle (1.6pt);
   \draw[ggamber,dashed] (0,1) -- (0,0);
-  \filldraw[ggamber] (0,0) circle (2.2pt);
-  \node[ggamber!80!black,font=\scriptsize,below=1pt] at (0,0) {$\rho_{2,1}=\rho_{2,2}=0$};
-  \node[font=\scriptsize,align=center] at (0,-0.6) {ra\'iz virtual doble\\al fondo de la hondonada};
+  \filldraw[ggamber] (0,0) circle (2.4pt);
+  \node[ggamber!80!black,font=\scriptsize,anchor=west] at (0.18,-0.28)
+    {$\rho_{2,1}=\rho_{2,2}=0$ (ra\'iz virtual doble)};
 \end{tikzpicture}
 \caption{Ra\'ices que siempre est\'an ah\'i. El polinomio $x^2+1$ no tiene ra\'iz real, pero s\'i una
 ra\'iz virtual doble en $x=0$, donde la gr\'afica m\'as se acerca al eje. Un polinomio de grado~$2$
@@ -136,9 +138,14 @@ intervalo de encuadre, la construcci\'on devuelve la lista \lean{[0,\,0]}.}
 \label{fig:fillin}
 \end{figure}
 
-\section{P1: ¿qu\'e es una ra\'iz virtual, y por qu\'e exactamente \texorpdfstring{$d$}{d}?}\label{sec:q1}
+\section{Las \texorpdfstring{$d$}{d} ra\'ices que siempre est\'an ah\'i}\label{sec:q1}
 
-\emph{La idea en una l\'inea.} Entre dos puntos cr\'iticos consecutivos de $p$---dos ra\'ices
+La idea de que un polinomio carga $d$ ``ra\'ices'' reales can\'onicas con independencia de cu\'antas
+sean genuinas es de Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm}, enmarcada en la teor\'ia de
+variaci\'on de signos cuyo tratamiento de libro es Basu--Pollack--Roy~\cite{bpr}, Cap.~2. La
+definici\'on es \lean{vroots} y el recuento es \lean{vroots\_length}.
+
+Entre dos puntos cr\'iticos consecutivos de $p$---dos ra\'ices
 consecutivas de $p'$---la derivada mantiene signo constante, as\'i que $p$ es estrictamente
 mon\'otona ah\'i y $|p|$ tiene un \'unico m\'inimo. El punto donde se alcanza ese m\'inimo es una
 ra\'iz virtual: la \'unica ra\'iz de $p$ en la celda si $p$ cambia de signo a trav\'es de ella, y si
@@ -157,13 +164,19 @@ En Lean es \lean{vroots\_length}: la lista \lean{vroots lo hi p} de ra\'ices vir
 el excedente par de Budan--Fourier, ahora realizado como colisiones de ra\'ices virtuales fuera del
 eje.
 
-La cuenta entregada: esto es una receta recursiva limpia sobre el papel---\emph{minimiza $|p|$ en cada
-celda $p'$-mon\'otona}---pero ``el punto donde $|p|$ es m\'inimo'' es una elecci\'on, y ``las celdas''
-las corta un objeto definido por la misma recursi\'on. ¿C\'omo se le entrega eso a una m\'aquina?
+La receta es limpia sobre el papel---\emph{minimiza $|p|$ en cada celda $p'$-mon\'otona}---pero ``el
+punto donde $|p|$ es menor'' es una elecci\'on, y ``las celdas'' las corta un objeto definido por la
+misma recursi\'on. Ambas han de hacerse expl\'icitas antes de que un n\'ucleo las acepte.
 
-\section{P2: c\'omo construirlas para que una m\'aquina las acepte}\label{sec:q2}
+\section{Constru\'irlas: el operador de elecci\'on \texorpdfstring{$\Rd_d$}{R\_d}}\label{sec:q2}
 
-\emph{El intervalo de encuadre.} Las celdas de $p$ las cortan las ra\'ices virtuales de $p'$ junto con
+La construcci\'on recursiva---cortar la recta por los puntos cr\'iticos, minimizar $|p|$ en cada
+trozo---es la definici\'on de Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm}, ligada al recuento de
+variaci\'on de signos por Coste~\cite{coste}. Donde una prueba a mano dice ``toma el punto donde $|p|$
+es menor'', una formal debe producirlo: ese es el operador \lean{R} (existencia
+\lean{exists\_isMinOn\_abs\_eval}), ensamblado por la recursi\'on \lean{vroots}.
+
+Las celdas de $p$ las cortan las ra\'ices virtuales de $p'$ junto con
 dos vallas exteriores. En vez de trabajar en todo $\R$ desde el principio, fijo un intervalo cerrado
 $[lo,hi]$ y construyo las ra\'ices virtuales dentro de \'el; tomar $lo,hi$ m\'as all\'a de toda ra\'iz
 de la torre de derivadas (una cota de Cauchy) recupera el objeto global, y ese \'ultimo paso se
@@ -179,6 +192,16 @@ rev\'es), el teorema del valor intermedio da una ra\'iz, el m\'inimo de $|p|$ es
 minimizador es esa ra\'iz---\lean{R\_eval\_eq\_zero\_of\_le\_zero\_le}. As\'i que en una celda donde
 $p$ cambia de signo, $\Rd_d$ es la ra\'iz genuina; donde no, es el extremo m\'as cercano. Ese es el
 sentido preciso en que las ra\'ices virtuales extienden a las reales.
+
+\begin{recipebox}{El operador de elecci\'on $\Rd_d(a,b,p)$ (receta)}
+En un intervalo cerrado $[a,b]$, toma \textbf{cualquier minimizador de $|p|$} (existe, $[a,b]$ es
+compacto). Dos hechos bastan para toda la teor\'ia. \textbf{Cae en el intervalo},
+$\Rd_d(a,b,p)\in[a,b]$ (\lean{R\_mem}); este \'unico hecho da el entrelazado. \textbf{Es una ra\'iz
+real cuando $p$ tiene una}: si $p$ cambia de signo en $[a,b]$, el m\'inimo de $|p|$ es $0$, luego
+$\Rd_d$ es una ra\'iz genuina (\lean{R\_eval\_eq\_zero\_of\_le\_zero\_le}); as\'i extienden las
+virtuales a las reales. La unicidad, donde $p'$ mantiene signo, sale gratis de los ladrillos de
+monoton\'ia de la secci\'on siguiente---as\'i que el minimizador \emph{elegido} es de hecho el \'unico.
+\end{recipebox}
 
 \emph{La recursi\'on.} Las ra\'ices virtuales se ensamblan listando los breakpoints
 \[
@@ -219,7 +242,14 @@ es lo que las hace salir ordenadas y entrelazadas con las $\rho'_{2,j}$.}
 \label{fig:construct}
 \end{figure}
 
-\section{P3: d\'onde se resiste la formalizaci\'on}\label{sec:q3}
+\section{Hacer formal la construcci\'on}\label{sec:q3}
+
+La construcci\'on es cl\'asica y el entrelazado tiene una prueba a mano de una l\'inea---``$\Rd_d$ cae
+en su celda, y las celdas comparten extremos''---as\'i que lo que cuesta el trabajo no es matem\'atica
+nueva sino la contabilidad que hace que una familia recursiva y definida por elecci\'on pase un
+n\'ucleo, el an\'alogo de la cirug\'ia de listas que necesit\'o el desarrollo compa\~nero de
+Budan--Fourier~\cite{bflean}. Entra en \lean{vroots\_chain\_mem} (el invariante maestro) y
+\lean{isChain\_zipWith\_R}.
 
 \emph{Una elecci\'on no computable, usada con honestidad.} $\Rd_d$ es un minimizador \emph{elegido},
 as\'i que \lean{R} es \lean{noncomputable} y el desarrollo se apoya en \lean{Classical.choice}. Es
@@ -251,12 +281,18 @@ pruebas para conciliar las cotas. Y un \lean{rcases} destructivo sobre una ecuac
 \lean{le\_refl lo}), pero del tipo que solo un n\'ucleo detecta. No son profundas, pero son justo los
 gestos de la mano que un asistente de pruebas rechaza.
 
-La cuenta entregada: la cadena y la localizaci\'on por \'indice est\'an probadas; \emph{¿qu\'e dan, y
-qu\'e queda fuera de alcance por ahora?}
+La cadena y la localizaci\'on por \'indice, una vez probadas, son exactamente sobre lo que descansa el
+entrelazado.
 
-\section{P4: qu\'e da la teor\'ia certificada}\label{sec:q4}
+\section{El entrelazado de Rolle}\label{sec:q4}
 
-\emph{El entrelazado de Rolle.} La consecuencia principal es el entrelazado de las ra\'ices virtuales
+Que las ra\'ices de $p$ y $p'$ se intercalen es de Rolle, de 1690~\cite{rolle}; que las
+ra\'ices \emph{virtuales} se intercalen del mismo modo---incluso cuando no hay ra\'ices reales---es el
+refinamiento de Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm} y el n\'ucleo estructural del teorema de
+recuento de Coste~\cite{coste}. Es \lean{vroots\_interlacing}, que descansa en la localizaci\'on por
+\'indice \lean{vroots\_getElem\_mem}.
+
+La consecuencia principal es el entrelazado de las ra\'ices virtuales
 de $p$ con las de $p'$:
 \begin{theorem}[Entrelazado de Rolle de ra\'ices virtuales; \lean{vroots\_interlacing}]\label{thm:interlace}
 Para $lo\le hi$ y cada \'indice $r$ en rango,
@@ -295,8 +331,34 @@ a\~nadido el teorema del recuento. Y como la familia
 est\'a definida para todo polinomio, con ra\'ices reales o sin ellas, conecta los m\'etodos de
 intervalo con el \'algebra del discriminante: un par de ra\'ices virtuales colisiona exactamente cuando
 dos ra\'ices reales est\'an a punto de volverse complejas, que es de donde sale el excedente par de
-Budan--Fourier. La teor\'ia estructural formalizada aqu\'i es el cimiento sobre el que se sostiene todo
-eso.
+Budan--Fourier (Figura~\ref{fig:bifurc}). La teor\'ia estructural formalizada aqu\'i es el cimiento
+sobre el que se sostiene todo eso.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.35]
+  \useasboundingbox (-1.85,-1.7) rectangle (1.95,1.8);
+  \draw[->,thick] (-1.6,0) -- (1.8,0) node[right,font=\small] {$t$};
+  \draw[->,thick] (0,-1.55) -- (0,1.65) node[above,font=\small] {ra\'iz};
+  \draw[ggteal,very thick,domain=0:1.4,samples=70] plot ({\x},{sqrt(\x)});
+  \draw[ggteal,very thick,domain=0:1.4,samples=70] plot ({\x},{-sqrt(\x)});
+  \draw[ggamber,very thick] (-1.5,0.05) -- (0,0.05);
+  \draw[ggamber,very thick] (-1.5,-0.05) -- (0,-0.05);
+  \filldraw[ggamber] (0,0) circle (1.7pt);
+  \node[ggteal,font=\scriptsize,align=center] at (1.0,1.32) {ra\'ices reales $\pm\sqrt{t}$\\($=$ virtuales)};
+  \node[ggamber!80!black,font=\scriptsize,align=center] at (-0.82,0.62) {ra\'iz virtual\\doble $\rho=0$};
+  \node[font=\scriptsize,align=center,text=black!65] at (-0.82,-0.7) {sin ra\'ices\\reales};
+  \node[font=\scriptsize] at (0.62,-0.42) {colisi\'on};
+\end{tikzpicture}
+\caption{Ra\'ices que siempre est\'an ah\'i, al mover un par\'ametro. Para $p_t=x^2-t$ las dos ra\'ices
+reales $\pm\sqrt{t}$ (teal) existen solo para $t\ge 0$ y desaparecen al caer $t$ por debajo de $0$; las
+dos ra\'ices \emph{virtuales} (\'ambar) persisten para \emph{todo} $t$, coincidiendo con las reales
+cuando $t\ge 0$ y colisionando en la ra\'iz virtual doble $\rho=0$ para $t<0$. El recuento de ra\'ices
+reales salta $2\to 0$ en $t=0$; el de virtuales se queda en $2$. La colisi\'on en $t=0$ es exactamente
+donde se forma un par conjugado---el origen del excedente par de Budan--Fourier. (Otra vista del mismo
+fen\'omeno que la Figura~\ref{fig:fillin}, ahora en movimiento.)}
+\label{fig:bifurc}
+\end{figure}
 
 \section{Las piezas}\label{sec:blocks}
 
@@ -393,12 +455,10 @@ nombre, y agradecer\'ia una indicaci\'on.
 realiz\'o con un asistente de IA; el n\'ucleo de Lean certifica las pruebas, y las delimitaciones de
 alcance de arriba son m\'ias.
 
-\section{Preguntas reflexivas, para la siguiente cuenta}\label{sec:questions}
+\section{Qu\'e queda abierto}\label{sec:questions}
 
-Una sarta de cuentas est\'a hecha para continuarse. El valor de certificar esta teor\'ia estructural se
-mide por lo que permite preguntar despu\'es, y preguntar con m\'as filo. Cierro con las preguntas que
-prefiero llevarme antes que fingir resueltas---cada una un lugar donde este trabajo se queda corto, y
-cada una, creo, un pelda\~no hacia arriba m\'as que un cabo suelto.
+Tres hechos que este desarrollo no resuelve marcan hacia d\'onde apunta; cada uno es un lugar donde el
+trabajo se queda corto, y cada uno es el comienzo del siguiente.
 
 \begin{enumerate}\itemsep3pt
 \item \emph{De dos construcciones a un recuento.} La igualdad principal

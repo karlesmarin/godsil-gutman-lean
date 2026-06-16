@@ -38,6 +38,8 @@
 \newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,
   arc=3pt,left=8pt,right=8pt,top=5pt,bottom=5pt}
 \newcommand{\keyeq}[1]{\begin{center}\keybox{$\displaystyle #1$}\end{center}}
+\newtcolorbox{recipebox}[1]{colframe=ggamber,colback=ggamber!8,arc=3pt,boxrule=0.8pt,
+  title=\textbf{#1},coltitle=white,colbacktitle=ggamber}
 
 \title{\bf Roots That Are Always There\\[4pt]
   \large\normalfont The virtual roots of a real polynomial, machine-checked in Lean~4}
@@ -81,58 +83,57 @@ standard axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 \end{abstract}
 
 \medskip
-\noindent\emph{What you will find here.} A short guided tour, built as a string of beads: each
-section ends with the question the next answers. The first asks what a virtual root \emph{is}, and
-why there are always exactly $d$ of them (Section~\ref{sec:q1}); the second, how to build them so a
-machine will accept the construction (Section~\ref{sec:q2}); the third, where the formalization
-genuinely resists (Section~\ref{sec:q3}); the fourth, what the certified theory gives---the Rolle
-interlacing, and the road to the exact count (Section~\ref{sec:q4}). The load-bearing lemmas are in
-one table (Section~\ref{sec:blocks}); the honest limits, including the deferred count, are in
-Section~\ref{sec:boundary}; and the close asks the questions worth carrying forward. If you read
-only two things, read the interlacing (Theorem~\ref{thm:interlace}) and Figure~\ref{fig:fillin}.
+\noindent The development is a single Lean file, \lean{VirtualRoots.lean}; its load-bearing lemmas are
+gathered in Section~\ref{sec:blocks}, and its limits---chiefly the deferred exact count---are stated
+in Section~\ref{sec:boundary}. If you read only two things, read the interlacing
+(Theorem~\ref{thm:interlace}) and Figure~\ref{fig:fillin}.
 
-\section{The question that begins it}\label{sec:intro}
+\section{A count that does not wobble}\label{sec:intro}
 
-\emph{History bead.} Budan~\cite{budan} and Fourier~\cite{fourier} could bound the number of real
-roots of a polynomial in an interval by a difference of sign counts, but the bound is only an
-inequality: the surplus, always even, is the price of the roots that fail to be real. For two
-centuries that surplus was an error term. In 1998 Gonz\'alez-Vega, Lombardi and Mah\'e~\cite{glm}
-turned it into an object. They observed
-that a degree-$d$ polynomial, real-rooted or not, carries $d$ canonical real numbers---the
-\emph{virtual roots}---that vary continuously with the coefficients, restrict to the genuine roots
-when those are present, and account \emph{exactly} for the Budan--Fourier count. Coste, Lajous,
-Lombardi and Roy later made the count an equality through them~\cite{coste}.
+How many roots does a polynomial have? The honest answer wobbles. A real polynomial of degree $d$ has
+\emph{somewhere between $0$ and $d$} real roots, and the number lurches as the coefficients move:
+$x^2-t$ has two real roots, then one, then none as $t$ falls through zero, while its degree never
+changes. A count that jumps when nothing essential has is a poor count. \textbf{There is a better one:
+a degree-$d$ polynomial always has exactly $d$ \emph{virtual roots}}---real numbers
+$\rho_{d,1}(p)\le\cdots\le\rho_{d,d}(p)$ that coincide with the genuine roots when those exist and
+otherwise sit where the polynomial comes closest to vanishing. They never jump, never disappear, and
+vary continuously with the coefficients. This paper machine-checks the structural theory of that
+better count.
 
 The picture to keep is the simplest non-trivial one. The polynomial $p=x^2+1$ has no real root, yet
 its graph dips to a single closest approach at $x=0$. Virtual roots see that approach: $p$ has the
-double virtual root $\rho_{2,1}=\rho_{2,2}=0$. Where a real root would be, there is a virtual one;
-where two conjugate roots hide, the two virtual roots collide at the foot of the dip
-(Figure~\ref{fig:fillin}). Nothing is invented---the construction is explicit and semialgebraic---and
-nothing is lost: the count is always $d$.
+double virtual root $\rho_{2,1}=\rho_{2,2}=0$ (Figure~\ref{fig:fillin}). Where a real root would be,
+there is a virtual one; where two conjugate roots hide, the two virtual roots collide at the foot of
+the dip rather than vanish. Nothing is invented---the construction is explicit and
+semialgebraic---and nothing is lost: \textbf{the count is always $d$}. The driving thread of the paper
+is this contrast, that real roots are a count that wobbles and virtual roots are the stable
+$d$-element family underneath, and that the stability is not asserted but \emph{constructed},
+concretely enough for a kernel to check.
 
-This paper formalizes the part of that story that is structural: the construction, the count, the
-order, and the interlacing. The arithmetic equality with the sign-variation drop---the part that
-earns the name ``Budan--Fourier''---is the sequel, and Section~\ref{sec:boundary} says exactly why it
-is held back. What begins it is the question: \emph{what is a virtual root, concretely enough that a
-proof assistant will accept it, and why are there always $d$?}
+The object is due to Gonz\'alez-Vega, Lombardi and Mah\'e~\cite{glm}, and it is the natural carrier of
+the Budan--Fourier count, made an equality through it by Coste, Lajous, Lombardi and Roy~\cite{coste}.
+This paper formalizes the part of that story that is structural---the construction, the count, the
+order, and the Rolle interlacing---and is honest, in Section~\ref{sec:boundary}, about the arithmetic
+count it leaves to the sequel. I came to it as I came to Sturm~\cite{sturmlean} and
+Budan--Fourier~\cite{bflean}: by asking which classical results in real-root counting a mature library
+is still missing, and finding the virtual roots absent from every prover I could search.
 
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[scale=0.95]
-  \useasboundingbox (-2.9,-0.95) rectangle (2.9,3.1);
-  % axes
+  \useasboundingbox (-2.9,-0.6) rectangle (2.9,3.15);
+  % axes (y-axis starts at the x-axis, no stub below to clash with the label)
   \draw[->,thick] (-2.6,0) -- (2.6,0) node[right,font=\small] {$x$};
-  \draw[->,thick] (0,-0.4) -- (0,3.0) node[above,font=\small] {$y$};
+  \draw[->,thick] (0,0) -- (0,3.0) node[above,font=\small] {$y$};
   % parabola y = x^2 + 1 (scaled)
   \draw[ggteal,very thick,domain=-1.55:1.55,samples=80] plot (\x,{\x*\x+1});
-  \node[ggteal,font=\small] at (1.7,2.7) {$p=x^2+1$};
+  \node[ggteal,font=\small] at (1.75,2.7) {$p=x^2+1$};
   % minimum / double virtual root
   \filldraw[ggamber] (0,1) circle (1.6pt);
   \draw[ggamber,dashed] (0,1) -- (0,0);
-  \filldraw[ggamber] (0,0) circle (2.2pt);
-  \node[ggamber!80!black,font=\scriptsize,below=1pt] at (0,0)
-    {$\rho_{2,1}=\rho_{2,2}=0$};
-  \node[font=\scriptsize,align=center] at (0,-0.55) {double virtual root\\at the foot of the dip};
+  \filldraw[ggamber] (0,0) circle (2.4pt);
+  \node[ggamber!80!black,font=\scriptsize,anchor=west] at (0.18,-0.28)
+    {$\rho_{2,1}=\rho_{2,2}=0$ (double virtual root)};
 \end{tikzpicture}
 \caption{Roots that are always there. The polynomial $x^2+1$ has \emph{no} real root, but a double
 virtual root at $x=0$, where the graph comes closest to the axis. A degree-$2$ polynomial has two
@@ -141,9 +142,14 @@ construction returns the list \lean{[0,\,0]}.}
 \label{fig:fillin}
 \end{figure}
 
-\section{Q1: what is a virtual root, and why exactly \texorpdfstring{$d$}{d}?}\label{sec:q1}
+\section{The \texorpdfstring{$d$}{d} roots that are always there}\label{sec:q1}
 
-\emph{The idea in one line.} Between two consecutive critical points of $p$---two consecutive roots
+The idea that a polynomial carries $d$ canonical real ``roots'' regardless of how many are genuine is
+Gonz\'alez-Vega--Lombardi--Mah\'e's~\cite{glm}, set in the sign-variation theory whose textbook account
+is Basu--Pollack--Roy~\cite{bpr}, Ch.~2. The definition is \lean{vroots} and the count is
+\lean{vroots\_length}.
+
+Between two consecutive critical points of $p$---two consecutive roots
 of $p'$---the derivative keeps a constant sign, so $p$ is strictly monotone there and $|p|$ has a
 single minimum. The point where that minimum is attained is a virtual root: the unique root of $p$ in
 the cell if $p$ changes sign across it, and otherwise the cell endpoint where $p$ is smallest. The
@@ -160,13 +166,19 @@ In Lean this is \lean{vroots\_length}: the list \lean{vroots lo hi p} of virtual
 are always exactly $d$}. The gap between the two counts is precisely the even Budan--Fourier surplus,
 now realized as collisions of virtual roots away from the axis.
 
-The bead handed on: this is a clean recursive recipe on paper---\emph{minimise $|p|$ on each
-$p'$-monotone cell}---but ``the point where $|p|$ is minimised'' is a choice, and ``the cells'' are
-cut by an object defined by the same recursion. How does one hand that to a machine?
+The recipe is clean on paper---\emph{minimise $|p|$ on each $p'$-monotone cell}---but ``the point
+where $|p|$ is least'' is a choice, and ``the cells'' are cut by an object defined by the same
+recursion. Both have to be made explicit before a kernel will accept them.
 
-\section{Q2: how to build them so a machine accepts it}\label{sec:q2}
+\section{Building them: the choice operator \texorpdfstring{$\Rd_d$}{R\_d}}\label{sec:q2}
 
-\emph{The bracketing interval.} The cells of $p$ are cut by the virtual roots of $p'$ together with
+The recursive construction---cut the line by the critical points, minimise $|p|$ on each piece---is the
+definition of Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm}, tied to the sign-variation count by
+Coste~\cite{coste}. Where a paper proof says ``take the point where $|p|$ is least,'' a formal one must
+produce it: this is the operator \lean{R} (existence \lean{exists\_isMinOn\_abs\_eval}), assembled by
+the recursion \lean{vroots}.
+
+The cells of $p$ are cut by the virtual roots of $p'$ together with
 two outer fences. Rather than work on all of $\R$ from the start, I fix a closed interval $[lo,hi]$
 and build the virtual roots inside it; taking $lo,hi$ beyond every root of the derivative tower (a
 Cauchy bound) recovers the global object, and that last step is discussed in
@@ -182,6 +194,16 @@ reverse), the intermediate value theorem gives a root, the minimum of $|p|$ is t
 minimiser is that root---\lean{R\_eval\_eq\_zero\_of\_le\_zero\_le}. So on a cell where $p$ changes
 sign, $\Rd_d$ is the genuine root; where $p$ does not, it is the nearer endpoint. That is the precise
 sense in which virtual roots extend the real ones.
+
+\begin{recipebox}{The choice operator $\Rd_d(a,b,p)$ (recipe)}
+On a closed interval $[a,b]$, take \textbf{any minimiser of $|p|$} (it exists, $[a,b]$ is compact).
+Two facts are all the theory needs. \textbf{It lands in the interval}, $\Rd_d(a,b,p)\in[a,b]$
+(\lean{R\_mem}); this single fact yields the interlacing. \textbf{It is an actual root when $p$ has
+one}: if $p$ changes sign across $[a,b]$, the minimum of $|p|$ is $0$, so $\Rd_d$ is a genuine root
+(\lean{R\_eval\_eq\_zero\_of\_le\_zero\_le}); this is how virtual roots extend the real ones.
+Uniqueness, where $p'$ keeps a sign, comes free from the monotonicity bricks of Q3---so the
+\emph{chosen} minimiser is in fact the only one.
+\end{recipebox}
 
 \emph{The recursion.} The virtual roots are then assembled by listing the breakpoints
 \[
@@ -230,7 +252,13 @@ them come out sorted and interlaced with the $\rho'_{2,j}$.}
 \label{fig:construct}
 \end{figure}
 
-\section{Q3: where the formalization resists}\label{sec:q3}
+\section{Making the construction formal}\label{sec:q3}
+
+The construction is classical and the interlacing has a one-line paper proof---``$\Rd_d$ lands in its
+cell, and cells share endpoints''---so what costs the work is not new mathematics but the bookkeeping
+that makes a recursive, choice-defined family pass a kernel, the analogue of the list-surgery the
+companion Budan--Fourier development~\cite{bflean} needed. It enters in \lean{vroots\_chain\_mem} (the
+master invariant) and \lean{isChain\_zipWith\_R}.
 
 \emph{A noncomputable choice, used honestly.} $\Rd_d$ is a \emph{chosen} minimiser, so \lean{R} is
 \lean{noncomputable} and the development leans on \lean{Classical.choice}. That is sound and standard,
@@ -259,12 +287,17 @@ a destructuring \lean{rcases} on an equation $w=lo$ silently \emph{substitutes} 
 branch---a one-character fix (\lean{le\_rfl} for \lean{le\_refl lo}), but the kind of thing only a
 kernel catches. These are not deep, but they are exactly the hand-waves a proof assistant refuses.
 
-The bead handed on: the chain and the per-index localization are proved; \emph{what do they give, and
-what stays out of reach for now?}
+The chain and the per-index localization, once proved, are exactly what the interlacing rests on.
 
-\section{Q4: what the certified theory gives}\label{sec:q4}
+\section{The Rolle interlacing}\label{sec:q4}
 
-\emph{The Rolle interlacing.} The headline consequence is the interlacing of the virtual roots of $p$
+That the roots of $p$ and $p'$ interleave is Rolle's, from 1690~\cite{rolle}; that the \emph{virtual}
+roots interleave the same way---even when no real roots exist---is the
+Gonz\'alez-Vega--Lombardi--Mah\'e refinement~\cite{glm} and the structural core of Coste's count
+theorem~\cite{coste}. It is \lean{vroots\_interlacing}, resting on the per-index localization
+\lean{vroots\_getElem\_mem}.
+
+The interlacing of the virtual roots of $p$
 with those of $p'$:
 \begin{theorem}[Rolle interlacing of virtual roots; \lean{vroots\_interlacing}]\label{thm:interlace}
 For $lo\le hi$ and each index $r$ in range,
@@ -300,8 +333,39 @@ Basu--Pollack--Roy~\cite{bpr}---the count is exact, so a subdivision method read
 $\V(a)-\V(b)$ on each half has, in principle, a verified guarantee once the count theorem is added.
 And because the family is defined for every polynomial, real-rooted or not, it connects the interval
 methods to the algebra of the discriminant: a pair of virtual roots collides exactly when two real
-roots are about to become complex, which is where the even Budan--Fourier surplus comes from. The
-structural theory formalized here is the foundation all of that stands on.
+roots are about to become complex, which is where the even Budan--Fourier surplus comes from
+(Figure~\ref{fig:bifurc}). The structural theory formalized here is the foundation all of that stands
+on.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.35]
+  \useasboundingbox (-1.85,-1.7) rectangle (1.95,1.8);
+  % axes: horizontal = parameter t, vertical = root location
+  \draw[->,thick] (-1.6,0) -- (1.8,0) node[right,font=\small] {$t$};
+  \draw[->,thick] (0,-1.55) -- (0,1.65) node[above,font=\small] {root};
+  % real roots = virtual roots for t >= 0: x = +/- sqrt(t)
+  \draw[ggteal,very thick,domain=0:1.4,samples=70] plot ({\x},{sqrt(\x)});
+  \draw[ggteal,very thick,domain=0:1.4,samples=70] plot ({\x},{-sqrt(\x)});
+  % virtual roots for t < 0: doubled line at x = 0
+  \draw[ggamber,very thick] (-1.5,0.05) -- (0,0.05);
+  \draw[ggamber,very thick] (-1.5,-0.05) -- (0,-0.05);
+  \filldraw[ggamber] (0,0) circle (1.7pt);
+  % labels
+  \node[ggteal,font=\scriptsize,align=center] at (1.0,1.32) {real roots $\pm\sqrt{t}$\\($=$ virtual)};
+  \node[ggamber!80!black,font=\scriptsize,align=center] at (-0.82,0.62) {double virtual\\root $\rho=0$};
+  \node[font=\scriptsize,align=center,text=black!65] at (-0.82,-0.7) {no real\\roots};
+  \node[font=\scriptsize] at (0.62,-0.42) {collision};
+\end{tikzpicture}
+\caption{Roots that are always there, as a parameter moves. For $p_t=x^2-t$ the two real roots
+$\pm\sqrt{t}$ (teal) exist only for $t\ge 0$ and vanish as $t$ drops below $0$; the two \emph{virtual}
+roots (amber) persist for \emph{all} $t$, coinciding with the real roots when $t\ge 0$ and colliding
+into the double virtual root $\rho=0$ for $t<0$. The real-root count jumps $2\to 0$ at $t=0$; the
+virtual-root count stays $2$. The collision at $t=0$ is exactly where a conjugate pair forms---the
+source of the even Budan--Fourier surplus. (A different view of the same phenomenon as
+Figure~\ref{fig:fillin}, now in motion.)}
+\label{fig:bifurc}
+\end{figure}
 
 \section{The building blocks}\label{sec:blocks}
 
@@ -396,12 +460,10 @@ exclude an unpublished or differently-named development, and I would welcome a p
 carried out with an AI assistant; the Lean kernel certifies the proofs, and the scope statements above
 are mine.
 
-\section{Reflective questions, for the next bead}\label{sec:questions}
+\section{What remains open}\label{sec:questions}
 
-A string of beads is meant to be continued. The worth of certifying this structural theory is
-measured by what it lets one ask next, and ask more sharply. I close with the questions I would rather
-carry forward than pretend to have settled---each a place where this work stops short, and each, I
-think, a rung up from it rather than merely a loose end.
+Three facts this development does not settle mark where it points next; each is a place the work stops
+short, and each is the start of the following one.
 
 \begin{enumerate}\itemsep3pt
 \item \emph{From two constructions to one count.} The headline equality
