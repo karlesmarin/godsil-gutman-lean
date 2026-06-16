@@ -20,7 +20,6 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
 \usepackage{float}
-\usepackage[section]{placeins}
 \usepackage[most]{tcolorbox}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
@@ -92,24 +91,24 @@ Section~\ref{sec:boundary}; and the closing section asks, by way of reflection, 
 would rather carry into the next paper than pretend to have settled. If you read only two things,
 read Theorem~\ref{thm:bf} and Figure~\ref{fig:tower}; the rest is the argument that connects them.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
   obj/.style={draw=ggteal,thick,rounded corners=2pt,fill=ggband!40,align=center,
-    font=\small,inner sep=5pt,minimum height=10mm},
-  q/.style={font=\scriptsize\itshape,text=ggamber!80!black,align=center},
+    font=\small,inner sep=4pt,minimum height=11mm,text width=23mm},
+  q/.style={font=\scriptsize\itshape,text=ggamber!80!black,align=center,fill=white,inner sep=1pt},
   arr/.style={-{Stealth[length=2.4mm]},thick,ggteal}]
   \node[obj] (seq) {a tower of\\derivatives};
-  \node[obj,right=18mm of seq] (count) {a count of\\sign changes};
-  \node[obj,right=18mm of count] (quantum) {one root,\\one step (per mult.)};
-  \node[obj,below=14mm of quantum] (glue) {glue the steps\\over $(a,b]$};
-  \node[obj,left=18mm of glue] (free) {Descartes,\\and its even gap};
-  \node[obj,left=18mm of free,fill=ggamber!25,draw=ggamber] (done)
-    {\textbf{Budan--Fourier,}\\\textbf{machine-checked}};
-  \draw[arr] (seq) -- node[q,above=1mm] {Q1: how can\\subtraction bound?} (count);
-  \draw[arr] (count) -- node[q,above=1mm] {Q2: why move,\\and by how much?} (quantum);
-  \draw[arr] (quantum) -- node[q,right=1mm] {Q3: where does\\it resist?} (glue);
-  \draw[arr] (glue) -- node[q,above=1mm] {Q4: what is\\then free?} (free);
+  \node[obj,right=34mm of seq] (count) {a count of\\sign changes};
+  \node[obj,right=34mm of count] (quantum) {one root,\\one step / mult.};
+  \node[obj,below=16mm of quantum] (glue) {glue the steps\\over $(a,b]$};
+  \node[obj,left=34mm of glue] (free) {Descartes\\\& its even gap};
+  \node[obj,left=34mm of free,fill=ggamber!25,draw=ggamber] (done)
+    {\textbf{Budan--}\\\textbf{Fourier,}\\\textbf{checked}};
+  \draw[arr] (seq) -- node[q,above=2pt] {Q1:\\count?} (count);
+  \draw[arr] (count) -- node[q,above=2pt] {Q2: by\\how much?} (quantum);
+  \draw[arr] (quantum) -- node[q,right=2pt,fill=none] {Q3:\\resists?} (glue);
+  \draw[arr] (glue) -- node[q,above=2pt] {Q4: then\\free?} (free);
   \draw[arr] (free) -- (done);
 \end{tikzpicture}
 \caption{The reader's map. From the derivative tower to a certified interval count and what it
@@ -219,7 +218,7 @@ $p_B$: the drop happens at a critical point that no root explains, and it comes 
 size because $p_B$'s missing roots are a conjugate pair. This is the phenomenon Descartes' rule
 exhibits globally; Budan--Fourier localizes it.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{budan_fig1_tower}
 \caption{The derivative tower counts roots up to an even surplus. \emph{(A)} $p_A=(x-1)^2(x+1)$:
@@ -232,7 +231,7 @@ sign and count is asserted against exact arithmetic before drawing.}
 \label{fig:tower}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[htbp]
 \centering\small
 \rowcolors{2}{ggband!35}{white}
 \begin{tabular}{@{}rccccr@{}}
@@ -295,9 +294,9 @@ sign change; \textbf{on the left each vanishing member takes the opposite sign},
 \emph{alternates} and contributes one sign change per member.
 \end{recipebox}
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.92\textwidth]{budan_fig2_critical}
+\includegraphics[width=0.74\textwidth]{budan_fig2_critical}
 \caption{Anatomy of a critical point, for the double root $c=1$ of $p_A$ (the block $p,p'$ vanishes,
 $m=2$). Reading each sign just off $c$ from the member above it: on the right (teal) a vanishing
 member copies the sign above---the block collapses, $\V(c^+)=0$; on the left (plum) it takes the
@@ -360,7 +359,7 @@ invariant, no polynomials. \emph{Structural:} \lean{signs\_right\_eq\_Rseq} and
 two monotonicity bricks and by nothing else.
 \end{recipebox}
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
   s/.style={draw=ggteal,rounded corners=1.5pt,minimum size=7.5mm,inner sep=2pt,font=\small,fill=white},
@@ -460,9 +459,9 @@ transfers; what the tower adds over the coefficients is precisely the interval a
 the even gap. Figure~\ref{fig:shadow} makes the accounting visible: the bound splits into the real
 roots actually present and twice the conjugate pairs the interval cannot see.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{budan_fig3_shadow}
+\includegraphics[width=0.88\textwidth]{budan_fig3_shadow}
 \caption{Descartes' shadow. For $p=(x^2+1)(x-1)$ on $(0,2]$ the tower drop is $\V(0)-\V(2)=3$: the
 single real root $x=1$ contributes $1$, and the unseen conjugate pair $\pm i$ contributes the even
 remainder $2$. Read on $(0,\infty)$ this is Descartes' rule---three coefficient sign changes
@@ -492,7 +491,7 @@ are the foundation on which the same could be built over Mathlib. Nothing in thi
 isolator---that is named honestly among the open questions---but the load-bearing lemma it would
 stand on is now in the library.
 
-\begin{table}[t]
+\begin{table}[htbp]
   \centering\small
   \arrayrulecolor{ggteal}
   \caption{The load-bearing results, all \lean{sorry}-free in \lean{BudanFourier.lean} (Lean~4 /
@@ -533,7 +532,7 @@ pure-list \lean{Rseq\_spec}/\lean{Lseq\_spec} and the multiplicity identificatio
 drop \lean{fourierVar\_drop\_at\_critical\_point}; and the global induction over critical points
 assembles \lean{budan\_fourier}.
 
-\begin{table}[t]
+\begin{table}[htbp]
 \centering\small
 \rowcolors{2}{ggband!35}{white}
 \begin{tabular}{@{}rcccr@{}}
@@ -555,7 +554,7 @@ and the surplus is even: the signature of a conjugate pair, and exactly the
 \label{tab:signsB}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
   \centering\small
   \arrayrulecolor{ggteal}
   \caption{The development measured. Compile time is for checking \lean{BudanFourier.lean} against a
