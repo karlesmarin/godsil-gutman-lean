@@ -414,17 +414,24 @@ the interlacing.
     \textcolor{white}{\textbf{Quantity}} & \textcolor{white}{\textbf{Value}} \\
     \midrule
     \rowcolor{ggband}
-    Lean file & \lean{VirtualRoots.lean} \\
-    Public theorems / definitions & 16 / 2 \\
+    Lines in \lean{VirtualRoots.lean} & $369$ \\
+    Public theorems / definitions ($+$ private) & $16\,/\,2$ ($+1$) \\
     \rowcolor{ggband}
-    Axioms (headline theorems) & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
-    \lean{sorry} count & 0 \\
+    Mathlib dependencies (imports) & $5$ modules \\
+    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Deriv.Polynomial}, \lean{Deriv.MeanValue}, \lean{Topology.Algebra.Polynomial},} \\
+    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Topology.Order.Compact}, \lean{Topology.Order.IntermediateValue}} \\
     \rowcolor{ggband}
+    \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
+    Axioms beyond Lean's core & $0$ (only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
+    \rowcolor{ggband}
+    Compile time (warm Mathlib) & ${\approx}\,8$\,s \\
     Toolchain & Lean~4 (godsil pin v4.30) over Mathlib \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
-  \caption{The development measured. Build: \lean{lake env lean VirtualRoots.lean}, exit~0.}
+  \caption{The development measured. Build: \lean{lake env lean VirtualRoots.lean}, exit~0; compile
+  time is for checking the file against a prebuilt Mathlib. The footprint is deliberately small---five
+  analysis/topology modules and no heavy algebra---because the construction is elementary.}
   \label{tab:metrics}
 \end{table}
 
@@ -457,8 +464,11 @@ entry formalizes the inequality with multiplicity but not the virtual-root objec
 exclude an unpublished or differently-named development, and I would welcome a pointer.
 
 \emph{Authorship.} The mathematics is classical, due to the authors cited. The formalization was
-carried out with an AI assistant; the Lean kernel certifies the proofs, and the scope statements above
-are mine.
+carried out in close interaction with an AI assistant (Claude, Anthropic): the choice of target, the
+overall proof architecture, the statements, and the scope and novelty claims are mine; the assistant
+drafted and iterated much of the Lean under that direction. The division does not bear on validity---a
+proof is accepted only when the Lean kernel type-checks it, which it does, with the axiom profile
+reported above---but it is stated plainly here for scientific attribution.
 
 \section{What remains open}\label{sec:questions}
 

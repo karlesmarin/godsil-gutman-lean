@@ -408,17 +408,25 @@ entrelazado.
     \textcolor{white}{\textbf{Cantidad}} & \textcolor{white}{\textbf{Valor}} \\
     \midrule
     \rowcolor{ggband}
-    Fichero Lean & \lean{VirtualRoots.lean} \\
-    Teoremas / definiciones p\'ublicas & 16 / 2 \\
+    L\'ineas en \lean{VirtualRoots.lean} & $369$ \\
+    Teoremas / definiciones p\'ublicas ($+$ privado) & $16\,/\,2$ ($+1$) \\
     \rowcolor{ggband}
-    Axiomas (teoremas principales) & \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
-    N\'umero de \lean{sorry} & 0 \\
+    Dependencias de Mathlib (imports) & $5$ m\'odulos \\
+    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Deriv.Polynomial}, \lean{Deriv.MeanValue}, \lean{Topology.Algebra.Polynomial},} \\
+    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Topology.Order.Compact}, \lean{Topology.Order.IntermediateValue}} \\
     \rowcolor{ggband}
+    \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
+    Axiomas fuera del n\'ucleo de Lean & $0$ (solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
+    \rowcolor{ggband}
+    Tiempo de compilaci\'on (Mathlib precompilado) & ${\approx}\,8$\,s \\
     Toolchain & Lean~4 (godsil pin v4.30) sobre Mathlib \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
-  \caption{El desarrollo, medido. Build: \lean{lake env lean VirtualRoots.lean}, exit~0.}
+  \caption{El desarrollo, medido. Build: \lean{lake env lean VirtualRoots.lean}, exit~0; el tiempo de
+  compilaci\'on es para verificar el fichero contra un Mathlib precompilado. La huella es
+  deliberadamente peque\~na---cinco m\'odulos de an\'alisis/topolog\'ia y nada de \'algebra
+  pesada---porque la construcci\'on es elemental.}
   \label{tab:metrics}
 \end{table}
 
@@ -452,8 +460,12 @@ Hago la afirmaci\'on al nivel del objeto nombrado; no puedo excluir un desarroll
 nombre, y agradecer\'ia una indicaci\'on.
 
 \emph{Autor\'ia.} La matem\'atica es cl\'asica, debida a los autores citados. La formalizaci\'on se
-realiz\'o con un asistente de IA; el n\'ucleo de Lean certifica las pruebas, y las delimitaciones de
-alcance de arriba son m\'ias.
+realiz\'o en interacci\'on estrecha con un asistente de IA (Claude, Anthropic): la elecci\'on del
+objetivo, la arquitectura general de la prueba, los enunciados y las afirmaciones de alcance y novedad
+son m\'ias; el asistente redact\'o e iter\'o buena parte del Lean bajo esa direcci\'on. La divisi\'on
+no afecta a la validez---una prueba se acepta solo cuando el n\'ucleo de Lean la type-checkea, cosa que
+hace, con el perfil de axiomas reportado arriba---pero se enuncia aqu\'i con claridad por atribuci\'on
+cient\'ifica.
 
 \section{Qu\'e queda abierto}\label{sec:questions}
 
