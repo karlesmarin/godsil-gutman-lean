@@ -21,6 +21,16 @@ lean_lib «Sturm» where
   -- Budan–Fourier development imports and reuses on the derivative tower.
 
 @[default_target]
+lean_lib «BudanFourier» where
+  -- The Budan–Fourier theorem (real-root counting via the derivative tower). First in Lean.
+  -- Imported by the virtual-root exact count (= the fourierVar drop).
+
+@[default_target]
+lean_lib «VirtualRoots» where
+  -- Virtual roots of a real polynomial (Coste / González-Vega–Lombardi–Mahé): the ℛ_d
+  -- construction, count = degree, sortedness, and the Rolle interlacing. First in any ITP.
+
+@[default_target]
 lean_lib «RealStable» where
   -- RealRooted predicate + closure algebra + Interlaces (pencil form).
   -- Foundation toward Heilmann–Lieb (real-rootedness), used by MatchingPoly.
