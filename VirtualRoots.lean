@@ -203,6 +203,92 @@ public theorem isChain_zipWith_R (p : Polynomial ℝ) : ∀ (bps : List ℝ),
       refine ⟨hbound, ?_⟩
       simpa [List.zipWith_cons_cons] using ih
 
+/-! ## The breakpoints invariant (milestone 1, brick 4: the interlacing)
+
+The recursion that builds `vroots` is driven by one invariant: the augmented list
+`lo :: (vroots lo hi p ++ [hi])` — the breakpoints that cut `[lo,hi]` for the polynomial *one degree
+up* — is sorted, and every virtual root lands in `[lo,hi]`. The two facts are mutually dependent (a
+breakpoint list is sorted only if its members lie in range, and an `ℛ_d`-value lies in range only
+between sorted breakpoints), so they are proved together by one induction down the derivative tower.
+The chain half is the Rolle interlacing `ρ_{d,r}(P) ≤ ρ_{d-1,r}(P') ≤ ρ_{d,r+1}(P)` in list form. -/
+
+/-- Every `ℛ_d`-value between consecutive breakpoints lands in `[lo,hi]`, provided the breakpoints are
+sorted and themselves lie in `[lo,hi]`. The membership engine, by the same structural recursion as
+`isChain_zipWith_R`. -/
+private theorem zipWith_R_mem_Icc (p : Polynomial ℝ) {lo hi : ℝ} : ∀ (bps : List ℝ),
+    List.IsChain (· ≤ ·) bps → (∀ w ∈ bps, w ∈ Set.Icc lo hi) →
+    ∀ x ∈ List.zipWith (R p) bps bps.tail, x ∈ Set.Icc lo hi
+  | [], _, _ => by simp
+  | [_], _, _ => by simp
+  | x :: y :: l, h, hmem => by
+    obtain ⟨hxy, hrest⟩ := List.isChain_cons_cons.mp h
+    have hzip : List.zipWith (R p) (x :: y :: l) (x :: y :: l).tail
+        = R p x y :: List.zipWith (R p) (y :: l) (y :: l).tail := by
+      simp [List.zipWith_cons_cons]
+    rw [hzip]
+    intro z hz
+    rw [List.mem_cons] at hz
+    rcases hz with rfl | hz
+    · have hx := Set.mem_Icc.mp (hmem x (by simp))
+      have hy := Set.mem_Icc.mp (hmem y (by simp))
+      have hr := Set.mem_Icc.mp (R_mem (p := p) hxy)
+      exact Set.mem_Icc.mpr ⟨le_trans hx.1 hr.1, le_trans hr.2 hy.2⟩
+    · exact zipWith_R_mem_Icc p (y :: l) hrest
+        (fun w hw => hmem w (List.mem_cons_of_mem x hw)) z hz
+
+/-- **The breakpoints invariant.** For `lo ≤ hi`, the augmented breakpoint list
+`lo :: (vroots lo hi p ++ [hi])` is sorted, and every virtual root of `p` lies in `[lo,hi]`. Proved by
+one induction down the tower: the breakpoints for `p` are exactly this list for `derivative p`. -/
+public theorem vroots_chain_mem (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomial ℝ) :
+    List.IsChain (· ≤ ·) (lo :: (vroots lo hi p ++ [hi]))
+      ∧ (∀ x ∈ vroots lo hi p, x ∈ Set.Icc lo hi) := by
+  induction p using vroots.induct (lo := lo) (hi := hi) with
+  | case1 p h =>
+    refine ⟨?_, ?_⟩
+    · rw [vroots, dif_pos h]
+      simp only [List.nil_append]
+      exact List.isChain_cons_cons.mpr ⟨hab, List.isChain_singleton hi⟩
+    · rw [vroots, dif_pos h]; simp
+  | case2 p h ih =>
+    obtain ⟨ihchain, ihmem⟩ := ih
+    have hbmem : ∀ w ∈ lo :: (vroots lo hi (derivative p) ++ [hi]), w ∈ Set.Icc lo hi := by
+      intro w hw
+      rw [List.mem_cons, List.mem_append, List.mem_singleton] at hw
+      rcases hw with rfl | (hw | rfl)
+      · exact Set.mem_Icc.mpr ⟨le_rfl, hab⟩
+      · exact ihmem w hw
+      · exact Set.mem_Icc.mpr ⟨hab, le_rfl⟩
+    have hmem : ∀ x ∈ vroots lo hi p, x ∈ Set.Icc lo hi := by
+      rw [vroots, dif_neg h]; exact zipWith_R_mem_Icc p _ ihchain hbmem
+    have hchainV : List.IsChain (· ≤ ·) (vroots lo hi p) := by
+      rw [vroots, dif_neg h]; exact isChain_zipWith_R p _ ihchain
+    refine ⟨?_, hmem⟩
+    have happend : List.IsChain (· ≤ ·) (vroots lo hi p ++ [hi]) := by
+      refine hchainV.append (List.isChain_singleton hi) ?_
+      intro a ha b hb
+      have hain : a ∈ vroots lo hi p := List.mem_of_mem_getLast? ha
+      rw [List.head?_cons, Option.mem_some_iff] at hb
+      subst hb
+      exact (Set.mem_Icc.mp (hmem a hain)).2
+    refine happend.cons ?_
+    intro y hy
+    have hyin : y ∈ vroots lo hi p ++ [hi] := List.mem_of_mem_head? hy
+    rw [List.mem_append, List.mem_singleton] at hyin
+    rcases hyin with hyin | rfl
+    · exact (Set.mem_Icc.mp (hmem y hyin)).1
+    · exact hab
+
+/-- **The virtual roots come out sorted on `[lo,hi]`** (Rolle interlacing, list form): the breakpoint
+list `lo :: (vroots lo hi p ++ [hi])` for the next degree up is a chain. -/
+public theorem vroots_isChain (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomial ℝ) :
+    List.IsChain (· ≤ ·) (lo :: (vroots lo hi p ++ [hi])) :=
+  (vroots_chain_mem lo hi hab p).1
+
+/-- **Every virtual root lies in the bracketing interval** `[lo,hi]`. -/
+public theorem vroots_subset_Icc (lo hi : ℝ) (hab : lo ≤ hi) (p : Polynomial ℝ) :
+    ∀ x ∈ vroots lo hi p, x ∈ Set.Icc lo hi :=
+  (vroots_chain_mem lo hi hab p).2
+
 /-! ## Roadmap (next milestones)
 
 The remaining development, to be built on the bedrock above:
