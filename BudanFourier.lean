@@ -25,9 +25,10 @@ variations of the Fourier (derivative-tower) sequence, and differs from it by an
 Descartes' rule of signs is the special case read off the coefficients (the `b → ∞` Fourier
 sequence); Mathlib already has that count, so this completes the picture for a bounded interval.
 
-This file is **P0**: the two definitions + the main statement (with `sorry`). The reusable
-sign-variation toolkit (zeros invisible, the `wallCount` parity engine, local sign constancy) lives
-in `Sturm.lean`; the proof phase will factor that shared core out and reuse it here.
+**Complete and `sorry`-free** (depends only on `propext`, `Classical.choice`, `Quot.sound`). The
+reusable sign-variation toolkit (zeros invisible, the `wallCount` parity engine, local sign
+constancy) lives in `Sturm.lean` and is shared here; the local analysis at a critical point uses the
+monotonicity bricks of this file plus the derivative-order characterization of root multiplicity.
 
 ## Reference route
 Wikipedia "Budan's theorem"; Basu–Pollack–Roy, *Algorithms in Real Algebraic Geometry* (Ch. 2);
@@ -35,6 +36,7 @@ W. Li, *The Budan–Fourier theorem and counting real roots with multiplicity*, 
 -/
 public import Mathlib.Algebra.Polynomial.Derivative
 public import Mathlib.Algebra.Polynomial.Roots
+public import Mathlib.Algebra.Polynomial.FieldDivision
 public import Mathlib.Data.List.Destutter
 public import Mathlib.Data.Sign.Basic
 public import Mathlib.Data.Real.Basic
@@ -498,7 +500,175 @@ theorem Lseq_spec : ∀ (s : List SignType), (∀ h : s ≠ [], s.getLast h ≠ 
               refine ⟨m + g', ?_⟩
               rw [if_pos hiL, if_neg hσR]; omega
 
-/-- **Local drop at a critical point — the analytic core (PROOF PENDING).** The one piece with no
+/-! ## Plumbing: the polynomial tower realizes the abstract sign lists `Rseq`/`Lseq`
+
+The two list lemmas `Rseq_spec`/`Lseq_spec` are stated about an abstract list of signs. Here we show
+that, for the derivative tower, the sign pattern at `b` (right of the critical point `c`) *is* `Rseq`
+of the pattern at `c`, and the pattern at `a` (left) *is* `Lseq` of it — the per-member recursion of
+the monotonicity bricks, threaded up the tower via its derivative-chain structure. -/
+
+/-- The top derivative `p^(deg p)` is a nonzero constant, so it never vanishes. -/
+theorem iterate_derivative_natDegree_eval_ne {p : Polynomial ℝ} (hp : p ≠ 0) (x : ℝ) :
+    ((derivative^[p.natDegree]) p).eval x ≠ 0 := by
+  have hdeg : ((derivative^[p.natDegree]) p).natDegree = 0 :=
+    Nat.le_zero.mp (by simpa using natDegree_iterate_derivative p p.natDegree)
+  have hne : (derivative^[p.natDegree]) p ≠ 0 :=
+    fourierSeq_mem_ne_zero hp _ (by rw [fourierSeq_mem]; exact ⟨p.natDegree, le_refl _, rfl⟩)
+  rw [eq_C_of_natDegree_eq_zero hdeg, eval_C]
+  intro h0
+  exact hne (by rw [eq_C_of_natDegree_eq_zero hdeg]; simp [h0])
+
+/-- The last member of the Fourier sequence is `p^(deg p)`. -/
+theorem fourierSeq_getLast {p : Polynomial ℝ} (h : fourierSeq p ≠ []) :
+    (fourierSeq p).getLast h = (derivative^[p.natDegree]) p := by
+  have hrw : fourierSeq p
+      = (List.range p.natDegree).map (fun k => (derivative^[k]) p)
+        ++ [(derivative^[p.natDegree]) p] := by
+    rw [fourierSeq, List.range_succ, List.map_append, List.map_singleton]
+  simp only [hrw, List.getLast_append_singleton]
+
+/-- The last member of the Fourier sequence never vanishes. -/
+theorem fourierSeq_getLast_eval_ne {p : Polynomial ℝ} (hp : p ≠ 0) (x : ℝ)
+    (h : fourierSeq p ≠ []) : ((fourierSeq p).getLast h).eval x ≠ 0 := by
+  rw [fourierSeq_getLast h]; exact iterate_derivative_natDegree_eval_ne hp x
+
+/-- The `i`-th member of the Fourier sequence is `p^(i)`. -/
+theorem fourierSeq_getElem? (p : Polynomial ℝ) (i : ℕ) (hi : i < p.natDegree + 1) :
+    (fourierSeq p)[i]? = some ((derivative^[i]) p) := by
+  rw [fourierSeq, List.getElem?_map, List.getElem?_range hi, Option.map_some]
+
+/-- The Fourier sequence is a derivative chain: each member is the derivative of the previous. -/
+theorem fourierSeq_isChain (p : Polynomial ℝ) :
+    List.IsChain (fun q q' => q' = derivative q) (fourierSeq p) := by
+  rw [fourierSeq, List.isChain_map]
+  refine (List.isChain_range_succ _ p.natDegree).mpr ?_
+  intro m _
+  exact Function.iterate_succ_apply' derivative m p
+
+/-- **Right side = `Rseq`.** For a derivative chain `L` whose last member is nonzero at `c` and none
+of whose members vanishes on `(c, b]`, the sign pattern at `b` equals `Rseq` of the pattern at `c`. -/
+theorem signs_right_eq_Rseq {c b : ℝ} (hcb : c < b) :
+    ∀ (L : List (Polynomial ℝ)),
+      List.IsChain (fun q q' => q' = derivative q) L →
+      (∀ h : L ≠ [], ((L.getLast h).eval c) ≠ 0) →
+      (∀ q ∈ L, ∀ z ∈ Set.Ioc c b, q.eval z ≠ 0) →
+      L.map (fun q => SignType.sign (q.eval b))
+        = Rseq (L.map (fun q => SignType.sign (q.eval c))) := by
+  intro L
+  induction L with
+  | nil => intro _ _ _; rfl
+  | cons q rest ih =>
+    intro hchain hlast hno
+    have hchain_rest := (List.isChain_cons.mp hchain).2
+    have hno_rest : ∀ q' ∈ rest, ∀ z ∈ Set.Ioc c b, q'.eval z ≠ 0 :=
+      fun q' hq' => hno q' (List.mem_cons_of_mem q hq')
+    have hlast_rest : ∀ h : rest ≠ [], ((rest.getLast h).eval c) ≠ 0 := by
+      intro h; have := hlast (List.cons_ne_nil q rest); rwa [List.getLast_cons h] at this
+    have hIH := ih hchain_rest hlast_rest hno_rest
+    rw [List.map_cons, List.map_cons]
+    by_cases hqc : SignType.sign (q.eval c) = 0
+    · have hqc0 : q.eval c = 0 := by rwa [sign_eq_zero_iff] at hqc
+      have hrest : rest ≠ [] := by
+        rintro rfl; exact (hlast (List.cons_ne_nil q [])) (by simpa using hqc0)
+      obtain ⟨r, rest', hrc⟩ := List.exists_cons_of_ne_nil hrest
+      have hr : r = derivative q := (List.isChain_cons.mp hchain).1 r (by rw [hrc]; rfl)
+      have hRdef : Rseq (SignType.sign (q.eval c)
+            :: rest.map (fun q => SignType.sign (q.eval c)))
+          = ((Rseq (rest.map (fun q => SignType.sign (q.eval c)))).headD 0)
+            :: Rseq (rest.map (fun q => SignType.sign (q.eval c))) := by
+        simp only [Rseq, if_pos hqc]
+      rw [hRdef, ← hIH]
+      congr 1
+      rw [hrc, List.map_cons]
+      show SignType.sign (q.eval b) = SignType.sign (r.eval b)
+      rw [hr]
+      exact sign_eval_right_vanish hqc0 hcb le_rfl
+        (fun w hw => by rw [← hr]; exact hno_rest r (by rw [hrc]; exact List.mem_cons_self ..) w hw)
+    · have hRdef : Rseq (SignType.sign (q.eval c)
+            :: rest.map (fun q => SignType.sign (q.eval c)))
+          = SignType.sign (q.eval c)
+            :: Rseq (rest.map (fun q => SignType.sign (q.eval c))) := by
+        simp only [Rseq, if_neg hqc]
+      rw [hRdef, ← hIH]
+      congr 1
+      exact sign_eval_right_kept (by rwa [sign_eq_zero_iff] at hqc) hcb le_rfl
+        (hno q (List.mem_cons_self ..))
+
+/-- **Left side = `Lseq`.** Symmetric to `signs_right_eq_Rseq`: the sign pattern at `a` (left of `c`)
+equals `Lseq` of the pattern at `c`. -/
+theorem signs_left_eq_Lseq {a c : ℝ} (hac : a < c) :
+    ∀ (L : List (Polynomial ℝ)),
+      List.IsChain (fun q q' => q' = derivative q) L →
+      (∀ h : L ≠ [], ((L.getLast h).eval c) ≠ 0) →
+      (∀ q ∈ L, ∀ z ∈ Set.Ico a c, q.eval z ≠ 0) →
+      L.map (fun q => SignType.sign (q.eval a))
+        = Lseq (L.map (fun q => SignType.sign (q.eval c))) := by
+  intro L
+  induction L with
+  | nil => intro _ _ _; rfl
+  | cons q rest ih =>
+    intro hchain hlast hno
+    have hchain_rest := (List.isChain_cons.mp hchain).2
+    have hno_rest : ∀ q' ∈ rest, ∀ z ∈ Set.Ico a c, q'.eval z ≠ 0 :=
+      fun q' hq' => hno q' (List.mem_cons_of_mem q hq')
+    have hlast_rest : ∀ h : rest ≠ [], ((rest.getLast h).eval c) ≠ 0 := by
+      intro h; have := hlast (List.cons_ne_nil q rest); rwa [List.getLast_cons h] at this
+    have hIH := ih hchain_rest hlast_rest hno_rest
+    rw [List.map_cons, List.map_cons]
+    by_cases hqc : SignType.sign (q.eval c) = 0
+    · have hqc0 : q.eval c = 0 := by rwa [sign_eq_zero_iff] at hqc
+      have hrest : rest ≠ [] := by
+        rintro rfl; exact (hlast (List.cons_ne_nil q [])) (by simpa using hqc0)
+      obtain ⟨r, rest', hrc⟩ := List.exists_cons_of_ne_nil hrest
+      have hr : r = derivative q := (List.isChain_cons.mp hchain).1 r (by rw [hrc]; rfl)
+      have hLdef : Lseq (SignType.sign (q.eval c)
+            :: rest.map (fun q => SignType.sign (q.eval c)))
+          = (-(Lseq (rest.map (fun q => SignType.sign (q.eval c)))).headD 0)
+            :: Lseq (rest.map (fun q => SignType.sign (q.eval c))) := by
+        simp only [Lseq, if_pos hqc]
+      rw [hLdef, ← hIH]
+      congr 1
+      rw [hrc, List.map_cons]
+      show SignType.sign (q.eval a) = -(SignType.sign (r.eval a))
+      rw [hr]
+      exact sign_eval_left_vanish hqc0 hac le_rfl
+        (fun w hw => by rw [← hr]; exact hno_rest r (by rw [hrc]; exact List.mem_cons_self ..) w hw)
+    · have hLdef : Lseq (SignType.sign (q.eval c)
+            :: rest.map (fun q => SignType.sign (q.eval c)))
+          = SignType.sign (q.eval c)
+            :: Lseq (rest.map (fun q => SignType.sign (q.eval c))) := by
+        simp only [Lseq, if_neg hqc]
+      rw [hLdef, ← hIH]
+      congr 1
+      exact sign_eval_left_kept (by rwa [sign_eq_zero_iff] at hqc) hac le_rfl
+        (hno q (List.mem_cons_self ..))
+
+/-- **The leading-zero run of a sign list has the prescribed length.** If the first `r` entries are
+`0` and entry `r` (when present) is nonzero, then `takeWhile (· = 0)` has length exactly `r`. -/
+theorem takeWhile_eq_zero_length : ∀ (l : List SignType) (r : ℕ), r ≤ l.length →
+    (∀ i, i < r → l[i]? = some 0) → (∀ x, l[r]? = some x → x ≠ 0) →
+    (l.takeWhile (· = 0)).length = r := by
+  intro l
+  induction l with
+  | nil => intro r hr _ _; simp only [List.length_nil, Nat.le_zero] at hr; rw [hr]; rfl
+  | cons x xs ih =>
+    intro r hr hlt hstop
+    cases r with
+    | zero =>
+      have hx : x ≠ 0 := hstop x (by simp)
+      rw [List.takeWhile_cons_of_neg (by simpa using hx)]
+      rfl
+    | succ r' =>
+      have hx0 : x = 0 := by have := hlt 0 (Nat.succ_pos r'); simpa using this
+      rw [List.takeWhile_cons_of_pos (by simp [hx0]), List.length_cons]
+      have hr' : r' ≤ xs.length := by simp only [List.length_cons] at hr; omega
+      have hlt' : ∀ i, i < r' → xs[i]? = some 0 := by
+        intro i hi; have := hlt (i + 1) (by omega); simpa using this
+      have hstop' : ∀ y, xs[r']? = some y → y ≠ 0 := by
+        intro y hy; apply hstop y; simpa using hy
+      rw [ih r' hr' hlt' hstop']
+
+/-- **Local drop at a critical point — the analytic core.** The one piece with no
 Sturm analogue: the derivative tower is *not* a coprime chain, so a whole block of consecutive
 members `p^(i), …, p^(j)` may vanish at `c`. Stated in additive form `V(a) = V(b) + #roots(a,b] +
 2e`, which packages BOTH the Budan–Fourier inequality `#roots ≤ V(a)−V(b)` and the even-difference
@@ -510,16 +680,119 @@ public theorem fourierVar_drop_at_critical_point {p : Polynomial ℝ} (hp : p �
     (h_only : ∀ q ∈ fourierSeq p, ∀ z ∈ Set.Icc a b, q.eval z = 0 → z = c) :
     ∃ e, fourierVar p a = fourierVar p b
        + (p.roots.filter (fun x => a < x ∧ x ≤ b)).card + 2 * e := by
-  sorry
+  obtain ⟨hca, hcb⟩ := hc
+  have hpmem : p ∈ fourierSeq p := by
+    rw [fourierSeq_mem]; exact ⟨0, Nat.zero_le _, by simp⟩
+  set σ := (fourierSeq p).map (fun q => SignType.sign (q.eval c)) with hσdef
+  -- σ's last entry is nonzero (the top derivative is a nonzero constant)
+  have hσlast : ∀ h : σ ≠ [], σ.getLast h ≠ 0 := by
+    intro h
+    have hrw : σ = ((List.range p.natDegree).map (fun k => (derivative^[k]) p)).map
+          (fun q => SignType.sign (q.eval c))
+        ++ [SignType.sign (((derivative^[p.natDegree]) p).eval c)] := by
+      rw [hσdef, fourierSeq, List.range_succ, List.map_append, List.map_singleton,
+        List.map_append, List.map_singleton]
+    simp only [hrw, List.getLast_append_singleton, ne_eq, sign_eq_zero_iff]
+    exact iterate_derivative_natDegree_eval_ne hp c
+  rw [fourierVar_eq_signVarAt, fourierVar_eq_signVarAt,
+    Sturm.signVarAt_eq_signChanges, Sturm.signVarAt_eq_signChanges]
+  obtain ⟨_, _, gL, hgL⟩ := Lseq_spec σ hσlast
+  obtain ⟨_, _, hRsc⟩ := Rseq_spec σ hσlast
+  -- the sign pattern at `b` reproduces `signChanges (Rseq σ)`
+  have hRb : Sturm.signChanges ((fourierSeq p).map (fun q => SignType.sign (q.eval b)))
+      = Sturm.signChanges (Rseq σ) := by
+    rcases eq_or_lt_of_le hcb with hcbeq | hcblt
+    · have hSb : (fourierSeq p).map (fun q => SignType.sign (q.eval b)) = σ := by
+        rw [hσdef, hcbeq]
+      rw [hSb, hRsc]
+    · have hrt := signs_right_eq_Rseq hcblt (fourierSeq p) (fourierSeq_isChain p)
+        (fun h => fourierSeq_getLast_eval_ne hp c h)
+        (fun q hq z hz hqz =>
+          (ne_of_lt hz.1) (h_only q hq z ⟨hca.trans hz.1.le, hz.2⟩ hqz).symm)
+      rw [← hσdef] at hrt
+      rw [hrt]
+  rcases eq_or_lt_of_le hca with hcaeq | hcalt
+  · -- `a = c`: no genuine left drop; no roots in `(a, b]`
+    have hSa : (fourierSeq p).map (fun q => SignType.sign (q.eval a)) = σ := by
+      rw [hσdef, hcaeq]
+    have hroots0 : (p.roots.filter (fun x => a < x ∧ x ≤ b)).card = 0 := by
+      rw [Multiset.card_eq_zero, Multiset.filter_eq_nil]
+      intro x hx
+      rintro ⟨hax, hxb⟩
+      have hxroot : p.eval x = 0 := (Polynomial.mem_roots'.mp hx).2
+      have hxc : x = c := h_only p hpmem x ⟨hax.le, hxb⟩ hxroot
+      have hxa : x = a := hxc.trans hcaeq.symm
+      rw [hxa] at hax; exact lt_irrefl a hax
+    refine ⟨0, ?_⟩
+    rw [hSa, hroots0, hRb, hRsc]
+    omega
+  · -- `a < c`: the genuine drop, with `#roots = leading-zero run = rootMultiplicity`
+    have hSa := signs_left_eq_Lseq hcalt (fourierSeq p) (fourierSeq_isChain p)
+      (fun h => fourierSeq_getLast_eval_ne hp c h)
+      (fun q hq z hz hqz =>
+        (ne_of_lt hz.2) (h_only q hq z ⟨hz.1, (le_of_lt hz.2).trans hcb⟩ hqz))
+    rw [← hσdef] at hSa
+    set r := p.rootMultiplicity c with hrdef
+    have hσlen : σ.length = p.natDegree + 1 := by
+      rw [hσdef, List.length_map, fourierSeq_length]
+    have hr_le : r ≤ p.natDegree := by
+      have hdvd := p.pow_rootMultiplicity_dvd c
+      have hle := Polynomial.natDegree_le_of_dvd hdvd hp
+      simpa [natDegree_pow, Polynomial.natDegree_X_sub_C] using hle
+    have hσget : ∀ i, i < p.natDegree + 1 →
+        σ[i]? = some (SignType.sign (((derivative^[i]) p).eval c)) := by
+      intro i hi
+      rw [hσdef, List.getElem?_map, fourierSeq_getElem? p i hi, Option.map_some]
+    -- the takeWhile-zero run has length `r = rootMultiplicity`
+    have stepA : (σ.takeWhile (· = 0)).length = r := by
+      apply takeWhile_eq_zero_length σ r (by rw [hσlen]; omega)
+      · intro i hir
+        rw [hσget i (by omega)]
+        have hz : ((derivative^[i]) p).eval c = 0 :=
+          isRoot_iterate_derivative_of_lt_rootMultiplicity hir
+        rw [hz, sign_zero]
+      · intro x hx
+        rw [hσget r (by omega)] at hx
+        have hxeq : x = SignType.sign (((derivative^[r]) p).eval c) := by
+          injection hx with hx'; exact hx'.symm
+        rw [hxeq]; simp only [ne_eq, sign_eq_zero_iff]
+        intro h0
+        have hroot_le : ∀ m ≤ r, ((derivative^[m]) p).IsRoot c := by
+          intro m hm
+          rcases lt_or_eq_of_le hm with hlt' | heq
+          · exact isRoot_iterate_derivative_of_lt_rootMultiplicity hlt'
+          · rw [heq]; exact h0
+        have hfact : ((r.factorial : ℝ)) ∈ nonZeroDivisors ℝ := by
+          rw [mem_nonZeroDivisors_iff_ne_zero]; exact_mod_cast Nat.factorial_ne_zero r
+        have hlt'' : r < p.rootMultiplicity c :=
+          (lt_rootMultiplicity_iff_isRoot_iterate_derivative_of_mem_nonZeroDivisors hp hfact).mpr
+            hroot_le
+        exact absurd hlt'' (lt_irrefl r)
+    -- `#roots(a,b] = rootMultiplicity c p` (every root in the interval equals `c`)
+    have hB : (p.roots.filter (fun x => a < x ∧ x ≤ b)).card = r := by
+      have hfilter_eq : p.roots.filter (fun x => a < x ∧ x ≤ b)
+          = p.roots.filter (fun x => c = x) := by
+        apply Multiset.filter_congr
+        intro x hx
+        have hxroot : p.eval x = 0 := (Polynomial.mem_roots'.mp hx).2
+        constructor
+        · rintro ⟨hax, hxb⟩
+          exact (h_only p hpmem x ⟨hax.le, hxb⟩ hxroot).symm
+        · rintro rfl; exact ⟨hcalt, hcb⟩
+      rw [hfilter_eq, ← Multiset.count_eq_card_filter_eq, Polynomial.count_roots]
+    have hroots : (p.roots.filter (fun x => a < x ∧ x ≤ b)).card
+        = (σ.takeWhile (· = 0)).length := by rw [hB]; exact stepA.symm
+    refine ⟨gL, ?_⟩
+    rw [hSa, hgL, hRb, hroots]
 
 /-- **The Budan–Fourier theorem.** For nonzero `p` and `a < b` with neither endpoint a root, the
 number of real roots of `p` in `(a, b]` counted with multiplicity is bounded by the drop in Fourier
 sign variations, and has the same parity as that drop.
 
-Global skeleton (sorry-free modulo the single analytic core `fourierVar_drop_at_critical_point`):
-strong induction on the number of *distinct* critical points (roots of the tower's product `Pc`) in
-`(a, b]`; peel the maximum one, split just below it, recurse left and apply the local drop on the
-right, combining the two additive existentials. -/
+Proof (`sorry`-free): strong induction on the number of *distinct* critical points (roots of the
+tower's product `Pc`) in `(a, b]`; peel the maximum one, split just below it, recurse left and apply
+the local drop `fourierVar_drop_at_critical_point` on the right, combining the two additive
+existentials. -/
 public theorem budan_fourier (p : Polynomial ℝ) (hp : p ≠ 0) {a b : ℝ} (hab : a < b)
     (ha : p.eval a ≠ 0) (hb : p.eval b ≠ 0) :
     (p.roots.filter (fun x => a < x ∧ x ≤ b)).card ≤ fourierVar p a - fourierVar p b ∧
