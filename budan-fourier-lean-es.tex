@@ -642,12 +642,19 @@ el recuento exacto con multiplicidad, y un certificado que una herramienta esc\'
 reverificar? ¿Cu\'anta de la maquinaria de fracciones continuas de Vincent y
 Akritas~\cite{vincent,collinsakritas} querr\'ia el puente honesto?
 
-\item \emph{Un teorema tras dos recuentos.} El recuento de coeficientes de Descartes y el recuento de la
-torre son, tras desplegar, la misma clase de objeto (Secci\'on~\ref{sec:q4}), y el recuento de la cadena
-de Sturm est\'a construido sobre el mismo instrumental (\cite{sturmlean}). ¿Hay un \'unico enunciado en
-Lean---un principio de variaci\'on de signo sobre una ``sucesi\'on admisible'' abstracta---del que la
-cota de Descartes, la cota en intervalo de Budan--Fourier y el recuento exacto de Sturm sean tres
-instancias, de modo que la biblioteca guarde el lema local una vez en lugar de tres?
+\item \emph{Portar la unificaci\'on conocida, no atribu\'irsela.} Que los recuentos de Descartes,
+Budan--Fourier y Sturm son facetas de un \'unico principio de variaci\'on de signo es cl\'asico, no
+m\'io---lo dicen sin rodeos Akritas~\cite{akritas} y Basu--Pollack--Roy~\cite{bpr}---y el invariante
+unificador profundo, el \emph{\'indice de Cauchy}, est\'a axiomatizado mediante \emph{cadenas de Sturm}
+abstractas por Eisermann~\cite{eisermann} y \emph{ya} se ha verificado por m\'aquina, en Isabelle/HOL,
+por Li y Paulson~\cite{liCauchy}. Lo que falta es una formalizaci\'on en \emph{Lean} de ese marco. Una
+sub-pregunta, eso s\'i, queda genuinamente abierta y es propia de este trabajo: los \emph{bloques que se
+anulan} de la torre rompen la coprimalidad en que se apoyan los axiomas cl\'asicos de cadena de
+Sturm---¿los satisfacen igual, o fuerzan un conjunto estrictamente m\'as d\'ebil en el que el
+colapso/alternancia de la Secci\'on~\ref{sec:q2} sea la ley local general (de modo que
+\lean{Rseq}/\lean{Lseq} sean lo primitivo y \lean{FlankReduce} un caso degenerado)? El objetivo honesto
+es llevar una unificaci\'on conocida a Mathlib, y hallar los axiomas m\'as d\'ebiles que la torre
+fuerza.
 
 \item \emph{Qu\'e es realmente el desacoplamiento.} \lean{Rseq}/\lean{Lseq} separaron la combinatoria de
 reescribir una lista de signos del \'algebra que licencia cada reescritura, exactamente como
@@ -701,6 +708,9 @@ rule of signs, en \emph{Proc.\ SYMSAC~'76}, ACM, 1976, 272--275.
 Math\'ematique} \textbf{44} (1998) 219--256.
 \bibitem{bpr} S.~Basu, R.~Pollack, M.-F.~Roy, \emph{Algorithms in Real Algebraic Geometry}, 2\textsuperscript{a} ed.,
 Algorithms and Computation in Mathematics \textbf{10}, Springer, 2006 (teor\'ia de variaci\'on de signo, Cap.~2).
+\bibitem{eisermann} M.~Eisermann, The fundamental theorem of algebra made effective: an elementary
+real-algebraic proof via Sturm chains, \emph{Amer.\ Math.\ Monthly} \textbf{119} (2012), no.~9,
+715--752; \texttt{arXiv:0808.0097} (``cadenas de Sturm'' abstractas y el \'indice de Cauchy).
 \bibitem{liBF} W.~Li, L.~C.~Paulson, Counting polynomial roots in Isabelle/HOL: a formal proof of the
 Budan--Fourier theorem, en \emph{Proc.\ 8th ACM SIGPLAN Int.\ Conf.\ on Certified Programs and Proofs
 (CPP~2019)}, ACM, 2019, 52--64 (\texttt{doi:10.1145/3293880.3294092}); preprint
@@ -708,6 +718,9 @@ Budan--Fourier theorem, en \emph{Proc.\ 8th ACM SIGPLAN Int.\ Conf.\ on Certifie
 Counting Real Roots with Multiplicity'' (W.~Li, 2018), \url{https://isa-afp.org/entries/Budan_Fourier.html}.
 \bibitem{litarski} W.~Li, L.~C.~Paulson, A formal proof of the Sturm--Tarski theorem, \emph{Archive of
 Formal Proofs} (2014), \url{https://isa-afp.org/entries/Sturm_Tarski.html}.
+\bibitem{liCauchy} W.~Li, L.~C.~Paulson, Evaluating winding numbers and counting complex roots through
+Cauchy indices in Isabelle/HOL, \emph{J.~Automated Reasoning} \textbf{64} (2020), no.~2, 331--360;
+\texttt{arXiv:1804.03922}.
 \bibitem{eberl} M.~Eberl, Sturm's Theorem, \emph{Archive of Formal Proofs} (2014),
 \url{https://isa-afp.org/entries/Sturm_Sequences.html}.
 \bibitem{cohen} C.~Cohen, Construction of real algebraic numbers in Coq, en \emph{Interactive Theorem

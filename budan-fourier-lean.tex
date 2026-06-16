@@ -626,11 +626,17 @@ exact multiplicity-aware root count, and a certificate a skeptical tool can re-c
 continued-fraction machinery of Vincent and Akritas~\cite{vincent,collinsakritas} would the honest
 bridge want?
 
-\item \emph{One theorem behind two counts.} Descartes' coefficient count and the tower count are, after
-unfolding, the same kind of object (Section~\ref{sec:q4}), and Sturm's chain count is built on the same
-toolkit (\cite{sturmlean}). Is there a single Lean statement---a sign-variation principle on an abstract
-``admissible sequence''---of which Descartes' bound, Budan--Fourier's interval bound, and Sturm's exact
-count are three instances, so the library holds the local lemma once rather than three times?
+\item \emph{Porting the known unification, not claiming it.} That Descartes', Budan--Fourier's and
+Sturm's counts are facets of one sign-variation principle is classical, not mine---it is said plainly by
+Akritas~\cite{akritas} and Basu--Pollack--Roy~\cite{bpr}---and the deeper unifying invariant, the
+\emph{Cauchy index}, is axiomatised through abstract \emph{Sturm chains} by Eisermann~\cite{eisermann}
+and has \emph{already} been machine-checked, in Isabelle/HOL, by Li and Paulson~\cite{liCauchy}. What is
+missing is a \emph{Lean} formalisation of that framework. One sub-question, though, is genuinely open and
+specific to this work: the derivative tower's \emph{vanishing blocks} break the coprimality the classical
+Sturm-chain axioms lean on---do they still satisfy those axioms, or do they force a strictly weaker
+axiom set in which the collapse/alternation of Section~\ref{sec:q2} is the general local law (so that
+\lean{Rseq}/\lean{Lseq} are the primitive and \lean{FlankReduce} a degenerate case)? The honest target
+is to carry a known unification into Mathlib, and to find the weakest axioms the tower forces.
 
 \item \emph{What the decoupling really is.} \lean{Rseq}/\lean{Lseq} separated the combinatorics of
 rewriting a sign list from the algebra licensing each rewrite, exactly as \lean{FlankReduce} did for
@@ -683,6 +689,9 @@ rule of signs, in \emph{Proc.\ SYMSAC~'76}, ACM, 1976, 272--275.
 Math\'ematique} \textbf{44} (1998) 219--256.
 \bibitem{bpr} S.~Basu, R.~Pollack, M.-F.~Roy, \emph{Algorithms in Real Algebraic Geometry}, 2nd ed.,
 Algorithms and Computation in Mathematics \textbf{10}, Springer, 2006 (sign-variation theory, Ch.~2).
+\bibitem{eisermann} M.~Eisermann, The fundamental theorem of algebra made effective: an elementary
+real-algebraic proof via Sturm chains, \emph{Amer.\ Math.\ Monthly} \textbf{119} (2012), no.~9,
+715--752; \texttt{arXiv:0808.0097} (abstract ``Sturm chains'' and the Cauchy index).
 \bibitem{liBF} W.~Li, L.~C.~Paulson, Counting polynomial roots in Isabelle/HOL: a formal proof of the
 Budan--Fourier theorem, in \emph{Proc.\ 8th ACM SIGPLAN Int.\ Conf.\ on Certified Programs and Proofs
 (CPP~2019)}, ACM, 2019, 52--64 (\texttt{doi:10.1145/3293880.3294092}); preprint
@@ -690,6 +699,9 @@ Budan--Fourier theorem, in \emph{Proc.\ 8th ACM SIGPLAN Int.\ Conf.\ on Certifie
 and Counting Real Roots with Multiplicity'' (W.~Li, 2018), \url{https://isa-afp.org/entries/Budan_Fourier.html}.
 \bibitem{litarski} W.~Li, L.~C.~Paulson, A formal proof of the Sturm--Tarski theorem, \emph{Archive of
 Formal Proofs} (2014), \url{https://isa-afp.org/entries/Sturm_Tarski.html}.
+\bibitem{liCauchy} W.~Li, L.~C.~Paulson, Evaluating winding numbers and counting complex roots through
+Cauchy indices in Isabelle/HOL, \emph{J.~Automated Reasoning} \textbf{64} (2020), no.~2, 331--360;
+\texttt{arXiv:1804.03922}.
 \bibitem{eberl} M.~Eberl, Sturm's Theorem, \emph{Archive of Formal Proofs} (2014),
 \url{https://isa-afp.org/entries/Sturm_Sequences.html}.
 \bibitem{cohen} C.~Cohen, Construction of real algebraic numbers in Coq, in \emph{Interactive Theorem
