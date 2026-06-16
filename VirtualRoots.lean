@@ -142,6 +142,26 @@ public theorem R_eval_eq_zero_of_ge_zero_ge {p : Polynomial ℝ} {a b : ℝ} (ha
   obtain ⟨c, hc, hpc⟩ := intermediate_value_Icc' hab hcont ⟨hb, ha⟩
   exact R_eval_eq_zero_of_exists hab ⟨c, hc, hpc⟩
 
+/-! ## The recursive virtual roots (milestone 1, brick 3b)
+
+On a bracketing interval `[lo,hi]` that contains all roots of the whole derivative tower (take
+`lo = -M`, `hi = M` with `M` a Cauchy bound `Polynomial.cauchyBound`, design (B)), the `d` virtual
+roots of `P` are built from the `d-1` virtual roots of `P'`: the breakpoints
+`lo, ρ_{d-1,1}(P'), …, ρ_{d-1,d-1}(P'), hi` cut `[lo,hi]` into `d` intervals, on each of which `P'`
+keeps a constant sign, and `ρ_{d,j}(P)` is `ℛ_d` applied to the `j`-th. Working on the finite `[lo,hi]`
+keeps everything over `ℝ` and reuses `R`/`R_mem`/`R_eval_*` verbatim. -/
+
+/-- **The recursive virtual roots** of `p` on the bracketing interval `[lo,hi]`, built from the virtual
+roots of `derivative p` by `ℛ_d` on each `P'`-monotone subinterval. A degree-`0` polynomial has none;
+well-founded on `natDegree` (`natDegree_derivative_lt`). -/
+public noncomputable def vroots (lo hi : ℝ) (p : Polynomial ℝ) : List ℝ :=
+  if h : p.natDegree = 0 then []
+  else
+    let bps := lo :: (vroots lo hi (derivative p) ++ [hi])
+    List.zipWith (R p) bps bps.tail
+  termination_by p.natDegree
+  decreasing_by exact natDegree_derivative_lt h
+
 /-! ## Roadmap (next milestones)
 
 The remaining development, to be built on the bedrock above:
