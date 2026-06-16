@@ -214,9 +214,10 @@ exact arithmetic by the figure script.
 tower is $p_B,\ 2x,\ 2$, and $\V(-2)=2$ while $\V(2)=0$, so the bound is $\V(-2)-\V(2)=2$ while the
 true count is $0$. \textbf{The surplus is $2$---even.} Looking closer (Figure~\ref{fig:tower}(B)), the
 staircase drops at $x=0$, which is a zero of the \emph{interior} member $p_B'=2x$ but not a root of
-$p_B$: the drop happens at a critical point that no root explains, and it comes in a block of even
-size because $p_B$'s missing roots are a conjugate pair. This is the phenomenon Descartes' rule
-exhibits globally; Budan--Fourier localizes it.
+$p_B$: the drop happens at a critical point that no root of $p_B$ explains, and it is necessarily
+\emph{even} (here $\V(a)=\V(b)+0+2e$ with $e=1$)---the local trace of the conjugate pair $\pm i$ that
+the real interval cannot see. This is the phenomenon Descartes' rule exhibits globally; Budan--Fourier
+localizes it.
 
 \begin{figure}[htbp]
 \centering
@@ -280,27 +281,28 @@ inherited verbatim from the Sturm toolkit). That is why the staircase is flat be
 the action is at a critical point $c$, and the new difficulty is the vanishing block.
 
 \emph{The two bricks.} The tower has one feature that replaces coprimality: each member is the
-derivative of the one above it, $p^{(k+1)}=(p^{(k)})'$. So if $p^{(k)}(c)=0$ while $p^{(k+1)}$ keeps a
+derivative of the previous one, $p^{(k+1)}=(p^{(k)})'$. So if $p^{(k)}(c)=0$ while $p^{(k+1)}$ keeps a
 constant nonzero sign $s$ just off $c$, then $p^{(k)}$ is strictly monotone there, and its sign just
-off $c$ is forced---\emph{the same} as $p^{(k+1)}$ on the right, the \emph{opposite} on the left. No
-Taylor expansion, no multiplicity bookkeeping: one application of the mean value theorem.
+off $c$ is forced---\emph{the same} as its derivative $p^{(k+1)}$ on the right, the \emph{opposite} on
+the left. No Taylor expansion, no multiplicity bookkeeping: one application of the mean value theorem.
 \begin{recipebox}{The two monotonicity bricks (recipe)}
 If $q(c)=0$ and $q'$ keeps the constant nonzero sign $s$ on $(c,z]$, then
 $\mathrm{sign}\,q(z)=s$ (\lean{sign\_eval\_right\_vanish}). If instead $q'$ keeps sign $s$ on $[z,c)$,
-then $\mathrm{sign}\,q(z)=-s$ (\lean{sign\_eval\_left\_vanish}). Apply this up a vanishing block, from
-the first \emph{non}-vanishing member above it downward: \textbf{on the right of $c$ each vanishing
-member copies the sign above it}, so the block collapses to a single sign and contributes \emph{no}
-sign change; \textbf{on the left each vanishing member takes the opposite sign}, so the block
-\emph{alternates} and contributes one sign change per member.
+then $\mathrm{sign}\,q(z)=-s$ (\lean{sign\_eval\_left\_vanish}). Apply this up a vanishing block,
+anchored at its first \emph{non}-vanishing member (the higher derivative just past the block):
+\textbf{on the right of $c$ each vanishing member copies the sign of its derivative}, so the block
+collapses to a single sign and contributes \emph{no} sign change; \textbf{on the left each takes the
+opposite of its derivative's sign}, so the block \emph{alternates} and contributes one sign change per
+member.
 \end{recipebox}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.74\textwidth]{budan_fig2_critical}
 \caption{Anatomy of a critical point, for the double root $c=1$ of $p_A$ (the block $p,p'$ vanishes,
-$m=2$). Reading each sign just off $c$ from the member above it: on the right (teal) a vanishing
-member copies the sign above---the block collapses, $\V(c^+)=0$; on the left (plum) it takes the
-opposite sign---the block alternates, $\V(c^-)=2$. Hence $\V(c^-)-\V(c^+)=m$, the multiplicity, plus
+$m=2$). Reading each sign just off $c$ from that member's derivative: on the right (teal)
+a vanishing member copies its derivative's sign---the block collapses, $\V(c^+)=0$; on the left (plum)
+it takes the opposite---the block alternates, $\V(c^-)=2$. Hence $\V(c^-)-\V(c^+)=m$, the multiplicity, plus
 an even amount from any interior blocks. Signs are exact from the tower of $p_A$.}
 \label{fig:critical}
 \end{figure}
@@ -341,7 +343,7 @@ job for Sturm~\cite{sturmlean}.
 
 The difficulty is precise. To compare $\V(a)$ with $\V(b)$ across $c$, one must perform the
 collapse-on-the-right and alternate-on-the-left on the evaluated sign lists, and the rule for each
-entry depends on whether \emph{that} member vanishes at $c$ and on the sign of the member above it.
+entry depends on whether \emph{that} member vanishes at $c$ and on the sign of its derivative.
 The combinatorics of rewriting a list and the algebra of why each rewrite is legal are entangled, and
 an honest proof separates them.
 
@@ -349,7 +351,7 @@ The separation is two list operations on bare signs, defined by recursion and pr
 ever mentioning a polynomial.
 \begin{recipebox}{The decoupling (recipe)}
 On a list $s$ of signs (entry $0$ = a vanishing member, $\pm1$ = a kept one), \lean{Rseq} replaces
-each $0$ by the value below it and \lean{Lseq} replaces it by the negation of the value below it.
+each $0$ by the next surviving value and \lean{Lseq} replaces it by the negation of that value.
 Two facts then divide the labour. \emph{Combinatorial:} \lean{Rseq\_spec} shows the right list has the
 same sign-change count as $s$, and \lean{Lseq\_spec} shows the left list has that count plus the
 leading-zero run plus an even number---this is pure list induction carrying a head sign-parity
@@ -392,17 +394,17 @@ two monotonicity bricks and by nothing else.
   \draw[arr,ggplum] (1.0,0.45) -- (0.4,1.05);
   \draw[arr,ggteal] (1.0,-0.45) -- (0.4,-1.05);
   \node[lbl,text=ggplum!80!black,text width=4.6cm] at (5.6,1.5)
-    {a vanisher takes the \emph{negated} sign below $\Rightarrow$ the block alternates,
+    {a vanisher takes the \emph{negated} next sign $\Rightarrow$ the block alternates,
      $+1$ per vanisher: $\V(c^-)=\V(c)+m+2e$};
   \node[lbl,text=ggteal!80!black,text width=4.6cm] at (5.6,-1.5)
-    {a vanisher \emph{copies} the sign below $\Rightarrow$ the block collapses, no new change:
+    {a vanisher \emph{copies} the next sign $\Rightarrow$ the block collapses, no new change:
      $\V(c^+)=\V(c)$};
   \node[lbl,text=gray,text width=4.6cm] at (5.6,0)
     {a bare list of signs; \textbf{no polynomial appears}};
 \end{tikzpicture}
 \caption{The decoupling of Section~\ref{sec:q3}, at the level of bare sign lists (here the block
 $0,0$ of the double root of $p_A$). \lean{Rseq} and \lean{Lseq} are pure list operations---a
-vanishing entry copies, resp.\ negates, the surviving sign below it---and their counting
+vanishing entry copies, resp.\ negates, the next surviving sign---and their counting
 specifications (\lean{Rseq\_spec}, \lean{Lseq\_spec}) are proved by list induction with no polynomial
 in sight. The structural lemmas \lean{signs\_right\_eq\_Rseq}/\lean{signs\_left\_eq\_Lseq} are the only
 bridge back to the tower, and they are fed solely by the two monotonicity bricks.}
@@ -445,19 +447,21 @@ coefficient count to interval methods; the modern algorithmic descendants are th
 and bisection real-root isolators of Vincent, Collins and Akritas~\cite{vincent,collinsakritas}. The
 parity refinement is the part that explains the others.
 
-\emph{Descartes, and why it overcounts evenly.} Descartes' rule is the $b\to\infty$ shadow of
-Budan--Fourier: the signs of $p^{(k)}$ at large positive $x$ are the signs of the leading
-coefficients, and the sign variations there are exactly the coefficient sign variations Mathlib
-already counts. Budan--Fourier on $(0,\infty)$ then says: the number of positive roots is at most the
-coefficient sign variations, and differs from it by an even number. That even number is the
-content---it is why Descartes' rule, applied to a polynomial with $v$ sign changes, never reports a
-parity error: \textbf{the unseen roots come in conjugate pairs, and each pair contributes $2$ to the gap}.
-Example B is the smallest instance: $x^2+1$ has $\V=2$ sign variations on the half-line and zero real
-roots, the gap a single conjugate pair. The Lean count used here and Mathlib's
+\emph{Descartes, and why it overcounts evenly.} Descartes' rule is the shadow of Budan--Fourier on
+$(0,\infty)$. At the left end the tower evaluates to $p^{(k)}(0)=k!\,a_k$, where $a_k$ is the
+coefficient of $x^k$; so the tower's sign sequence at $0$ \emph{is} the sign sequence of the
+coefficients, and $\V(0)$ is exactly the coefficient sign-variation count Mathlib already computes. At
+the other end every $p^{(k)}$ takes the sign of the one leading coefficient, so $\V(+\infty)=0$.
+Budan--Fourier on $(0,\infty)$ then reads: the number of positive roots is at most
+$\V(0)-\V(+\infty)=\V(0)$, the coefficient sign variations, and differs from it by an even number. That
+even number is the content---it is why Descartes' rule never reports a parity error:
+\textbf{the unseen roots come in conjugate pairs, and each pair contributes $2$ to the gap}.
+Figure~\ref{fig:shadow} is the smallest instance carrying a pair: for $p=(x^2+1)(x-1)$ the
+coefficients $+,-,+,-$ give $\V(0)=3$, there is a single positive root $x=1$, and the gap $2$ is
+exactly the conjugate pair $\pm i$. The Lean count used here and Mathlib's
 \lean{Polynomial.signVariations} are, after unfolding, the same kind of object, so the toolkit
 transfers; what the tower adds over the coefficients is precisely the interval and the localization of
-the even gap. Figure~\ref{fig:shadow} makes the accounting visible: the bound splits into the real
-roots actually present and twice the conjugate pairs the interval cannot see.
+the even gap.
 
 \begin{figure}[htbp]
 \centering
@@ -608,9 +612,11 @@ local drop and the global theorem.
 
 \section{Reflective questions, for the next bead}\label{sec:questions}
 
-A string of beads is meant to be continued. I close with the questions I would rather carry forward
-than pretend to have settled---each a place where this work stops short, and each, I think, the start
-of another paper.
+A string of beads is meant to be continued. Machine-checking a two-hundred-year-old theorem is not an
+end in itself: its worth is measured by what the certified pieces let one ask next, and ask more
+sharply. I close with the questions I would rather carry forward than pretend to have settled---each a
+place where this work stops short, and each, I think, not just the seed of another paper but a rung up
+from this one.
 
 \begin{enumerate}\itemsep3pt
 \item \emph{From bound to certificate.} The theorem says the drop \emph{bounds} the count and shares
@@ -638,6 +644,12 @@ field, where the leading run need not equal the multiplicity? And is there a Ber
 multivariate analogue of the block collapse---the place where root counting on the line meets the
 geometry of several variables?
 \end{enumerate}
+
+\noindent What ties the four together is one reflection. With the theorem now a fixed point that a
+kernel will defend, the interesting direction is no longer proving it again but asking what can stand
+\emph{on} it: a certificate, a single principle behind three counts, a reusable proof pattern, a wider
+field. Each would not merely extend the result---it would raise the whole derivative-tower story by a
+level, which is the only kind of continuation worth the next bead.
 
 \section*{Reproducing}
 \begin{verbatim}
@@ -671,11 +683,11 @@ rule of signs, in \emph{Proc.\ SYMSAC~'76}, ACM, 1976, 272--275.
 Math\'ematique} \textbf{44} (1998) 219--256.
 \bibitem{bpr} S.~Basu, R.~Pollack, M.-F.~Roy, \emph{Algorithms in Real Algebraic Geometry}, 2nd ed.,
 Algorithms and Computation in Mathematics \textbf{10}, Springer, 2006 (sign-variation theory, Ch.~2).
-\bibitem{liBF} W.~Li, Counting Polynomial Roots in Isabelle/HOL: A Formal Proof of the Budan--Fourier
-Theorem, in \emph{Proc.\ 8th ACM SIGPLAN Int.\ Conf.\ on Certified Programs and Proofs (CPP~2019)}, ACM,
-2019, 52--64; preprint \texttt{arXiv:1811.11093}; Archive of Formal Proofs entry ``The Budan--Fourier
-Theorem and Counting Real Roots with Multiplicity'' (2018),
-\url{https://isa-afp.org/entries/Budan_Fourier.html}.
+\bibitem{liBF} W.~Li, L.~C.~Paulson, Counting polynomial roots in Isabelle/HOL: a formal proof of the
+Budan--Fourier theorem, in \emph{Proc.\ 8th ACM SIGPLAN Int.\ Conf.\ on Certified Programs and Proofs
+(CPP~2019)}, ACM, 2019, 52--64 (\texttt{doi:10.1145/3293880.3294092}); preprint
+\texttt{arXiv:1811.11093}. The accompanying Archive of Formal Proofs entry ``The Budan--Fourier Theorem
+and Counting Real Roots with Multiplicity'' (W.~Li, 2018), \url{https://isa-afp.org/entries/Budan_Fourier.html}.
 \bibitem{litarski} W.~Li, L.~C.~Paulson, A formal proof of the Sturm--Tarski theorem, \emph{Archive of
 Formal Proofs} (2014), \url{https://isa-afp.org/entries/Sturm_Tarski.html}.
 \bibitem{eberl} M.~Eberl, Sturm's Theorem, \emph{Archive of Formal Proofs} (2014),

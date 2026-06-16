@@ -6,14 +6,15 @@ the ANATOMY OF A CRITICAL POINT -- the heart of `fourierVar_drop_at_critical_poi
 At a critical point c, a whole BLOCK of consecutive tower members may vanish
 (here p and p' both vanish at the double root c=1 of p_A=(x-1)^2(x+1), a block of
 length m=2 = the root multiplicity).  The two monotonicity bricks of the
-formalization fix every sign just off c from the one above it:
+formalization fix every sign just off c from the member listed just BELOW it
+(its derivative p^(k+1)):
 
   * RIGHT of c  (z = c^+): a vanishing member COPIES the sign of its derivative
-    (the member above it).  The block collapses to a single sign -> 0 new sign
+    (the member below it).  The block collapses to a single sign -> 0 new sign
     variations.  Hence V(c^+) = V(b): the right side carries no information.
 
   * LEFT of c   (z = c^-): a vanishing member takes the OPPOSITE sign of the one
-    above it.  The block fully ALTERNATES -> exactly m sign variations.
+    below it.  The block fully ALTERNATES -> exactly m sign variations.
 
 So V(c^-) - V(c^+) = m (plus an even amount from interior blocks), which is the
 additive existential `V(a) = V(b) + #roots + 2e` proved sorry-free in Lean.
@@ -104,20 +105,20 @@ for name, col in cols.items():
         ax.text(cx, yof(i), txt, fontsize=15, color=tc, ha="center", va="center",
                 bbox=dict(boxstyle="round,pad=0.28", fc=face, ec=cc, lw=1.3))
 
-# arrows: LEFT side -> alternation (opposite of the one above)
-for i in (0, 1):  # vanishing members copy-with-flip from the one below/above
+# arrows: LEFT side -> alternation (opposite of the one below)
+for i in (0, 1):  # vanishing members copy-with-flip from the one below
     ax.add_patch(FancyArrowPatch((colx["$c$"] - 0.32, yof(i)), (colx["$c^-$ (left)"] + 0.34, yof(i)),
                  arrowstyle="-|>", mutation_scale=12, color=PLUM, lw=1.4))
 ax.text(colx["$c^-$ (left)"] + 0.3, -0.15,
-        "vanishing member =\nOPPOSITE sign above\n" r"$\Rightarrow$ block alternates: $V(c^-)=2$",
+        "vanishing member =\nOPPOSITE of sign below\n" r"$\Rightarrow$ block alternates: $V(c^-)=2$",
         color=PLUM, fontsize=8.6, ha="center", va="top")
 
-# arrows: RIGHT side -> copy (same as the one above)
+# arrows: RIGHT side -> copy (same as the one below)
 for i in (0, 1):
     ax.add_patch(FancyArrowPatch((colx["$c$"] + 0.32, yof(i)), (colx["$c^+$ (right)"] - 0.34, yof(i)),
                  arrowstyle="-|>", mutation_scale=12, color=TEAL, lw=1.4))
 ax.text(colx["$c^+$ (right)"] - 0.1, -0.15,
-        "vanishing member =\nSAME sign above\n" r"$\Rightarrow$ block collapses: $V(c^+)=0$",
+        "vanishing member =\nSAME as sign below\n" r"$\Rightarrow$ block collapses: $V(c^+)=0$",
         color=TEAL, fontsize=8.6, ha="center", va="top")
 
 # bottom headline
