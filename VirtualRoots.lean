@@ -162,6 +162,23 @@ public noncomputable def vroots (lo hi : ℝ) (p : Polynomial ℝ) : List ℝ :=
   termination_by p.natDegree
   decreasing_by exact natDegree_derivative_lt h
 
+/-- Exact derivative degree in characteristic zero: `deg(P') = deg P − 1` for `deg P ≥ 1`. -/
+public theorem natDegree_derivative_eq {p : Polynomial ℝ} (hp : 0 < p.natDegree) :
+    (derivative p).natDegree = p.natDegree - 1 :=
+  natDegree_eq_of_degree_eq_some (degree_derivative_eq p hp)
+
+/-- **`vroots` has the right length**: a degree-`d` polynomial has exactly `d` virtual roots. -/
+public theorem vroots_length (lo hi : ℝ) (p : Polynomial ℝ) :
+    (vroots lo hi p).length = p.natDegree := by
+  induction p using vroots.induct (lo := lo) (hi := hi) with
+  | case1 p h => rw [vroots, dif_pos h, h]; rfl
+  | case2 p h ih =>
+    rw [vroots, dif_neg h]
+    simp only [List.tail_cons, List.length_zipWith, List.length_cons, List.length_append,
+      List.length_singleton, List.length_nil]
+    rw [ih, natDegree_derivative_eq (Nat.pos_of_ne_zero h)]
+    omega
+
 /-! ## Roadmap (next milestones)
 
 The remaining development, to be built on the bedrock above:
