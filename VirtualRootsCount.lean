@@ -707,6 +707,57 @@ theorem exists_tower_gap_right : ∀ (L : List (Polynomial ℝ)), (∀ q ∈ L, 
     · subst h; exact hz2 w hw
     · exact hz1 q' h w ⟨hw.1, le_trans hw.2 hz2z1⟩
 
+/-- **`p'` keeps a constant sign across a root-free cell.** Two interior points of a `p'`-root-free
+cell give `p'` the same sign (IVT). -/
+theorem deriv_sign_const_on_cell {p : Polynomial ℝ} {a b : ℝ}
+    (hno : ∀ w ∈ Set.Ioo a b, (derivative p).eval w ≠ 0) {w₁ w₂ : ℝ}
+    (h1 : w₁ ∈ Set.Ioo a b) (h2 : w₂ ∈ Set.Ioo a b) :
+    SignType.sign ((derivative p).eval w₁) = SignType.sign ((derivative p).eval w₂) := by
+  rcases le_total w₁ w₂ with hle | hle
+  · apply Sturm.sign_eval_eq_of_no_root hle
+    intro y hy
+    exact hno y ⟨lt_of_lt_of_le h1.1 hy.1, lt_of_le_of_lt hy.2 h2.2⟩
+  · rw [eq_comm]
+    apply Sturm.sign_eval_eq_of_no_root hle
+    intro y hy
+    exact hno y ⟨lt_of_lt_of_le h2.1 hy.1, lt_of_le_of_lt hy.2 h1.2⟩
+
+/-- **(d) The Fourier head `d` is the sign of `p'` just right of `x`.** The first surviving sign of the
+`p'`-tower at `x` equals `sign (p'(z))` for any `z` just above `x` at which no tower member vanishes on
+`(x,z]` — by `signs_right_eq_Rseq` (the pattern at `z` is `Rseq` of the pattern at `x`, whose head is
+the first surviving sign). -/
+theorem fourier_head_right {p : Polynomial ℝ} (hp' : derivative p ≠ 0) {x z : ℝ} (hxz : x < z)
+    (hno : ∀ q ∈ BudanFourier.fourierSeq (derivative p), ∀ w ∈ Set.Ioc x z, q.eval w ≠ 0) :
+    (((BudanFourier.fourierSeq (derivative p)).map
+        (fun q => SignType.sign (q.eval x))).filter (· ≠ 0)).head?
+      = some (SignType.sign ((derivative p).eval z)) := by
+  set L := BudanFourier.fourierSeq (derivative p) with hLdef
+  have hchain : List.IsChain (fun q q' => q' = derivative q) L := BudanFourier.fourierSeq_isChain _
+  have hLne : L ≠ [] := BudanFourier.fourierSeq_ne_nil _
+  have hlast : ∀ h : L ≠ [], ((L.getLast h).eval x) ≠ 0 :=
+    fun h => BudanFourier.fourierSeq_getLast_eval_ne hp' x h
+  have hRseq := BudanFourier.signs_right_eq_Rseq hxz L hchain hlast hno
+  have hlastsign : ∀ h : (L.map (fun q => SignType.sign (q.eval x))) ≠ [],
+      (L.map (fun q => SignType.sign (q.eval x))).getLast h ≠ 0 := by
+    intro h
+    rw [List.getLast_map, Ne, sign_eq_zero_iff]
+    exact BudanFourier.fourierSeq_getLast_eval_ne hp' x hLne
+  obtain ⟨_, hhead, _⟩ := BudanFourier.Rseq_spec (L.map (fun q => SignType.sign (q.eval x))) hlastsign
+  have hL0 : L.head? = some (derivative p) := by
+    obtain ⟨a, t, hcons⟩ := List.exists_cons_of_ne_nil hLne
+    have h := BudanFourier.fourierSeq_getElem? (derivative p) 0 (by omega)
+    simp only [Function.iterate_zero, id_eq, ← hLdef] at h
+    rw [hcons] at h ⊢
+    simp only [List.getElem?_cons_zero] at h
+    simpa using h
+  have hhead_z : (L.map (fun q => SignType.sign (q.eval z))).head?
+      = some (SignType.sign ((derivative p).eval z)) := by
+    rw [List.head?_map, hL0, Option.map_some]
+  calc (((L.map (fun q => SignType.sign (q.eval x))).filter (· ≠ 0))).head?
+      = (BudanFourier.Rseq (L.map (fun q => SignType.sign (q.eval x)))).head? := hhead.symm
+    _ = (L.map (fun q => SignType.sign (q.eval z))).head? := congrArg List.head? hRseq.symm
+    _ = some (SignType.sign ((derivative p).eval z)) := hhead_z
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies

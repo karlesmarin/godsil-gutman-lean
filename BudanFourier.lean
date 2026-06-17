@@ -298,7 +298,7 @@ The right side collapses (`signChanges (Rseq s) = signChanges s`, i.e. `V(b) = V
 adds the leading-zero run plus an even surplus (the Budan–Fourier drop + parity). -/
 
 /-- Signs just right of `c`: a vanishing member copies the sign above it. -/
-def Rseq : List SignType → List SignType
+public def Rseq : List SignType → List SignType
   | [] => []
   | σ :: rest => if σ = 0 then ((Rseq rest).headD 0) :: Rseq rest else σ :: Rseq rest
 
@@ -311,7 +311,7 @@ def Lseq : List SignType → List SignType
 they destutter away: `signChanges (Rseq s) = signChanges s`. (Also: `Rseq s` is all-nonzero and shares
 its leading surviving sign with `s`.) Needs the last entry nonzero (the leading coefficient never
 vanishes). -/
-theorem Rseq_spec : ∀ (s : List SignType), (∀ h : s ≠ [], s.getLast h ≠ 0) →
+public theorem Rseq_spec : ∀ (s : List SignType), (∀ h : s ≠ [], s.getLast h ≠ 0) →
     (∀ y ∈ Rseq s, y ≠ 0) ∧ (Rseq s).head? = (s.filter (· ≠ 0)).head? ∧
     Sturm.signChanges (Rseq s) = Sturm.signChanges s := by
   intro s
@@ -528,17 +528,17 @@ theorem fourierSeq_getLast {p : Polynomial ℝ} (h : fourierSeq p ≠ []) :
   simp only [hrw, List.getLast_append_singleton]
 
 /-- The last member of the Fourier sequence never vanishes. -/
-theorem fourierSeq_getLast_eval_ne {p : Polynomial ℝ} (hp : p ≠ 0) (x : ℝ)
+public theorem fourierSeq_getLast_eval_ne {p : Polynomial ℝ} (hp : p ≠ 0) (x : ℝ)
     (h : fourierSeq p ≠ []) : ((fourierSeq p).getLast h).eval x ≠ 0 := by
   rw [fourierSeq_getLast h]; exact iterate_derivative_natDegree_eval_ne hp x
 
 /-- The `i`-th member of the Fourier sequence is `p^(i)`. -/
-theorem fourierSeq_getElem? (p : Polynomial ℝ) (i : ℕ) (hi : i < p.natDegree + 1) :
+public theorem fourierSeq_getElem? (p : Polynomial ℝ) (i : ℕ) (hi : i < p.natDegree + 1) :
     (fourierSeq p)[i]? = some ((derivative^[i]) p) := by
   rw [fourierSeq, List.getElem?_map, List.getElem?_range hi, Option.map_some]
 
 /-- The Fourier sequence is a derivative chain: each member is the derivative of the previous. -/
-theorem fourierSeq_isChain (p : Polynomial ℝ) :
+public theorem fourierSeq_isChain (p : Polynomial ℝ) :
     List.IsChain (fun q q' => q' = derivative q) (fourierSeq p) := by
   rw [fourierSeq, List.isChain_map]
   refine (List.isChain_range_succ _ p.natDegree).mpr ?_
@@ -547,7 +547,7 @@ theorem fourierSeq_isChain (p : Polynomial ℝ) :
 
 /-- **Right side = `Rseq`.** For a derivative chain `L` whose last member is nonzero at `c` and none
 of whose members vanishes on `(c, b]`, the sign pattern at `b` equals `Rseq` of the pattern at `c`. -/
-theorem signs_right_eq_Rseq {c b : ℝ} (hcb : c < b) :
+public theorem signs_right_eq_Rseq {c b : ℝ} (hcb : c < b) :
     ∀ (L : List (Polynomial ℝ)),
       List.IsChain (fun q q' => q' = derivative q) L →
       (∀ h : L ≠ [], ((L.getLast h).eval c) ≠ 0) →
