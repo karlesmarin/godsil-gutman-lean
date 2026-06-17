@@ -661,6 +661,52 @@ theorem lt_R_iff_eval_pos {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
         rw [hvx, abs_of_pos hpx, hpr, abs_zero] at hmin_r
         linarith
 
+/-! ### (d) The right-gap: a point `z` just above `x` avoiding all tower roots
+
+`signs_right_eq_Rseq` needs a point `z > x` at which no member of the derivative tower vanishes on
+`(x, z]`. Such a `z` exists because each (nonzero) tower member has finitely many roots. -/
+
+/-- A single nonzero polynomial has a root-free half-open interval `(x, z]` for some `z ≤ B`. -/
+theorem exists_gap_right_single {q : Polynomial ℝ} (hq : q ≠ 0) {x B : ℝ} (hxB : x < B) :
+    ∃ z, x < z ∧ z ≤ B ∧ ∀ w ∈ Set.Ioc x z, q.eval w ≠ 0 := by
+  classical
+  by_cases hTe : ((q.roots.toFinset).filter (fun r => x < r ∧ r ≤ B)).Nonempty
+  · set m := ((q.roots.toFinset).filter (fun r => x < r ∧ r ≤ B)).min' hTe with hm
+    have hmmem := Finset.min'_mem _ hTe
+    rw [Finset.mem_filter] at hmmem
+    have hxm : x < m := hmmem.2.1
+    have hmB : m ≤ B := hmmem.2.2
+    refine ⟨(x + m) / 2, by linarith, by linarith, ?_⟩
+    intro w hw hroot
+    have hwmem : w ∈ (q.roots.toFinset).filter (fun r => x < r ∧ r ≤ B) := by
+      rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots hq]
+      exact ⟨hroot, hw.1, by have := hw.2; linarith⟩
+    have hle := Finset.min'_le _ w hwmem
+    have := hw.2
+    linarith
+  · refine ⟨B, hxB, le_rfl, ?_⟩
+    intro w hw hroot
+    exact hTe ⟨w, by
+      rw [Finset.mem_filter, Multiset.mem_toFinset, Polynomial.mem_roots hq]
+      exact ⟨hroot, hw.1, hw.2⟩⟩
+
+/-- **The right-gap for a tower.** For a finite list of nonzero polynomials and `x < B`, some
+`z ∈ (x, B]` has every member root-free on `(x, z]`. -/
+theorem exists_tower_gap_right : ∀ (L : List (Polynomial ℝ)), (∀ q ∈ L, q ≠ 0) →
+    ∀ {x B : ℝ}, x < B → ∃ z, x < z ∧ z ≤ B ∧ ∀ q ∈ L, ∀ w ∈ Set.Ioc x z, q.eval w ≠ 0 := by
+  intro L
+  induction L with
+  | nil => intro _ x B hxB; exact ⟨B, hxB, le_rfl, by simp⟩
+  | cons q rest ih =>
+    intro hL x B hxB
+    obtain ⟨z₁, hz1x, hz1B, hz1⟩ := ih (fun q' hq' => hL q' (List.mem_cons_of_mem q hq')) hxB
+    obtain ⟨z₂, hz2x, hz2z1, hz2⟩ := exists_gap_right_single (hL q (List.mem_cons_self ..)) hz1x
+    refine ⟨z₂, hz2x, le_trans hz2z1 hz1B, ?_⟩
+    intro q' hq' w hw
+    rcases List.mem_cons.mp hq' with h | h
+    · subst h; exact hz2 w hw
+    · exact hz1 q' h w ⟨hw.1, le_trans hw.2 hz2z1⟩
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
