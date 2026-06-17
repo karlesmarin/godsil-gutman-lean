@@ -381,7 +381,40 @@ cell that sign is constant; so $d$ is the cell's monotonicity direction. (In Lea
 work~\cite{bflean}: the sign pattern just right of $x$ is the leading-surviving pattern at $x$.) This
 identity is what removes the multiplicity bookkeeping that makes the classical proof delicate: once $d$
 is pinned to the cell, ``$v_i$ above $x$'' and ``a new Fourier variation'' are the \emph{same} event,
-and the two recursions agree term by term. Summing the steps gives Theorem~\ref{thm:count}.
+and the two recursions agree term by term. Summing the steps gives Theorem~\ref{thm:count}
+(Figure~\ref{fig:staircase}).
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[xscale=1.75,yscale=0.62]
+  % p = x^3 - x : three virtual roots (here all real) at -1, 0, 1
+  \draw[->,thick] (-1.85,0) -- (1.85,0) node[right,font=\small] {$x$};
+  \draw[->,thick] (-1.7,-0.15) -- (-1.7,3.7) node[above,font=\small] {$\V(x)$};
+  \foreach \y in {1,2,3} {\node[font=\scriptsize,left] at (-1.7,\y) {$\y$}; \draw[black!20] (-1.7,\y)--(1.7,\y);}
+  % the staircase V(x): 3 on (a,-1], 2 on (-1,0], 1 on (0,1], 0 on (1,b]
+  \draw[ggteal,very thick] (-1.7,3) -- (-1,3);
+  \draw[ggteal,very thick] (-1,2) -- (0,2);
+  \draw[ggteal,very thick] (0,1) -- (1,1);
+  \draw[ggteal,very thick] (1,0) -- (1.7,0);
+  \draw[ggteal,dotted] (-1,3)--(-1,2); \draw[ggteal,dotted] (0,2)--(0,1); \draw[ggteal,dotted] (1,1)--(1,0);
+  % virtual roots on the axis
+  \foreach \x in {-1,0,1} {\draw[ggamber,dashed] (\x,0)--(\x,{3+\x*0});}
+  \foreach \x in {-1,0,1} \filldraw[ggamber] (\x,0) circle (1.7pt);
+  \node[ggamber!80!black,font=\scriptsize,below=1pt] at (-1,-0.02) {$\rho_{3,1}$};
+  \node[ggamber!80!black,font=\scriptsize,below=1pt] at (0,-0.02) {$\rho_{3,2}$};
+  \node[ggamber!80!black,font=\scriptsize,below=1pt] at (1,-0.02) {$\rho_{3,3}$};
+  \node[ggteal,font=\scriptsize] at (-1.35,3.35) {$\V(a)=3$};
+  \node[ggteal,font=\scriptsize] at (1.35,0.42) {$\V(b)=0$};
+  \node[font=\scriptsize,text=black!65,align=center] at (-0.5,2.55) {one step\\per root};
+\end{tikzpicture}
+\caption{The exact count as a staircase. For $p=x^3-x$ the Budan--Fourier count $\V(x)$ is flat between
+virtual roots and drops by exactly one at each; the number of virtual roots in $(a,b]$ is the total
+descent $\V(a)-\V(b)$. Here $\V(a)-\V(b)=3$ for any $a<-1$ and $b>1$, matching the three virtual roots
+$\rho_{3,1}<\rho_{3,2}<\rho_{3,3}$ (all real for this $p$). A degree-two collision, as in
+Figure~\ref{fig:fillin}, would appear as a single step of height two---the count still exact, now reading
+a virtual root the real-root count cannot see.}
+\label{fig:staircase}
+\end{figure}
 
 \emph{What it needs, and what it does not.} The bracketing hypothesis---all tower roots strictly inside
 $[lo,hi]$---is exactly what makes the count clean: $\V(lo)$ is the degree, $\V(hi)=0$, and every
