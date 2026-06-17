@@ -163,7 +163,8 @@ matching polynomial (Paper II) and much of modern combinatorics:
   `#{virtual roots in (a,b]} = V(a) − V(b)` (`card_vroots_Ioc_eq_fourierVar`) that turns the
   Budan–Fourier *inequality* into an *equality*. To our knowledge the **first virtual roots — and this
   exact count — in any interactive theorem prover** (`VirtualRoots.lean`, `VirtualRootsCount.lean`,
-  `sorry`-free, three standard axioms). EN + ES. DOI *(on publication)*.
+  `sorry`-free, three standard axioms). EN + ES. DOI
+  [10.5281/zenodo.20736336](https://doi.org/10.5281/zenodo.20736336).
 - **One Engine, Three Counts** ([`sign-variation-lean.pdf`](sign-variation-lean.pdf)): a synthesis
   note — Descartes, Sturm and Budan–Fourier run through **one** sign-variation engine and **one**
   local-drop law `V(c⁻) = V(c⁺) + μ_c + 2e`; it locates the exact axiom where the derivative tower

@@ -105,7 +105,8 @@ references:
       - family-names: "Marín"
         given-names: "Carles"
     year: 2026
-    notes: "Virtual roots: construction, count = deg, Rolle interlacing, and exact count #(a,b]=V(a)−V(b); first in any ITP. DOI on publication."
+    doi: "10.5281/zenodo.20736336"
+    notes: "Virtual roots: construction, count = deg, Rolle interlacing, and exact count #(a,b]=V(a)−V(b); first in any ITP"
   - type: article
     title: "One Engine, Three Counts: Descartes, Sturm and Budan–Fourier through one sign-variation engine in Lean 4"
     authors:
