@@ -392,6 +392,76 @@ theorem strictMonoOn_or_antiOn_of_no_deriv_root {p : Polynomial ℝ} {a b : ℝ}
     intro y hy; rw [interior_Icc] at hy; rw [Polynomial.deriv]
     exact hsame y hy hm
 
+/-! ### (c): the count increment is the cell indicator
+
+With the breakpoints sorted, the virtual roots above `x` are a tail: every cell strictly above `x`
+contributes its root, every cell strictly below contributes nothing, and only the cell containing `x`
+is in question. So `N_p(x) − N_{p'}(x)` is exactly whether the virtual root of `p` in `x`'s cell lies
+above `x`. -/
+
+/-- **Half-open cell location.** In a sorted list of length `≥ 2` with `head ≤ z < last`, some
+consecutive pair half-open-brackets `z` (`L[i] ≤ z < L[i+1]`). -/
+theorem exists_bracket_lt {z : ℝ} (L : List ℝ) (hchain : List.IsChain (· ≤ ·) L) (hne : L ≠ [])
+    (hlo : L.head hne ≤ z) (hhi : z < L.getLast hne) (hlen : 2 ≤ L.length) :
+    ∃ i, ∃ (h : i + 1 < L.length), L[i]'(Nat.lt_of_succ_lt h) ≤ z ∧ z < L[i + 1]'h := by
+  induction L with
+  | nil => exact absurd rfl hne
+  | cons a L' ih =>
+    cases L' with
+    | nil => simp at hlen
+    | cons b rest =>
+      have hchain' : List.IsChain (· ≤ ·) (b :: rest) := (List.isChain_cons_cons.mp hchain).2
+      by_cases hzb : z < b
+      · exact ⟨0, by simp, by simpa using hlo, by simpa using hzb⟩
+      · have hzb' : b ≤ z := not_lt.mp hzb
+        have hne' : (b :: rest) ≠ [] := by simp
+        have hlast : (a :: b :: rest).getLast hne = (b :: rest).getLast hne' :=
+          List.getLast_cons hne'
+        have hlo' : (b :: rest).head hne' ≤ z := by simpa using hzb'
+        have hhi' : z < (b :: rest).getLast hne' := by rw [← hlast]; exact hhi
+        have hlen' : 2 ≤ (b :: rest).length := by
+          cases rest with
+          | nil =>
+            simp only [List.getLast_singleton] at hhi'
+            exact absurd hhi' (not_lt.mpr hzb')
+          | cons _ _ => simp
+        obtain ⟨i, hi, hia, hib⟩ := ih hchain' hne' hlo' hhi' hlen'
+        exact ⟨i + 1, by simpa using hi, by simpa using hia, by simpa using hib⟩
+
+/-- **Threshold count.** If a list splits at index `k` into a `≤ x` prefix and a `> x` suffix, then
+the number of entries exceeding `x` is `length − k`. -/
+theorem countP_gt_of_split (x : ℝ) : ∀ (L : List ℝ) (k : ℕ), k ≤ L.length →
+    (∀ j, (h : j < L.length) → j < k → L[j] ≤ x) →
+    (∀ j, (h : j < L.length) → k ≤ j → x < L[j]) →
+    L.countP (fun r => decide (x < r)) = L.length - k := by
+  intro L
+  induction L with
+  | nil => intro k _ _ _; simp
+  | cons a L' ih =>
+    intro k hk hle hgt
+    rw [List.countP_cons, List.length_cons]
+    rcases Nat.eq_zero_or_pos k with rfl | hkpos
+    · have hxa : x < a := hgt 0 (by simp) le_rfl
+      have hrec : L'.countP (fun r => decide (x < r)) = L'.length := by
+        have h := ih 0 (Nat.zero_le _) (fun j hj hj0 => absurd hj0 (Nat.not_lt_zero j))
+          (fun j hj _ => by
+            have := hgt (j + 1) (by simp only [List.length_cons]; omega) (Nat.zero_le _)
+            simpa [List.getElem_cons_succ] using this)
+        simpa using h
+      rw [hrec]; simp [hxa]
+    · obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+      have hxa : a ≤ x := hle 0 (by simp) (Nat.succ_pos k')
+      have hrec : L'.countP (fun r => decide (x < r)) = L'.length - k' := by
+        apply ih k' (by simp only [List.length_cons] at hk; omega)
+        · intro j hj hjk
+          have := hle (j + 1) (by simp only [List.length_cons]; omega) (by omega)
+          simpa [List.getElem_cons_succ] using this
+        · intro j hj hjk
+          have := hgt (j + 1) (by simp only [List.length_cons]; omega) (by omega)
+          simpa [List.getElem_cons_succ] using this
+      rw [hrec, if_neg (by simp [not_lt.mpr hxa])]
+      omega
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
