@@ -204,14 +204,13 @@ the signs low-to-high and Mathlib's coefficient list high-to-low.
 \centering
 \begin{tikzpicture}[font=\footnotesize]
 \matrix (m) [matrix of nodes, row sep=2.2mm, column sep=7mm, nodes={anchor=west, inner sep=2pt}]{
-   & \textit{sequence built from } $p=x^3-x$ & \textit{the engine $\V$ gives} & \textit{drop counts} \\
+   & \textit{sequence built from } $p=x^3-x$ & \textbf{one engine} $\V$ & \textit{drop counts} \\
   \textbf{Descartes} & coefficients $\,1,0,-1,0$ & $\V(0)=1$ & positive roots \\
   \textbf{Budan--Fourier} & tower $\,p,p',p'',p'''$ & $\V(-2)-\V(2)=3$ & roots w.\ mult.\ ($+$ even gap) \\
   \textbf{Sturm} & remainders $\,p,p',\tfrac23 x,1$ & $\V(-2)-\V(2)=3$ & distinct roots, exact \\
 };
 \begin{scope}[on background layer]
-  \node[draw=ggteal,thick,rounded corners=3pt,fill=ggband!35,fit=(m-2-3)(m-4-3),inner sep=4pt,
-    label={[font=\scriptsize\itshape,text=ggteal]above:one engine $\V=\lean{signChanges}$}] {};
+  \node[draw=ggteal,thick,rounded corners=3pt,fill=ggband!35,fit=(m-2-3)(m-4-3),inner sep=4pt] {};
 \end{scope}
 \end{tikzpicture}
 \caption{One polynomial, three sequences, one engine. Each classical count is the \emph{same}
@@ -259,14 +258,14 @@ geometries side by side.
   arr/.style={-{Stealth[length=2mm]},thick},
   lbl/.style={font=\scriptsize\itshape,align=center}]
   % Sturm side
-  \node[font=\bfseries\small,text=ggteal] at (1.4,2.2) {Sturm chain: one sandwiched zero};
+  \node[font=\bfseries\small,text=ggteal] at (0.8,2.3) {Sturm chain: sandwiched zero};
   \node[cell,draw=ggteal] at (0,1.4) {$+$};
   \node[cell,draw=ggamber,fill=ggamber!12,text=ggamber!80!black] at (0.8,1.4) {$0$};
   \node[cell,draw=ggteal] at (1.6,1.4) {$-$};
   \node[lbl,text width=4.2cm] at (1.0,0.55)
     {neighbours \emph{opposite} ($+,-$): delete the $0$, count unchanged (\lean{FlankReduce})};
   % BF side
-  \node[font=\bfseries\small,text=ggplum] at (6.1,2.2) {Tower: a vanishing block};
+  \node[font=\bfseries\small,text=ggplum] at (5.9,2.3) {Tower: vanishing block};
   \node[cell,draw=ggamber,fill=ggamber!12,text=ggamber!80!black] at (4.7,1.4) {$0$};
   \node[cell,draw=ggamber,fill=ggamber!12,text=ggamber!80!black] at (5.5,1.4) {$0$};
   \node[cell,draw=ggteal] at (6.3,1.4) {$+$};
