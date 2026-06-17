@@ -566,6 +566,101 @@ theorem count_diff_eq_cell {lo hi : ℝ} (hab : lo ≤ hi) {p : Polynomial ℝ} 
           _ ≤ (vroots lo hi p)[j] := (vroots_getElem_mem lo hi hab p j hj hbj).1
     rw [hNp, hm, hmd]; omega
 
+/-! ### (d) bricks: the cell is `p'`-root-free and pins `v_i` to the sign of `p(x)` -/
+
+/-- **(d) `p'` is root-free on the open cell.** Any root of `p'` strictly inside a cell would (Coste 2.2)
+be a virtual root of `p'`, i.e. a breakpoint — impossible strictly between two consecutive breakpoints. -/
+theorem deriv_root_free_on_cell {lo hi : ℝ} (hab : lo ≤ hi) {p : Polynomial ℝ} (hp : 0 < p.natDegree)
+    (hbr : Brackets lo hi p) {i : ℕ}
+    (hi1 : i + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length) {y : ℝ}
+    (hy1 : (lo :: (vroots lo hi (derivative p) ++ [hi]))[i]'(Nat.lt_of_succ_lt hi1) < y)
+    (hy2 : y < (lo :: (vroots lo hi (derivative p) ++ [hi]))[i + 1]'hi1) :
+    (derivative p).eval y ≠ 0 := by
+  intro hroot
+  have hbr' : Brackets lo hi (derivative p) := brackets_derivative hp hbr
+  have hyv : y ∈ vroots lo hi (derivative p) := root_mem_vroots hab hbr' hroot
+  have hymem : y ∈ (lo :: (vroots lo hi (derivative p) ++ [hi])) :=
+    List.mem_cons_of_mem lo (List.mem_append_left _ hyv)
+  have hchain : List.IsChain (· ≤ ·) (lo :: (vroots lo hi (derivative p) ++ [hi])) :=
+    vroots_isChain lo hi hab (derivative p)
+  exact not_mem_between hchain hi1 hymem hy1 hy2
+
+/-- **(d) On an increasing cell, `v_i` sits above `x` iff `p(x) < 0`.** The `|p|`-minimiser `ℛ_d` of a
+strictly increasing `p` lies right of `x` exactly when `p` is still negative at `x`. -/
+theorem lt_R_iff_eval_neg {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
+    (hmono : StrictMonoOn (fun t => p.eval t) (Set.Icc a b)) {x : ℝ} (hx : x ∈ Set.Ico a b) :
+    x < R p a b ↔ p.eval x < 0 := by
+  have hxI : x ∈ Set.Icc a b := ⟨hx.1, le_of_lt hx.2⟩
+  have hvI : R p a b ∈ Set.Icc a b := R_mem hab
+  have hmin : |p.eval (R p a b)| ≤ |p.eval x| := (isMinOn_iff.mp (R_isMinOn hab)) x hxI
+  constructor
+  · intro hlt
+    by_contra hpx
+    push_neg at hpx
+    have hpxpv : p.eval x < p.eval (R p a b) := hmono hxI hvI hlt
+    rw [abs_of_nonneg hpx, abs_of_nonneg (le_trans hpx hpxpv.le)] at hmin
+    linarith
+  · intro hpx
+    by_contra hnlt
+    push_neg at hnlt
+    rcases lt_or_eq_of_le hnlt with hvx | hvx
+    · have hpvpx : p.eval (R p a b) < p.eval x := hmono hvI hxI hvx
+      rw [abs_of_neg hpx, abs_of_neg (lt_trans hpvpx hpx)] at hmin
+      linarith
+    · exfalso
+      have htx : x < (x + b) / 2 := by have := hx.2; linarith
+      have htb : (x + b) / 2 ≤ b := by have := hx.2; linarith
+      have htI : (x + b) / 2 ∈ Set.Icc a b := ⟨le_trans hx.1 htx.le, htb⟩
+      have hpt : p.eval x < p.eval ((x + b) / 2) := hmono hxI htI htx
+      rcases le_or_gt (p.eval ((x + b) / 2)) 0 with htneg | htpos
+      · have hmin_t : |p.eval (R p a b)| ≤ |p.eval ((x + b) / 2)| :=
+          (isMinOn_iff.mp (R_isMinOn hab)) _ htI
+        rw [hvx, abs_of_neg hpx, abs_of_nonpos htneg] at hmin_t
+        linarith
+      · obtain ⟨r, hr, hpr⟩ := exists_root_of_sign_change htx (mul_neg_of_neg_of_pos hpx htpos)
+        have hrI : r ∈ Set.Icc a b := ⟨le_trans hx.1 hr.1.le, le_trans hr.2.le htb⟩
+        have hmin_r : |p.eval (R p a b)| ≤ |p.eval r| := (isMinOn_iff.mp (R_isMinOn hab)) r hrI
+        rw [hvx, abs_of_neg hpx, hpr, abs_zero] at hmin_r
+        linarith
+
+/-- **(d) On a decreasing cell, `v_i` sits above `x` iff `p(x) > 0`.** The mirror of `lt_R_iff_eval_neg`
+for a strictly decreasing `p`. -/
+theorem lt_R_iff_eval_pos {p : Polynomial ℝ} {a b : ℝ} (hab : a ≤ b)
+    (hanti : StrictAntiOn (fun t => p.eval t) (Set.Icc a b)) {x : ℝ} (hx : x ∈ Set.Ico a b) :
+    x < R p a b ↔ 0 < p.eval x := by
+  have hxI : x ∈ Set.Icc a b := ⟨hx.1, le_of_lt hx.2⟩
+  have hvI : R p a b ∈ Set.Icc a b := R_mem hab
+  have hmin : |p.eval (R p a b)| ≤ |p.eval x| := (isMinOn_iff.mp (R_isMinOn hab)) x hxI
+  constructor
+  · intro hlt
+    by_contra hpx
+    push_neg at hpx
+    have hpvpx : p.eval (R p a b) < p.eval x := hanti hxI hvI hlt
+    rw [abs_of_nonpos hpx, abs_of_neg (lt_of_lt_of_le hpvpx hpx)] at hmin
+    linarith
+  · intro hpx
+    by_contra hnlt
+    push_neg at hnlt
+    rcases lt_or_eq_of_le hnlt with hvx | hvx
+    · have hpxpv : p.eval x < p.eval (R p a b) := hanti hvI hxI hvx
+      rw [abs_of_pos hpx, abs_of_pos (lt_trans hpx hpxpv)] at hmin
+      linarith
+    · exfalso
+      have htx : x < (x + b) / 2 := by have := hx.2; linarith
+      have htb : (x + b) / 2 ≤ b := by have := hx.2; linarith
+      have htI : (x + b) / 2 ∈ Set.Icc a b := ⟨le_trans hx.1 htx.le, htb⟩
+      have hpt : p.eval ((x + b) / 2) < p.eval x := hanti hxI htI htx
+      rcases le_or_gt 0 (p.eval ((x + b) / 2)) with htpos | htneg
+      · have hmin_t : |p.eval (R p a b)| ≤ |p.eval ((x + b) / 2)| :=
+          (isMinOn_iff.mp (R_isMinOn hab)) _ htI
+        rw [hvx, abs_of_pos hpx, abs_of_nonneg htpos] at hmin_t
+        linarith
+      · obtain ⟨r, hr, hpr⟩ := exists_root_of_sign_change htx (mul_neg_of_pos_of_neg hpx htneg)
+        have hrI : r ∈ Set.Icc a b := ⟨le_trans hx.1 hr.1.le, le_trans hr.2.le htb⟩
+        have hmin_r : |p.eval (R p a b)| ≤ |p.eval r| := (isMinOn_iff.mp (R_isMinOn hab)) r hrI
+        rw [hvx, abs_of_pos hpx, hpr, abs_zero] at hmin_r
+        linarith
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
