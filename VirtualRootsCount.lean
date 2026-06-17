@@ -202,6 +202,56 @@ theorem exists_deriv_root_between {q : Polynomial ℝ} {z z' : ℝ} (hlt : z < z
   obtain ⟨y, hy, hdy⟩ := exists_deriv_eq_zero hlt hcont (by simp [hz, hz'])
   exact ⟨y, hy, by rwa [Polynomial.deriv] at hdy⟩
 
+/-- **A sorted list has no member strictly between two consecutive entries.** The combinatorial fact
+that pins each `q'`-root (which Coste 2.2 places among the breakpoints) to a breakpoint, never strictly
+inside a cell. -/
+theorem not_mem_between {L : List ℝ} (hL : List.IsChain (· ≤ ·) L) {i : ℕ}
+    (hi : i + 1 < L.length) {y : ℝ} (hy : y ∈ L)
+    (h1 : L[i]'(Nat.lt_of_succ_lt hi) < y) (h2 : y < L[i + 1]'hi) : False := by
+  have hpw := List.pairwise_iff_getElem.mp hL.pairwise
+  obtain ⟨j, hj, hjy⟩ := List.mem_iff_getElem.mp hy
+  subst hjy
+  rcases Nat.lt_trichotomy j i with h | h | h
+  · exact absurd (hpw j i hj (Nat.lt_of_succ_lt hi) h) (not_le.mpr h1)
+  · subst h; exact lt_irrefl _ h1
+  · rcases Nat.lt_trichotomy j (i + 1) with h' | h' | h'
+    · omega
+    · subst h'; exact lt_irrefl _ h2
+    · exact absurd (hpw (i + 1) j hi hj h') (not_le.mpr h2)
+
+/-- **Cell location.** In a sorted list of length `≥ 2` spanning `z` (head `≤ z ≤` last), some
+consecutive pair brackets `z`. Locates the cell of the breakpoint partition that contains a root. -/
+theorem exists_bracket {z : ℝ} (L : List ℝ) (hchain : List.IsChain (· ≤ ·) L) (hne : L ≠ [])
+    (hlo : L.head hne ≤ z) (hhi : z ≤ L.getLast hne) (hlen : 2 ≤ L.length) :
+    ∃ i, ∃ (h : i + 1 < L.length), L[i]'(Nat.lt_of_succ_lt h) ≤ z ∧ z ≤ L[i + 1]'h := by
+  induction L with
+  | nil => exact absurd rfl hne
+  | cons a L' ih =>
+    cases L' with
+    | nil => simp at hlen
+    | cons b rest =>
+      have hchain' : List.IsChain (· ≤ ·) (b :: rest) := (List.isChain_cons_cons.mp hchain).2
+      by_cases hzb : z ≤ b
+      · refine ⟨0, by simp, ?_, ?_⟩
+        · simpa using hlo
+        · simpa using hzb
+      · have hzb' : b < z := not_le.mp hzb
+        have hne' : (b :: rest) ≠ [] := by simp
+        have hlast : (a :: b :: rest).getLast hne = (b :: rest).getLast hne' :=
+          List.getLast_cons hne'
+        have hlo' : (b :: rest).head hne' ≤ z := le_of_lt (by simpa using hzb')
+        have hhi' : z ≤ (b :: rest).getLast hne' := by rw [← hlast]; exact hhi
+        have hlen' : 2 ≤ (b :: rest).length := by
+          cases rest with
+          | nil =>
+            simp only [List.getLast_singleton] at hhi'
+            exact absurd hhi' hzb
+          | cons _ _ => simp
+        obtain ⟨i, hi, hia, hib⟩ := ih hchain' hne' hlo' hhi' hlen'
+        refine ⟨i + 1, by simpa using hi, ?_, ?_⟩
+        · simpa using hia
+        · simpa using hib
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
