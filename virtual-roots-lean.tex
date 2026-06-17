@@ -84,11 +84,43 @@ only on the three standard axioms \lean{propext}, \lean{Classical.choice}, \lean
 \end{abstract}
 
 \medskip
-\noindent The development is two Lean files: \lean{VirtualRoots.lean} for the structural theory, and
-\lean{VirtualRootsCount.lean} for the exact count built on top of it. The load-bearing lemmas are
-gathered in Section~\ref{sec:blocks}, and the limits that remain---continuity, and the global object on
-all of $\R$---in Section~\ref{sec:boundary}. If you read only two things, read the interlacing
+\noindent\emph{What you will find here.} A short guided tour, built as a string of questions, one per
+section (Figure~\ref{fig:readermap}): \emph{how many} roots a polynomial really has, once the count is
+made not to wobble (\S\ref{sec:q1}); \emph{how} to build the $d$ of them through a choice operator
+$\Rd_d$ (\S\ref{sec:q2}); \emph{why} that construction resists being made formal (\S\ref{sec:q3});
+\emph{how} they interlace, in the manner of Rolle (\S\ref{sec:q4}); and \emph{how many} land in an
+interval---the exact Budan--Fourier count (\S\ref{sec:count}). The development is two Lean files,
+\lean{VirtualRoots.lean} (the structure) and \lean{VirtualRootsCount.lean} (the count); the
+load-bearing lemmas are gathered in Section~\ref{sec:blocks}, the honest limits in
+Section~\ref{sec:boundary}. If you read only two things, read the interlacing
 (Theorem~\ref{thm:interlace}) and the count (Theorem~\ref{thm:count}).
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  obj/.style={draw=ggteal,thick,rounded corners=2pt,fill=ggband!40,align=center,
+    font=\small,inner sep=4pt,minimum height=11mm,text width=21mm},
+  q/.style={font=\scriptsize\itshape,text=ggamber!80!black,align=center,fill=white,inner sep=1pt},
+  arr/.style={-{Stealth[length=2.4mm]},thick,ggteal}]
+  \node[obj] (op) {$\Rd_d$:\\min $|p|$};
+  \node[obj,right=30mm of op] (build) {$d$ virtual\\roots};
+  \node[obj,right=30mm of build] (order) {sorted, in\\$[lo,hi]$};
+  \node[obj,below=15mm of order] (loc) {each in\\its cell};
+  \node[obj,left=30mm of loc] (inter) {Rolle\\interlacing};
+  \node[obj,left=30mm of inter,fill=ggamber!25,draw=ggamber,font=\scriptsize,text width=27mm] (count)
+    {\textbf{exact count}\\$\#(a,b]{=}\V(a){-}\V(b)$};
+  \draw[arr] (op) -- node[q,above=2pt] {how\\many?} (build);
+  \draw[arr] (build) -- node[q,above=2pt] {what\\order?} (order);
+  \draw[arr] (order) -- node[q,right=2pt,fill=none] {where?} (loc);
+  \draw[arr] (loc) -- node[q,above=2pt] {inter-\\lace?} (inter);
+  \draw[arr] (inter) -- node[q,above=2pt] {count\\$(a,b]$?} (count);
+\end{tikzpicture}
+\caption{The reader's map. From the choice operator $\Rd_d$ to a certified interval count; each arrow
+is the question its section answers, and every node is a block of \lean{sorry}-free Lean. The clean
+chain---operator, $d$ roots, order, per-cell localization, interlacing, count---is the architecture the
+whole development hangs on.}
+\label{fig:readermap}
+\end{figure}
 
 \section{A count that does not wobble}\label{sec:intro}
 
@@ -618,6 +650,22 @@ axiomatize one such interlacing structure. Is there a single Lean notion of ``in
 that subsumes all of these---and where does the virtual-root family, defined even when no real roots
 exist, sit inside it? That is the bead I would most like to carry forward.
 \end{enumerate}
+
+\section*{Reproducing}
+\begin{verbatim}
+git clone https://github.com/karlesmarin/godsil-gutman-lean
+cd godsil-gutman-lean && lake exe cache get
+lake build BudanFourier         # the imported sign-variation toolkit
+lake env lean VirtualRoots.lean       # the structural theory
+lake env lean VirtualRootsCount.lean  # the exact count
+\end{verbatim}
+{\sloppy Lean~4 (godsil toolchain pin \lean{v4.30}) over Mathlib. The structural theorems are in
+\lean{VirtualRoots.lean} and the exact count \lean{card\_vroots\_Ioc\_eq\_fourierVar} in
+\lean{VirtualRootsCount.lean}; their supports are Table~\ref{tab:results}. Both files are
+\lean{sorry}-free, and \lean{\#print axioms} on \lean{vroots\_interlacing} and on
+\lean{card\_vroots\_Ioc\_eq\_fourierVar} reports only \lean{propext}, \lean{Classical.choice},
+\lean{Quot.sound}. The worked signs of every figure ($x^2+1$, $x^3-x$, $x^2-t$) are re-derived in exact
+arithmetic before the figure is drawn.\par}
 
 \begin{thebibliography}{99}\small
 \bibitem{glm} L.~Gonz\'alez-Vega, H.~Lombardi, L.~Mah\'e, Virtual roots of real polynomials,

@@ -83,11 +83,44 @@ depende solo de los tres axiomas est\'andar \lean{propext}, \lean{Classical.choi
 \end{abstract}
 
 \medskip
-{\sloppy\noindent El desarrollo son dos ficheros Lean. \lean{VirtualRoots.lean} lleva la teor\'ia
-estructural; \lean{VirtualRootsCount.lean}, el recuento exacto construido encima. Los lemas que soportan
-el peso est\'an reunidos en la Secci\'on~\ref{sec:blocks}, y los l\'imites que quedan---la continuidad, y
-el objeto global en todo $\R$---en la Secci\'on~\ref{sec:boundary}. Si solo lees dos cosas, lee el
-entrelazado (Teorema~\ref{thm:interlace}) y el recuento (Teorema~\ref{thm:count}).\par}
+\medskip
+{\sloppy\noindent\emph{Lo que encontrar\'as aqu\'i.} Una visita guiada breve, construida como una cadena
+de preguntas, una por secci\'on (Figura~\ref{fig:readermap}): \emph{cu\'antas} ra\'ices tiene de verdad
+un polinomio, una vez que el recuento deja de temblar (\S\ref{sec:q1}); \emph{c\'omo} construir las $d$
+mediante un operador de elecci\'on $\Rd_d$ (\S\ref{sec:q2}); \emph{por qu\'e} esa construcci\'on se
+resiste a hacerse formal (\S\ref{sec:q3}); \emph{c\'omo} se entrelazan, a la manera de Rolle
+(\S\ref{sec:q4}); y \emph{cu\'antas} caen en un intervalo---el recuento exacto de Budan--Fourier
+(\S\ref{sec:count}). El desarrollo son dos ficheros Lean, \lean{VirtualRoots.lean} (la estructura) y
+\lean{VirtualRootsCount.lean} (el recuento); los lemas que soportan el peso est\'an en la
+Secci\'on~\ref{sec:blocks}, los l\'imites honestos en la Secci\'on~\ref{sec:boundary}. Si solo lees dos
+cosas, lee el entrelazado (Teorema~\ref{thm:interlace}) y el recuento (Teorema~\ref{thm:count}).\par}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  obj/.style={draw=ggteal,thick,rounded corners=2pt,fill=ggband!40,align=center,
+    font=\small,inner sep=4pt,minimum height=11mm,text width=21mm},
+  q/.style={font=\scriptsize\itshape,text=ggamber!80!black,align=center,fill=white,inner sep=1pt},
+  arr/.style={-{Stealth[length=2.4mm]},thick,ggteal}]
+  \node[obj] (op) {$\Rd_d$:\\min $|p|$};
+  \node[obj,right=30mm of op] (build) {$d$ ra\'ices\\virtuales};
+  \node[obj,right=30mm of build] (order) {ordenadas,\\en $[lo,hi]$};
+  \node[obj,below=15mm of order] (loc) {cada una\\en su celda};
+  \node[obj,left=30mm of loc] (inter) {entrelazado\\de Rolle};
+  \node[obj,left=30mm of inter,fill=ggamber!25,draw=ggamber,font=\scriptsize,text width=27mm] (count)
+    {\textbf{recuento exacto}\\$\#(a,b]{=}\V(a){-}\V(b)$};
+  \draw[arr] (op) -- node[q,above=2pt] {¿cu\'antas?} (build);
+  \draw[arr] (build) -- node[q,above=2pt] {¿qu\'e\\orden?} (order);
+  \draw[arr] (order) -- node[q,right=2pt,fill=none] {¿d\'onde?} (loc);
+  \draw[arr] (loc) -- node[q,above=2pt] {¿entre-\\lazan?} (inter);
+  \draw[arr] (inter) -- node[q,above=2pt] {¿contar\\$(a,b]$?} (count);
+\end{tikzpicture}
+\caption{El mapa del lector. Del operador de elecci\'on $\Rd_d$ a un recuento certificado en un
+intervalo; cada flecha es la pregunta que responde su secci\'on, y cada nodo es un bloque de Lean
+\lean{sorry}-free. La cadena limpia---operador, $d$ ra\'ices, orden, localizaci\'on por celda,
+entrelazado, recuento---es la arquitectura sobre la que se sostiene todo el desarrollo.}
+\label{fig:readermap}
+\end{figure}
 
 \section{Un recuento que no tiembla}\label{sec:intro}
 
@@ -619,6 +652,22 @@ de esas estructuras de entrelazado. ¿Hay una \'unica noci\'on Lean de ``familia
 subsuma todas estas---y d\'onde se sit\'ua dentro de ella la familia de ra\'ices virtuales, definida
 incluso cuando no hay ra\'ices reales? Esa es la cuenta que m\'as me gustar\'ia llevarme.
 \end{enumerate}
+
+\section*{Reproducir}
+\begin{verbatim}
+git clone https://github.com/karlesmarin/godsil-gutman-lean
+cd godsil-gutman-lean && lake exe cache get
+lake build BudanFourier         # el toolkit de variacion de signos importado
+lake env lean VirtualRoots.lean       # la teoria estructural
+lake env lean VirtualRootsCount.lean  # el recuento exacto
+\end{verbatim}
+{\sloppy Lean~4 (pin de toolchain godsil \lean{v4.30}) sobre Mathlib. Los teoremas estructurales est\'an en
+\lean{VirtualRoots.lean} y el recuento exacto \lean{card\_vroots\_Ioc\_eq\_fourierVar} en
+\lean{VirtualRootsCount.lean}; sus soportes son la Tabla~\ref{tab:results}. Ambos ficheros son
+\lean{sorry}-free, y \lean{\#print axioms} sobre \lean{vroots\_interlacing} y sobre
+\lean{card\_vroots\_Ioc\_eq\_fourierVar} reporta solo \lean{propext}, \lean{Classical.choice},
+\lean{Quot.sound}. Los signos de cada figura ($x^2+1$, $x^3-x$, $x^2-t$) se re-derivan en aritm\'etica
+exacta antes de dibujarla.\par}
 
 \begin{thebibliography}{99}\small
 \bibitem{glm} L.~Gonz\'alez-Vega, H.~Lombardi, L.~Mah\'e, Virtual roots of real polynomials,
