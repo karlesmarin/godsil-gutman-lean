@@ -163,6 +163,15 @@ public noncomputable def vroots (lo hi : ℝ) (p : Polynomial ℝ) : List ℝ :=
   termination_by p.natDegree
   decreasing_by exact natDegree_derivative_lt h
 
+/-- **The `vroots` recursion, exposed.** For `deg p ≥ 1`, the virtual roots are `ℛ_d` applied to
+consecutive breakpoints `lo :: (vroots p' ++ [hi])`. Stated so other modules can unfold the (non-
+`@[expose]`) `vroots` definition through a lemma. -/
+public theorem vroots_eq_zipWith {lo hi : ℝ} {p : Polynomial ℝ} (hd : p.natDegree ≠ 0) :
+    vroots lo hi p
+      = List.zipWith (R p) (lo :: (vroots lo hi (derivative p) ++ [hi]))
+          (lo :: (vroots lo hi (derivative p) ++ [hi])).tail := by
+  rw [vroots, dif_neg hd]
+
 /-- Exact derivative degree in characteristic zero: `deg(P') = deg P − 1` for `deg P ≥ 1`. -/
 public theorem natDegree_derivative_eq {p : Polynomial ℝ} (hp : 0 < p.natDegree) :
     (derivative p).natDegree = p.natDegree - 1 :=

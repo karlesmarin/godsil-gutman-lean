@@ -252,6 +252,81 @@ theorem exists_bracket {z : ℝ} (L : List ℝ) (hchain : List.IsChain (· ≤ �
         · simpa using hia
         · simpa using hib
 
+/-- **Coste's Proposition 2.2.** Every actual root of `q` (under the bracket hypothesis) is one of its
+virtual roots. The keystone: it makes the breakpoints capture all of `q'`'s roots, so `q'` is
+sign-constant on each cell and `q` is monotone there. Proved by strong induction down the tower:
+locate the root's cell (`exists_bracket`), capture it with `ℛ_d` (`R_eval_eq_zero_of_exists`), and rule
+out a second root by Rolle (`exists_deriv_root_between` gives a `q'`-root in the open cell, which the
+inductive hypothesis places among the breakpoints — impossible by `not_mem_between`). -/
+theorem root_mem_vroots {lo hi : ℝ} (hab : lo ≤ hi) {q : Polynomial ℝ}
+    (hbr : Brackets lo hi q) {z : ℝ} (hz : q.eval z = 0) : z ∈ vroots lo hi q := by
+  suffices H : ∀ n, ∀ q : Polynomial ℝ, q.natDegree = n → Brackets lo hi q →
+      ∀ z, q.eval z = 0 → z ∈ vroots lo hi q from H q.natDegree q rfl hbr z hz
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro q hn hbr z hz
+    rcases Nat.eq_zero_or_pos n with h0 | hpos
+    · -- degree `0`: a nonzero constant has no roots
+      subst h0
+      exfalso
+      have hq0 := brackets_ne_zero hbr
+      obtain ⟨c, hc⟩ := Polynomial.natDegree_eq_zero.mp hn
+      rw [← hc, eval_C] at hz
+      rw [← hc, hz, map_zero] at hq0
+      exact hq0 rfl
+    · -- degree `≥ 1`: locate the cell, capture, and use Rolle for uniqueness
+      have hdeg : 0 < q.natDegree := by rw [hn]; exact hpos
+      have hd : q.natDegree ≠ 0 := by omega
+      have hbr' : Brackets lo hi (derivative q) := brackets_derivative hdeg hbr
+      have hdn : (derivative q).natDegree = n - 1 := by rw [natDegree_derivative_eq hdeg, hn]
+      have hzin : z ∈ Set.Ioo lo hi :=
+        hbr q ((BudanFourier.fourierSeq_mem q q).mpr ⟨0, Nat.zero_le _, by simp⟩) z hz
+      set bps := lo :: (vroots lo hi (derivative q) ++ [hi]) with hbps
+      have hchain : List.IsChain (· ≤ ·) bps := vroots_isChain lo hi hab (derivative q)
+      have hbne : bps ≠ [] := by simp [hbps]
+      have hlo : bps.head hbne ≤ z := by simp only [hbps]; simpa using le_of_lt hzin.1
+      have hhi : z ≤ bps.getLast hbne := by
+        simp only [hbps, List.getLast_cons (by simp : vroots lo hi (derivative q) ++ [hi] ≠ []),
+          List.getLast_append_singleton]
+        exact le_of_lt hzin.2
+      have hvl : (vroots lo hi (derivative q)).length = n - 1 := by rw [vroots_length, hdn]
+      have hblen : bps.length = (n - 1) + 2 := by
+        rw [hbps]
+        simp only [List.length_cons, List.length_append, List.length_nil, hvl]
+      have hlen : 2 ≤ bps.length := by rw [hblen]; omega
+      obtain ⟨i, hi1, hbiz, hzbi⟩ := exists_bracket bps hchain hbne hlo hhi hlen
+      have hadj : bps[i]'(Nat.lt_of_succ_lt hi1) ≤ bps[i + 1]'hi1 := le_trans hbiz hzbi
+      have hzmem : z ∈ Set.Icc (bps[i]'(Nat.lt_of_succ_lt hi1)) (bps[i + 1]'hi1) :=
+        Set.mem_Icc.mpr ⟨hbiz, hzbi⟩
+      have hwroot : q.eval (R q (bps[i]'(Nat.lt_of_succ_lt hi1)) (bps[i + 1]'hi1)) = 0 :=
+        R_eval_eq_zero_of_exists hadj ⟨z, hzmem, hz⟩
+      have hwmem := Set.mem_Icc.mp (R_mem (p := q) hadj)
+      have hwz : R q (bps[i]'(Nat.lt_of_succ_lt hi1)) (bps[i + 1]'hi1) = z := by
+        by_contra hne
+        have hbridge : ∀ y, bps[i]'(Nat.lt_of_succ_lt hi1) < y → y < bps[i + 1]'hi1 →
+            (derivative q).eval y = 0 → False := by
+          intro y hy1 hy2 hyroot
+          have hyv : y ∈ vroots lo hi (derivative q) :=
+            ih (n - 1) (by omega) (derivative q) hdn hbr' y hyroot
+          have hymem : y ∈ bps := by
+            rw [hbps]; exact List.mem_cons_of_mem lo (List.mem_append_left _ hyv)
+          exact not_mem_between hchain hi1 hymem hy1 hy2
+        rcases lt_or_gt_of_ne hne with hlt | hlt
+        · obtain ⟨y, hy, hyroot⟩ := exists_deriv_root_between hlt hwroot hz
+          exact hbridge y (lt_of_le_of_lt hwmem.1 hy.1) (lt_of_lt_of_le hy.2 hzbi) hyroot
+        · obtain ⟨y, hy, hyroot⟩ := exists_deriv_root_between hlt hz hwroot
+          exact hbridge y (lt_of_le_of_lt hbiz hy.1) (lt_of_lt_of_le hy.2 hwmem.2) hyroot
+      have hivr : i < (vroots lo hi q).length := by
+        rw [vroots_length, hn]; omega
+      have hvrq : vroots lo hi q
+          = List.zipWith (R q) bps bps.tail := by rw [vroots_eq_zipWith hd, ← hbps]
+      have hidx : (vroots lo hi q)[i]'hivr
+          = R q (bps[i]'(Nat.lt_of_succ_lt hi1)) (bps[i + 1]'hi1) := by
+        simp only [hvrq, List.getElem_zipWith, List.getElem_tail]
+      have : (vroots lo hi q)[i]'hivr = z := by rw [hidx, hwz]
+      exact this ▸ List.getElem_mem hivr
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
