@@ -99,3 +99,17 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20736143"
     notes: "Budan–Fourier (#roots in (a,b] with mult. ≤ V(a)−V(b), even surplus); first in Lean"
+  - type: article
+    title: "Roots That Are Always There: the Virtual Roots of a Real Polynomial, Machine-Checked in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    notes: "Virtual roots: construction, count = deg, Rolle interlacing, and exact count #(a,b]=V(a)−V(b); first in any ITP. DOI on publication."
+  - type: article
+    title: "One Engine, Three Counts: Descartes, Sturm and Budan–Fourier through one sign-variation engine in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    notes: "Synthesis note over Sturm + Budan–Fourier; the dividing line and the Descartes bridge. DOI on publication."

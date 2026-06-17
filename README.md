@@ -154,6 +154,23 @@ matching polynomial (Paper II) and much of modern combinatorics:
   by W. Li) (`BudanFourier.lean`, `sorry`-free, three standard axioms). EN + ES. DOI
   [10.5281/zenodo.20736143](https://doi.org/10.5281/zenodo.20736143).
 
+- **Roots That Are Always There** ([`virtual-roots-lean.pdf`](virtual-roots-lean.pdf)): the **virtual
+  roots** of a real polynomial (González-Vega–Lombardi–Mahé; Coste) — a degree-`d` polynomial always
+  has exactly `d` virtual roots `ρ_{d,1} ≤ … ≤ ρ_{d,d}`, continuous semialgebraic substitutes that
+  coincide with the real roots when these exist and otherwise sit where the polynomial comes closest to
+  vanishing. The `ℛ_d` construction, count `= deg`, sortedness, the **Rolle interlacing**
+  `ρ_{d,r}(p) ≤ ρ_{d−1,r}(p′) ≤ ρ_{d,r+1}(p)`, and the **exact Budan–Fourier count**
+  `#{virtual roots in (a,b]} = V(a) − V(b)` (`card_vroots_Ioc_eq_fourierVar`) that turns the
+  Budan–Fourier *inequality* into an *equality*. To our knowledge the **first virtual roots — and this
+  exact count — in any interactive theorem prover** (`VirtualRoots.lean`, `VirtualRootsCount.lean`,
+  `sorry`-free, three standard axioms). EN + ES. DOI *(on publication)*.
+- **One Engine, Three Counts** ([`sign-variation-lean.pdf`](sign-variation-lean.pdf)): a synthesis
+  note — Descartes, Sturm and Budan–Fourier run through **one** sign-variation engine and **one**
+  local-drop law `V(c⁻) = V(c⁺) + μ_c + 2e`; it locates the exact axiom where the derivative tower
+  leaves the Sturm-chain world (the tower is not a Sturm chain at a multiple root) and ties the
+  engine's `V(0)` to Mathlib's Descartes count via `fourierVar p 0 = Polynomial.signVariations p`
+  (`Descartes.lean`). A companion note to the Budan–Fourier paper. EN + ES. DOI *(on publication)*.
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.
