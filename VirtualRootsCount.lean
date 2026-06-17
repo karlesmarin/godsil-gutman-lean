@@ -327,6 +327,71 @@ theorem root_mem_vroots {lo hi : ℝ} (hab : lo ≤ hi) {q : Polynomial ℝ}
       have : (vroots lo hi q)[i]'hivr = z := by rw [hidx, hwz]
       exact this ▸ List.getElem_mem hivr
 
+/-! ### (a)+(b): `p` is strictly monotone on each `p'`-cell
+
+Coste 2.2 makes `p'` root-free on each open cell; with the IVT that forces `p'` to keep a constant
+sign there, hence (by the mean-value bedrock) `p` is strictly monotone across the closed cell — even
+though `p'` may vanish at the breakpoint endpoints. -/
+
+/-- **IVT sign-change.** A continuous polynomial with opposite signs at the ends of an interval has a
+root strictly inside. -/
+theorem exists_root_of_sign_change {q : Polynomial ℝ} {c d : ℝ} (hcd : c < d)
+    (hsign : q.eval c * q.eval d < 0) : ∃ e ∈ Set.Ioo c d, q.eval e = 0 := by
+  have hcont : ContinuousOn (fun x => q.eval x) (Set.Icc c d) := q.continuous.continuousOn
+  rcases mul_neg_iff.mp hsign with ⟨hcp, hdn⟩ | ⟨hcn, hdp⟩
+  · obtain ⟨e, he, hee⟩ := intermediate_value_Icc' hcd.le hcont (Set.mem_Icc.mpr ⟨hdn.le, hcp.le⟩)
+    have hee' : q.eval e = 0 := hee
+    refine ⟨e, ⟨lt_of_le_of_ne he.1 (fun h => ?_), lt_of_le_of_ne he.2 (fun h => ?_)⟩, hee'⟩
+    · rw [h, hee'] at hcp; exact lt_irrefl 0 hcp
+    · rw [← h, hee'] at hdn; exact lt_irrefl 0 hdn
+  · obtain ⟨e, he, hee⟩ := intermediate_value_Icc hcd.le hcont (Set.mem_Icc.mpr ⟨hcn.le, hdp.le⟩)
+    have hee' : q.eval e = 0 := hee
+    refine ⟨e, ⟨lt_of_le_of_ne he.1 (fun h => ?_), lt_of_le_of_ne he.2 (fun h => ?_)⟩, hee'⟩
+    · rw [h, hee'] at hcn; exact lt_irrefl 0 hcn
+    · rw [← h, hee'] at hdp; exact lt_irrefl 0 hdp
+
+/-- **(a)+(b): monotone on a root-free cell.** If `p'` has no root on the open interval `(a,b)`, then
+`p` is strictly monotone (one way or the other) on the closed `[a,b]`. -/
+theorem strictMonoOn_or_antiOn_of_no_deriv_root {p : Polynomial ℝ} {a b : ℝ} (hab : a < b)
+    (hno : ∀ y ∈ Set.Ioo a b, (derivative p).eval y ≠ 0) :
+    StrictMonoOn (fun x => p.eval x) (Set.Icc a b)
+      ∨ StrictAntiOn (fun x => p.eval x) (Set.Icc a b) := by
+  have hmid : (a + b) / 2 ∈ Set.Ioo a b := ⟨by linarith, by linarith⟩
+  -- a root-free `(a,b)` keeps `p'` of one sign: any sign disagreement gives a root by the IVT
+  have hsame : ∀ y ∈ Set.Ioo a b, 0 < (derivative p).eval ((a + b) / 2) → 0 < (derivative p).eval y := by
+    intro y hy hposm
+    by_contra hy0
+    have hy0 := not_lt.mp hy0
+    have hyneg : (derivative p).eval y < 0 := lt_of_le_of_ne hy0 (hno y hy)
+    rcases lt_trichotomy y ((a + b) / 2) with hlt | heq | hgt
+    · obtain ⟨e, he, hee⟩ := exists_root_of_sign_change hlt (mul_neg_of_neg_of_pos hyneg hposm)
+      exact hno e ⟨lt_trans hy.1 he.1, lt_trans he.2 hmid.2⟩ hee
+    · rw [heq] at hyneg; exact absurd hposm (not_lt.mpr hyneg.le)
+    · obtain ⟨e, he, hee⟩ := exists_root_of_sign_change hgt (mul_neg_of_pos_of_neg hposm hyneg)
+      exact hno e ⟨lt_trans hmid.1 he.1, lt_trans he.2 hy.2⟩ hee
+  have hsame' : ∀ y ∈ Set.Ioo a b, (derivative p).eval ((a + b) / 2) < 0 →
+      (derivative p).eval y < 0 := by
+    intro y hy hnegm
+    by_contra hy0
+    have hy0 := not_lt.mp hy0
+    have hypos : 0 < (derivative p).eval y := lt_of_le_of_ne hy0 (Ne.symm (hno y hy))
+    rcases lt_trichotomy y ((a + b) / 2) with hlt | heq | hgt
+    · obtain ⟨e, he, hee⟩ := exists_root_of_sign_change hlt (mul_neg_of_pos_of_neg hypos hnegm)
+      exact hno e ⟨lt_trans hy.1 he.1, lt_trans he.2 hmid.2⟩ hee
+    · rw [heq] at hypos; exact absurd hnegm (not_lt.mpr hypos.le)
+    · obtain ⟨e, he, hee⟩ := exists_root_of_sign_change hgt (mul_neg_of_neg_of_pos hnegm hypos)
+      exact hno e ⟨lt_trans hmid.1 he.1, lt_trans he.2 hy.2⟩ hee
+  rcases lt_trichotomy ((derivative p).eval ((a + b) / 2)) 0 with hm | hm | hm
+  · right
+    apply strictAntiOn_of_deriv_neg (convex_Icc a b) p.continuous.continuousOn
+    intro y hy; rw [interior_Icc] at hy; rw [Polynomial.deriv]
+    exact hsame' y hy hm
+  · exact absurd hm (hno _ hmid)
+  · left
+    apply strictMonoOn_of_deriv_pos (convex_Icc a b) p.continuous.continuousOn
+    intro y hy; rw [interior_Icc] at hy; rw [Polynomial.deriv]
+    exact hsame y hy hm
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
