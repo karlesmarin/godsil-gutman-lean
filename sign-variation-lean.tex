@@ -19,7 +19,7 @@
 \usepackage{float}
 \usepackage[most]{tcolorbox}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,matrix}
 \graphicspath{{figures/}}
 \setlength{\emergencystretch}{2em}
 \newtheorem{theorem}{Theorem}
@@ -73,6 +73,20 @@ coefficient count, and this exact axiomatic placement of the tower. Every headli
 \end{abstract}
 
 \medskip
+\noindent Three theorems, born a century and a half apart, count real roots by the same gesture:
+reading the signs of a sequence. Descartes (1637) read them off the \emph{coefficients} and bounded the
+positive roots. Budan (1807) and Fourier (1820s, published posthumously in 1831) read them off the
+\emph{derivative tower}, extending the bound to any interval and counting with multiplicity; their
+near-simultaneous discovery set off a priority dispute later disentangled by Akritas~\cite{akritas}.
+Sturm (1829) closed the gap from bound to \emph{exact} count---but with a third sequence, the signed
+Euclidean remainders, and only for distinct roots. That these are three faces of one principle emerged
+only in the twentieth century, through Cauchy's index and its modern axiomatisation as abstract
+\emph{Sturm chains} by Eisermann~\cite{eisermann}. \textbf{This paper makes that fusion concrete in
+Lean: one sign-variation engine, one local-drop law, three instances run through it, and the exact point
+where the derivative tower steps outside the Sturm-chain world.} The unification is classical; what is
+new is the machine-checked engine and the axiomatic line it lets us draw between the three.
+
+\medskip
 \noindent\emph{What you will find here.} One engine (Section~\ref{sec:engine}); the local-drop law they
 share (Section~\ref{sec:law}); the three instances read off it---Descartes, Sturm, Budan--Fourier
 (Section~\ref{sec:three}); the dividing line, where the tower leaves the Sturm-chain world
@@ -83,6 +97,7 @@ instances; here I assemble them into one picture and draw the line between them.
 
 \begin{figure}[htbp]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
   eng/.style={draw=ggteal,thick,rounded corners=3pt,fill=ggband!50,align=center,font=\small,
     inner sep=6pt},
@@ -112,7 +127,7 @@ instances; here I assemble them into one picture and draw the line between them.
     \node[fit=(bf),draw=ggplum,dashed,rounded corners=4pt,inner sep=4pt,
       label={[font=\scriptsize\itshape,text=ggplum]below:axiom \emph{fails} (Rseq/Lseq take over)}] {};
   \end{scope}
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{The thesis in one picture. A single sign-variation engine and a single local-drop law carry
 three classical root counts. Descartes' and Sturm's sequences obey Eisermann's Sturm-chain
 axiom---no two members vanish together; the derivative tower of Budan--Fourier breaks it at every
@@ -158,21 +173,21 @@ behaves}---and that is exactly what the next two sections separate.
 We read all three off one worked polynomial where they can be compared, $p=x^3-x=x(x-1)(x+1)$, and then
 name the feature each one isolates.
 
-\emph{Sturm} (\cite{sturmlean}; Figure~\ref{fig:sturm}). The signed-remainder chain
+\emph{Sturm} (\cite{sturmlean}; Figure~\ref{fig:compare}). The signed-remainder chain
 $x^3{-}x,\ 3x^2{-}1,\ \tfrac23 x,\ 1$ is built so that consecutive members are coprime: at a zero of an
 interior member the two neighbours are \emph{antipodal} (strictly opposite), so deleting that member
 leaves the count unchanged (the \lean{FlankReduce} relation). Only the head pair $(p,p')$ moves the
 count, by one, at each root. The drop counts \emph{distinct} roots exactly: $\V(-2)-\V(2)=3$ on $(-2,2]$.
 Here $\mu_c=1$ at every root and the surplus is $0$.
 
-\emph{Budan--Fourier} (\cite{budanlean}; Figure~\ref{fig:tower}). The derivative tower
+\emph{Budan--Fourier} (\cite{budanlean}; Figure~\ref{fig:compare}). The derivative tower
 $p,p',p'',\dots$ replaces coprimality by a one-step relation---each member is the derivative of the
 previous---so a vanishing member's sign just off $c$ is fixed by its derivative: it copies it on the
 right (the block \emph{collapses}, no new change) and negates it on the left (the block
 \emph{alternates}, one change per member). At a multiple root a whole block vanishes, the left
 alternation contributes the multiplicity, and interior blocks contribute an even surplus---so the count
 is a \emph{bound with multiplicity}, even-off from the truth. For $x^3-x$ (simple roots) it agrees with
-Sturm; its distinctive face is the double root and the phantom even drop (Figure~\ref{fig:tower}).
+Sturm; its distinctive face is the double root and the phantom even drop (Figure~\ref{fig:compare}).
 
 \emph{Descartes} is the shadow at the ends of $(0,\infty)$: since $p^{(k)}(0)=k!\,a_k$, the tower's sign
 sequence at $0$ \emph{is} the coefficient sequence, so $\V(0)$ is the coefficient sign-variation count;
@@ -187,20 +202,26 @@ the signs low-to-high and Mathlib's coefficient list high-to-low.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.78\textwidth]{sturm_fig1_staircase}
-\caption{The Sturm instance (from~\cite{sturmlean}): for $p=x^3-x$ the staircase $\V$ drops by exactly
-one at each root and does not move at a zero of an interior chain member (the $\pm1/\sqrt3$ guides),
-where the antipodal neighbours absorb it. Distinct-root count, exact.}
-\label{fig:sturm}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{budan_fig1_tower}
-\caption{The Budan--Fourier instance (from~\cite{budanlean}): \emph{(A)} the tower drop counts
-multiplicity (step of two at a double root); \emph{(B)} at a critical point that is not a root the drop
-is still even---the trace of a conjugate pair. Bound with multiplicity, even parity.}
-\label{fig:tower}
+\begin{tikzpicture}[font=\footnotesize]
+\matrix (m) [matrix of nodes, row sep=2.2mm, column sep=7mm, nodes={anchor=west, inner sep=2pt}]{
+   & \textit{sequence built from } $p=x^3-x$ & \textit{the engine $\V$ gives} & \textit{drop counts} \\
+  \textbf{Descartes} & coefficients $\,1,0,-1,0$ & $\V(0)=1$ & positive roots \\
+  \textbf{Budan--Fourier} & tower $\,p,p',p'',p'''$ & $\V(-2)-\V(2)=3$ & roots w.\ mult.\ ($+$ even gap) \\
+  \textbf{Sturm} & remainders $\,p,p',\tfrac23 x,1$ & $\V(-2)-\V(2)=3$ & distinct roots, exact \\
+};
+\begin{scope}[on background layer]
+  \node[draw=ggteal,thick,rounded corners=3pt,fill=ggband!35,fit=(m-2-3)(m-4-3),inner sep=4pt,
+    label={[font=\scriptsize\itshape,text=ggteal]above:one engine $\V=\lean{signChanges}$}] {};
+\end{scope}
+\end{tikzpicture}
+\caption{One polynomial, three sequences, one engine. Each classical count is the \emph{same}
+sign-variation engine $\V$ applied to a different sequence built from $p=x^3-x$: Descartes'
+coefficients, the Budan--Fourier derivative tower, Sturm's signed remainders. They read different
+facets---positive roots, roots with multiplicity, distinct roots---but the count, its local constancy
+off critical points, and its telescoping over $(a,b]$ are one and the same (boxed). The detailed
+staircases live in the companion papers~\cite{sturmlean,budanlean}; this paper's subject is the boxed
+column they share.}
+\label{fig:compare}
 \end{figure}
 
 \section{The dividing line}\label{sec:divide}
