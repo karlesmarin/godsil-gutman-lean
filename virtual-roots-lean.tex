@@ -448,7 +448,7 @@ roots are about to become complex, which is where the even Budan--Fourier surplu
 (Figure~\ref{fig:bifurc}). The structural theory formalized here is the foundation all of that stands
 on.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=1.35]
   \useasboundingbox (-1.85,-1.7) rectangle (1.95,1.8);
@@ -486,7 +486,7 @@ the monotonicity bricks give the existence and the two properties of $\Rd_d$; th
 \lean{vroots\_chain\_mem} proves sortedness and range together; and the per-index localization gives
 the interlacing.
 
-\begin{table}[htbp]
+\begin{table}[H]
   \centering\footnotesize
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}llc@{}}
@@ -521,7 +521,7 @@ the interlacing.
   \label{tab:results}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[H]
   \centering\footnotesize
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}lc@{}}
@@ -593,20 +593,23 @@ Three facts mark where the work points next; the first is now settled and names 
 question, the other two are still open.
 
 \begin{enumerate}\itemsep3pt
-\item \emph{Two definitions of one object.} The headline equality
-$\#\{\text{virtual roots in }(a,b]\}=\V(a)-\V(b)$ is now proved (Section~\ref{sec:count}) by the first
-of two honest routes: it \emph{bridges} the construction here---the $\Rd_d$ minimiser---to the
-sign-variation function \lean{fourierVar} of the companion work~\cite{bflean}, turning that paper's
-inequality~\cite{coste,glm} into an equality. There is a second route, not taken: \emph{define} virtual
-roots a second time, as the jumps of \lean{fourierVar}, where the count is almost definitional, and
-prove the two definitions agree. The interlacing was free in the first definition; the count would be
-free in the second; \textbf{the equivalence of the two definitions is the theorem that route would
-isolate}, and which is shorter in Lean is still the question.
+\item \emph{Two definitions, one object---which to formalize from.} Virtual roots carry two classical
+definitions: the $\Rd_d$ minimiser construction of Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm} used
+here, and the values at which \lean{fourierVar} jumps, the definition of Coste et al.~\cite{coste}. The
+two agree, and \emph{that agreement is itself Coste's theorem}---not something this paper opens. What
+this paper does is formalize the construction and \emph{bridge} it to \lean{fourierVar} for the count
+(Section~\ref{sec:count}). The jumps definition would make the count almost definitional but the
+interlacing harder; so the genuinely open part is not the mathematics but the \emph{Lean} choice---is
+re-deriving Coste's equivalence from the jumps side cheaper, in a proof assistant, than the bridge taken
+here? The interlacing was free on the construction side, the count would be free on the jumps side;
+neither definition gives both at once.
 \item \emph{Continuity, the other half of their reason for being.} Virtual roots vary
-\emph{continuously} with the coefficients---this is half of why Gonz\'alez-Vega--Lombardi--Mah\'e
-introduced them~\cite{glm}---and continuity is not touched here. A formalization would have to make
-$\Rd_d$, a chosen minimiser, depend continuously on $p$; the monotonicity bricks that pin the
-minimiser down are the natural starting point, but the statement is genuinely analytic.
+\emph{continuously} with the coefficients---indeed Gonz\'alez-Vega--Lombardi--Mah\'e prove the
+$\rho_{d,j}$ are semialgebraic continuous functions~\cite{glm}, which is half of why they introduced
+them. The mathematics is theirs and settled; what is open is only its formalization, untouched here. A
+Lean proof would have to make $\Rd_d$, a chosen minimiser, depend continuously on $p$; the monotonicity
+bricks that pin the minimiser down are the natural starting point, but the statement is genuinely
+analytic and beyond the algebraic bookkeeping of this paper.
 \item \emph{One interlacing, three faces.} The Rolle interlacing places virtual roots beside the
 families that run through the real-rootedness literature: the roots of a polynomial and its
 derivative (classical Rolle~\cite{rolle}), Newton's inequalities~\cite{newton}, and the

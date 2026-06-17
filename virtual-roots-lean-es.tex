@@ -592,22 +592,25 @@ Tres hechos marcan hacia d\'onde apunta el trabajo; el primero ya est\'a resuelt
 pregunta pendiente, los otros dos siguen abiertos.
 
 \begin{enumerate}\itemsep3pt
-\item \emph{Dos definiciones de un objeto.} La igualdad principal
-$\#\{\text{ra\'ices virtuales en }(a,b]\}=\V(a)-\V(b)$ ya est\'a probada (Secci\'on~\ref{sec:count}) por
-la primera de dos rutas honestas: \emph{puentea} la construcci\'on de aqu\'i---el minimizador
-$\Rd_d$---con la funci\'on de variaci\'on de signos \lean{fourierVar} del trabajo
-compa\~nero~\cite{bflean}, convirtiendo la desigualdad de aquel paper~\cite{coste,glm} en igualdad. Hay
-una segunda ruta, no tomada: \emph{definir} las ra\'ices virtuales una segunda vez, como los saltos de
-\lean{fourierVar}, donde el recuento es casi por definici\'on, y probar que ambas definiciones
-coinciden. El entrelazado fue gratis en la primera definici\'on; el recuento ser\'ia gratis en la
-segunda; \textbf{la equivalencia de ambas definiciones es el teorema que esa ruta aislar\'ia}, y cu\'al
-es m\'as corta en Lean sigue siendo la pregunta.
+\item \emph{Dos definiciones, un objeto---desde cu\'al formalizar.} Las ra\'ices virtuales tienen dos
+definiciones cl\'asicas: la construcci\'on por el minimizador $\Rd_d$ de
+Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm}, usada aqu\'i, y los valores donde salta \lean{fourierVar},
+la definici\'on de Coste et al.~\cite{coste}. Las dos coinciden, y \emph{esa coincidencia es el teorema
+de Coste}---no algo que este paper abra. Lo que este paper hace es formalizar la construcci\'on y
+\emph{puentearla} a \lean{fourierVar} para el recuento (Secci\'on~\ref{sec:count}). La definici\'on por
+saltos har\'ia el recuento casi por definici\'on pero el entrelazado m\'as dif\'icil; as\'i que lo
+genuinamente abierto no es la matem\'atica sino la elecci\'on \emph{en Lean}---¿es m\'as barato, en un
+asistente de pruebas, re-derivar la equivalencia de Coste desde el lado de los saltos que el puente
+tomado aqu\'i? El entrelazado fue gratis en el lado de la construcci\'on, el recuento lo ser\'ia en el
+de los saltos; ninguna definici\'on da ambas a la vez.
 \item \emph{La continuidad, la otra mitad de su raz\'on de ser.} Las ra\'ices virtuales var\'ian de
-forma \emph{continua} con los coeficientes---esto es la mitad de por qu\'e
-Gonz\'alez-Vega--Lombardi--Mah\'e las introdujeron~\cite{glm}---y la continuidad no se toca aqu\'i. Una
-formalizaci\'on tendr\'ia que hacer que $\Rd_d$, un minimizador elegido, dependa de $p$ con
-continuidad; los ladrillos de monoton\'ia que fijan el minimizador son el punto de partida natural,
-pero el enunciado es genuinamente anal\'itico.
+forma \emph{continua} con los coeficientes---de hecho Gonz\'alez-Vega--Lombardi--Mah\'e prueban que las
+$\rho_{d,j}$ son funciones semialgebraicas continuas~\cite{glm}, que es la mitad de por qu\'e las
+introdujeron. La matem\'atica es suya y est\'a resuelta; lo abierto es solo su formalizaci\'on, no
+tocada aqu\'i. Una prueba en Lean tendr\'ia que hacer que $\Rd_d$, un minimizador elegido, dependa de
+$p$ con continuidad; los ladrillos de monoton\'ia que fijan el minimizador son el punto de partida
+natural, pero el enunciado es genuinamente anal\'itico y va m\'as all\'a de la contabilidad algebraica
+de este paper.
 \item \emph{Un entrelazado, tres caras.} El entrelazado de Rolle sit\'ua a las ra\'ices virtuales junto
 a las familias que recorren la literatura de real-rootedness: las ra\'ices de un polinomio y su derivada
 (Rolle cl\'asico~\cite{rolle}), las desigualdades de Newton~\cite{newton} y el polinomio de matching de
