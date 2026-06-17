@@ -57,17 +57,19 @@ unifying invariant, the Cauchy index, is axiomatised through abstract \emph{Stur
 Eisermann~\cite{eisermann} and machine-checked, for the Cauchy-index route, in Isabelle/HOL by Li and
 Paulson~\cite{liCauchy}. This paper does three things in Lean~4 over Mathlib, all \lean{sorry}-free.
 (1)~It exhibits \emph{one engine}---a sign-variation count, its local constancy off critical points,
-and a global telescoping over them---and runs all three theorems through it, the first Lean
-formalizations of Sturm's theorem~\cite{sturmlean} and the Budan--Fourier theorem~\cite{budanlean}
-among them. (2)~It states their common local-drop law,
+and a global telescoping over them---and runs all three theorems through it: the first Lean
+formalizations of Sturm's theorem~\cite{sturmlean} and the Budan--Fourier theorem~\cite{budanlean},
+and the bridge \lean{fourierVar p 0 = Polynomial.signVariations p} identifying the engine's $\V(0)$
+with the coefficient sign count of Mathlib's own Descartes' rule, so the third count too is checked
+against the library and not merely read off in prose. (2)~It states their common local-drop law,
 $\V(c^-)=\V(c^+)+\mu_c+2e$, where $\mu_c$ is the order to which the counted polynomial vanishes at the
 critical point $c$. (3)~It locates precisely where the three diverge: Eisermann's Sturm-chain axiom
 forbids two consecutive members from vanishing together, and the derivative tower \emph{violates} this
 at every multiple root, so the tower is \emph{not} a Sturm chain---its local law is the block
 collapse/alternation (\lean{Rseq}/\lean{Lseq}), of which the antipodal single-drop of a genuine Sturm
 chain is the non-degenerate special case. The unification is classical; the contribution is the shared
-Lean engine, the two first-in-Lean formalizations it carries, and this exact axiomatic placement of the
-tower. Every headline theorem depends only on \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
+Lean engine, the two first-in-Lean formalizations it carries, the Descartes bridge to Mathlib's
+coefficient count, and this exact axiomatic placement of the tower. Every headline theorem depends only on \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 \end{abstract}
 
 \medskip
@@ -175,7 +177,13 @@ Sturm; its distinctive face is the double root and the phantom even drop (Figure
 \emph{Descartes} is the shadow at the ends of $(0,\infty)$: since $p^{(k)}(0)=k!\,a_k$, the tower's sign
 sequence at $0$ \emph{is} the coefficient sequence, so $\V(0)$ is the coefficient sign-variation count;
 and $\V(+\infty)=0$. The bound on positive roots is $\V(0)-\V(+\infty)=\V(0)$, even-off from the truth.
-For $x^3-x$ the coefficients $1,0,-1,0$ give one sign change and one positive root, $x=1$.
+For $x^3-x$ the coefficients $1,0,-1,0$ give one sign change and one positive root, $x=1$. This last
+instance is checked against the library, not just asserted: \lean{fourierVar p 0 =
+Polynomial.signVariations p} (\lean{Descartes.lean}, \lean{sorry}-free), so the engine's $\V(0)$ is
+\emph{definitionally} Mathlib's own coefficient sign-variation count---the function on which Mathlib's
+Descartes' rule is stated. The bridge is the two facts above ($p^{(k)}(0)=k!\,a_k$, and
+$\V(+\infty)=0$ left to prose) together with reversal-invariance of the sign count, the tower listing
+the signs low-to-high and Mathlib's coefficient list high-to-low.
 
 \begin{figure}[htbp]
 \centering
@@ -263,7 +271,10 @@ itself~\cite{eisermann}. \emph{Already machine-checked elsewhere}: the Cauchy-in
 Isabelle/HOL, by Li and Paulson~\cite{liCauchy}; and the Budan--Fourier theorem, in Isabelle/HOL, by
 Li~\cite{liBF}. \emph{Contributed here}: the explicit \emph{shared} sign-variation engine in Lean~4 over
 Mathlib; the first Lean formalizations of Sturm's theorem~\cite{sturmlean} and of Budan--Fourier~\cite{budanlean}
-running through it; and Proposition~\ref{prop:notsturm}, the precise placement of the derivative tower
+running through it; the bridge \lean{fourierVar p 0 = Polynomial.signVariations p}
+(\lean{Descartes.lean}), which identifies the engine's $\V(0)$ with the coefficient sign count on which
+Mathlib's own Descartes' rule is stated---so the third count is checked against the library, not merely
+read off in prose; and Proposition~\ref{prop:notsturm}, the precise placement of the derivative tower
 \emph{outside} the classical Sturm-chain axiom, with \lean{Rseq}/\lean{Lseq} identified as the local law
 of that wider regime. Everything is over $\R$; the multiplicity step uses characteristic zero
 essentially. No root is ever computed; no certificate is produced; no isolator is built.
@@ -297,6 +308,7 @@ git clone https://github.com/karlesmarin/godsil-gutman-lean
 cd godsil-gutman-lean && lake exe cache get
 lake env lean Sturm.lean          # the shared engine + Sturm instance
 lake env lean BudanFourier.lean   # the Budan-Fourier instance (imports Sturm)
+lake env lean Descartes.lean      # the Descartes bridge: V(0) = signVariations
 \end{verbatim}
 Lean \lean{v4.30.0-rc2}, Mathlib pin \lean{701fb6e9}. All headline theorems are \lean{sorry}-free and
 \lean{\#print axioms} reports only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}. The
