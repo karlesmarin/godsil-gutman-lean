@@ -4,10 +4,10 @@
 % Budan-Fourier and Sturm formalizations: the structural theory of virtual roots (the d
 % continuous substitutes for the real roots), with the Rolle-type interlacing.
 % Build: pdflatex virtual-roots-lean.tex (twice, for refs)
-% Verified against the Lean source 2026-06-16 (lake env lean VirtualRoots.lean, exit 0;
-% #print axioms VirtualRoots.vroots_interlacing / vroots_isChain / vroots_getElem_mem ->
-% propext, Classical.choice, Quot.sound only). Toolchain godsil v4.30. Worked examples
-% (x^2+1, x^3-x) re-checked in exact arithmetic.
+% Verified against the Lean source 2026-06-17 (lake env lean VirtualRoots.lean and
+% VirtualRootsCount.lean, exit 0; #print axioms on vroots_interlacing and on
+% card_vroots_Ioc_eq_fourierVar -> propext, Classical.choice, Quot.sound only).
+% Toolchain godsil v4.30. Worked examples (x^2+1, x^3-x) re-checked in exact arithmetic.
 
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
@@ -71,22 +71,24 @@ wherever $p$ has one (\lean{R\_eval\_eq\_zero\_of\_le\_zero\_le}); and the \emph
   \rho_{d,r}(p)\ \le\ \rho_{d-1,r}(p')\ \le\ \rho_{d,r+1}(p),
 \]
 the statement that each virtual root of $p'$ is wedged between two consecutive virtual roots of $p$
-(\lean{vroots\_interlacing}). To the best of my knowledge---based on searches in June~2026 of
-Mathlib, the Coq \lean{mathcomp-real-closed} library, the Isabelle AFP, and HOL~Light
-(Section~\ref{sec:boundary})---virtual roots had not been formalized in any interactive theorem
-prover; this is their first development. What is deliberately \emph{not} here is the exact
-Budan--Fourier count, that the number of virtual roots in $(a,b]$ equals the sign-variation drop
-$\V(a)-\V(b)$: that theorem fuses this construction with a second, independent one (the
-\lean{fourierVar} of the companion Budan--Fourier formalization~\cite{bflean}) and is the explicit
-sequel, named honestly in Section~\ref{sec:boundary}. Every theorem here depends only on the three
-standard axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
+(\lean{vroots\_interlacing}). Building on that structure I then prove the \emph{exact} Budan--Fourier
+count itself: the number of virtual roots in $(a,b]$ equals the sign-variation drop $\V(a)-\V(b)$ of
+the derivative tower (\lean{card\_vroots\_Ioc\_eq\_fourierVar}, Section~\ref{sec:count})---the equality
+that the classical Budan--Fourier theorem only bounds for the wobbling count of \emph{real} roots. This
+fuses the construction here with a second, independently recursive one, the \lean{fourierVar} sign
+count of the companion Budan--Fourier formalization~\cite{bflean}. To the best of my knowledge---based
+on searches in June~2026 of Mathlib, the Coq \lean{mathcomp-real-closed} library, the Isabelle AFP, and
+HOL~Light (Section~\ref{sec:boundary})---virtual roots, and this exact count through them, had not been
+formalized in any interactive theorem prover; this is their first development. Every theorem depends
+only on the three standard axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 \end{abstract}
 
 \medskip
-\noindent The development is a single Lean file, \lean{VirtualRoots.lean}; its load-bearing lemmas are
-gathered in Section~\ref{sec:blocks}, and its limits---chiefly the deferred exact count---are stated
-in Section~\ref{sec:boundary}. If you read only two things, read the interlacing
-(Theorem~\ref{thm:interlace}) and Figure~\ref{fig:fillin}.
+\noindent The development is two Lean files: \lean{VirtualRoots.lean} for the structural theory, and
+\lean{VirtualRootsCount.lean} for the exact count built on top of it. The load-bearing lemmas are
+gathered in Section~\ref{sec:blocks}, and the limits that remain---continuity, and the global object on
+all of $\R$---in Section~\ref{sec:boundary}. If you read only two things, read the interlacing
+(Theorem~\ref{thm:interlace}) and the count (Theorem~\ref{thm:count}).
 
 \section{A count that does not wobble}\label{sec:intro}
 
@@ -110,13 +112,18 @@ is this contrast, that real roots are a count that wobbles and virtual roots are
 $d$-element family underneath, and that the stability is not asserted but \emph{constructed},
 concretely enough for a kernel to check.
 
-The object is due to Gonz\'alez-Vega, Lombardi and Mah\'e~\cite{glm}, and it is the natural carrier of
-the Budan--Fourier count, made an equality through it by Coste, Lajous, Lombardi and Roy~\cite{coste}.
-This paper formalizes the part of that story that is structural---the construction, the count, the
-order, and the Rolle interlacing---and is honest, in Section~\ref{sec:boundary}, about the arithmetic
-count it leaves to the sequel. I came to it as I came to Sturm~\cite{sturmlean} and
-Budan--Fourier~\cite{bflean}: by asking which classical results in real-root counting a mature library
-is still missing, and finding the virtual roots absent from every prover I could search.
+The question is old, and so are its answers. Descartes (1637) bounded the positive roots by the sign
+changes of the coefficients; Budan and Fourier (1807--1831) read the same count off the derivative
+tower $p,p',p'',\dots$; Sturm (1835) made it exact, but only for \emph{distinct} roots. Each of these
+rules counts a quantity that wobbles---the real roots---so Budan's and Fourier's only \emph{bound} it,
+off by an even surplus no one could name. The fix came late: Gonz\'alez-Vega, Lombardi and Mah\'e
+isolated the virtual roots in 1998~\cite{glm}, the stable $d$-element family for which that bound
+becomes an equality (Coste, Lajous, Lombardi and Roy~\cite{coste}). This paper machine-checks that
+family---its construction, its count, its order, and the Rolle interlacing---and then the equality
+itself (Section~\ref{sec:count}): the surplus, it turns out, was only ever the count looking at the
+wrong roots. I came to it as I came to Sturm~\cite{sturmlean} and Budan--Fourier~\cite{bflean}: by
+asking which classical results in real-root counting a mature library still lacks, and finding the
+virtual roots absent from every prover I could search.
 
 \begin{figure}[htbp]
 \centering
@@ -317,20 +324,82 @@ roots exist is the point.
 \emph{What it is the road to.} The interlacing is the structural half of the Budan--Fourier story.
 The arithmetic half---that the number of virtual roots in a half-open interval $(a,b]$ equals the
 sign-variation drop $\V(a)-\V(b)$ of the derivative tower~\cite{coste}---is the equality that the
-classical Budan--Fourier inequality~\cite{bflean} only bounds. It is deliberately not proved here,
-for an honest reason explained next: it fuses this construction with a second, independently recursive
-one. The structural theory is complete; the count is the sequel.
+classical Budan--Fourier inequality~\cite{bflean} only bounds. It fuses this construction with a
+second, independently recursive one, and so was the sequel; it is the subject of the next section, now
+proved.
+
+\section{The exact count}\label{sec:count}
+
+The interlacing was, in the first version of this work, where the paper stopped: the structural theory
+was proved and the arithmetic count was named honestly as the sequel. It is now proved, and this
+section reports it. It is the equality the whole construction was for.
+
+\begin{theorem}[The exact Budan--Fourier count; \lean{card\_vroots\_Ioc\_eq\_fourierVar}]\label{thm:count}
+Suppose every root of every member of the derivative tower $p,p',p'',\dots$ lies strictly inside
+$[lo,hi]$. Then for $a\le b$ in $[lo,hi)$,
+\[
+  \#\{\,\rho\ \text{virtual root of }p\ :\ a<\rho\le b\,\}\;=\;\V(a)-\V(b),
+\]
+where $\V=\lean{fourierVar}$ is the Budan--Fourier sign-variation count of the tower at a point.
+\end{theorem}
+
+\noindent The classical Budan--Fourier theorem~\cite{bflean} bounds the number of \emph{real} roots in
+$(a,b]$ by $\V(a)-\V(b)$, off by an even surplus. Replace the real roots by the virtual ones and the
+inequality becomes an equality---the surplus was never a defect of the count, only of \emph{which}
+roots one was counting. The wobbling count of Section~\ref{sec:intro} is what made Budan--Fourier an
+inequality; the stable count makes it exact.
+
+\emph{Why it is one theorem and not a line.} It fuses the two recursions the development is built
+from. Both $\V$ and \lean{vroots} descend the same tower $p\to p'$---$\V$ by peeling the leading sign,
+\lean{vroots} by the Rolle interlacing---but they are \emph{a priori} different objects, and the
+theorem is that they march in step. The proof goes through the reformulation
+\[
+  \V_p(x)\;=\;\#\{\text{virtual roots of }p \text{ strictly above } x\}
+\]
+(\lean{fourierVar\_eq\_card\_vroots\_gt}, by induction down the tower), from which the $(a,b]$ count
+follows by subtraction; the interval theorem above is then a multiset partition. The inductive step is
+a single per-step lemma (\lean{count\_step}): from $p'$ to $p$, the count of virtual roots above $x$
+rises by exactly the Fourier increment $\V_p(x)-\V_{p'}(x)$, and that increment is $0$ or $1$.
+
+\emph{Where the two bits meet.} Locate $x$ in its cell $[\mathrm{bps}[i],\mathrm{bps}[i+1]]$ of the
+$p'$-breakpoint partition (Figure~\ref{fig:construct}). The interlacing already forces every cell
+strictly above $x$ to contribute a virtual root of $p$ and every cell below to contribute none, so the
+entire count increment is whether the one virtual root $v_i$ \emph{in $x$'s own cell} lies above $x$
+(\lean{count\_diff\_eq\_cell}). On that cell $p'$ is root-free---a root of $p'$ would be a virtual root
+of $p'$, i.e.\ a breakpoint, and none lies strictly between two consecutive breakpoints (Coste's
+Prop.~2.2, here \lean{root\_mem\_vroots})---so $p$ is strictly monotone across it, and its
+$|p|$-minimiser $v_i$ sits above $x$ exactly when $p(x)$ has the sign that has not yet ``turned the
+corner'' toward the root (\lean{lt\_R\_iff\_eval\_neg} and its twin).
+
+\emph{The one analytic step.} On the Fourier side the increment is $1$ exactly when $\mathrm{sign}\,p(x)$
+disagrees with the first surviving sign $d$ of the tower $p',p'',\dots$ at $x$. The bridge between the
+two sides is one identity:
+\keyeq{d \;=\; \text{the sign of } p' \text{ on } x\text{'s cell.}}
+The lowest non-vanishing derivative at $x$ fixes $p'$ just to the right of $x$, and on the root-free
+cell that sign is constant; so $d$ is the cell's monotonicity direction. (In Lean this is
+\lean{fourier\_head\_right}, reusing \lean{signs\_right\_eq\_Rseq} of the companion
+work~\cite{bflean}: the sign pattern just right of $x$ is the leading-surviving pattern at $x$.) This
+identity is what removes the multiplicity bookkeeping that makes the classical proof delicate: once $d$
+is pinned to the cell, ``$v_i$ above $x$'' and ``a new Fourier variation'' are the \emph{same} event,
+and the two recursions agree term by term. Summing the steps gives Theorem~\ref{thm:count}.
+
+\emph{What it needs, and what it does not.} The bracketing hypothesis---all tower roots strictly inside
+$[lo,hi]$---is exactly what makes the count clean: $\V(lo)$ is the degree, $\V(hi)=0$, and every
+virtual root is interior. It is the same fixed-interval discipline as the construction
+(Section~\ref{sec:q2}); lifting it to all of $\R$ by a Cauchy bound is the same deferred step
+(Section~\ref{sec:boundary}). No root is computed and no isolator is built---the theorem certifies the
+count, not a procedure.
 
 \section{What a certified virtual-root theory enables}\label{sec:enables}
 
 A machine-checked virtual-root family is the missing middle term between two things Mathlib already
-has and one it does not. It has Descartes' rule (the coefficient sign count) and, in the companion
-work, the Budan--Fourier \emph{inequality}; it does not have the object that would make that
-inequality an equality. Virtual roots are that object. Downstream, they are the right input to a
-certified real-root \emph{isolation} procedure in the line of Vincent, Collins and
-Akritas~\cite{vincent,collinsakritas,akritas} and the sign-variation theory of
-Basu--Pollack--Roy~\cite{bpr}---the count is exact, so a subdivision method reading
-$\V(a)-\V(b)$ on each half has, in principle, a verified guarantee once the count theorem is added.
+has and one it did not. It has Descartes' rule (the coefficient sign count) and, in the companion
+work, the Budan--Fourier \emph{inequality}; it did not have the object that makes that inequality an
+equality. Virtual roots are that object, and Section~\ref{sec:count} closes the equality. Downstream,
+they are the right input to a certified real-root \emph{isolation} procedure in the line of Vincent,
+Collins and Akritas~\cite{vincent,collinsakritas,akritas} and the sign-variation theory of
+Basu--Pollack--Roy~\cite{bpr}---the count is now exact, so a subdivision method reading
+$\V(a)-\V(b)$ on each half has, in principle, a verified guarantee to build on.
 And because the family is defined for every polynomial, real-rooted or not, it connects the interval
 methods to the algebra of the discriminant: a pair of virtual roots collides exactly when two real
 roots are about to become complex, which is where the even Budan--Fourier surplus comes from
@@ -394,14 +463,19 @@ the interlacing.
     \lean{vroots\_getElem\_mem} & $\mathrm{bps}[r]\le\rho_{d,r}(p)\le\mathrm{bps}[r{+}1]$ & proved \\
     \rowcolor{ggband}
     \lean{vroots\_interlacing} & $\rho_{d,r}(p)\le\rho_{d-1,r}(p')\le\rho_{d,r+1}(p)$ & proved \\
-    \lean{card\_virtualRoot\_eq\_fourierVar} & $\#$ in $(a,b]=\V(a)-\V(b)$ & \textit{future (\S\ref{sec:boundary})} \\
+    \midrule
+    \lean{fourierVar\_eq\_card\_vroots\_gt} & $\V_p(x)=\#\{\text{virtual roots}>x\}$ & proved \\
+    \rowcolor{ggband}
+    \lean{count\_step} & per-step bridge $\V_p{-}\V_{p'}=$ cell increment & proved \\
+    \lean{card\_vroots\_Ioc\_eq\_fourierVar} & $\#$ in $(a,b]=\V(a)-\V(b)$ & proved \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
-  \caption{The structural theory of virtual roots, all \lean{sorry}-free in \lean{VirtualRoots.lean}
-  (Lean~4 / Mathlib). \lean{\#print axioms} on \lean{vroots\_interlacing}, \lean{vroots\_isChain},
-  \lean{vroots\_getElem\_mem} reports only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
-  The last row is the named sequel, not part of this development.}
+  \caption{The theory of virtual roots, all \lean{sorry}-free: the structural results in
+  \lean{VirtualRoots.lean} (top) and the exact count in \lean{VirtualRootsCount.lean} (bottom), Lean~4
+  / Mathlib. \lean{\#print axioms} on \lean{vroots\_interlacing} and on
+  \lean{card\_vroots\_Ioc\_eq\_fourierVar} reports only \lean{propext}, \lean{Classical.choice},
+  \lean{Quot.sound}.}
   \label{tab:results}
 \end{table}
 
@@ -414,17 +488,13 @@ the interlacing.
     \textcolor{white}{\textbf{Quantity}} & \textcolor{white}{\textbf{Value}} \\
     \midrule
     \rowcolor{ggband}
-    Lines in \lean{VirtualRoots.lean} & $369$ \\
-    Public theorems / definitions ($+$ private) & $16\,/\,2$ ($+1$) \\
+    Lines: \lean{VirtualRoots.lean} $+$ \lean{VirtualRootsCount.lean} & $378+944$ \\
+    Structural theorems / defs (\lean{VirtualRoots}) & $16\,/\,2$ \\
     \rowcolor{ggband}
-    Mathlib dependencies (imports) & $5$ modules \\
-    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Deriv.Polynomial}, \lean{Deriv.MeanValue}, \lean{Topology.Algebra.Polynomial},} \\
-    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Topology.Order.Compact}, \lean{Topology.Order.IntermediateValue}} \\
-    \rowcolor{ggband}
+    Count: it imports \lean{VirtualRoots} and \lean{BudanFourier} & two recursions fused \\
     \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
-    Axioms beyond Lean's core & $0$ (only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
     \rowcolor{ggband}
-    Compile time (warm Mathlib) & ${\approx}\,8$\,s \\
+    Axioms beyond Lean's core & $0$ (only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
     Toolchain & Lean~4 (godsil pin v4.30) over Mathlib \\
     \bottomrule
   \end{tabular}
@@ -439,29 +509,28 @@ the interlacing.
 
 \emph{What is proved.} The structural theory of the $\Rd_d$ virtual roots, sorry-free: existence and
 the count ($=\deg p$), that they are sorted and lie in the bracketing interval, that $\Rd_d$ returns
-an actual root wherever $p$ changes sign, and the Rolle interlacing. These are the results of
-Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm} in their structural part.
+an actual root wherever $p$ changes sign, and the Rolle interlacing (\lean{VirtualRoots.lean}); and,
+built on these, the exact Budan--Fourier count $\#\{(a,b]\}=\V(a)-\V(b)$
+(\lean{VirtualRootsCount.lean}, Section~\ref{sec:count}). These are the results of
+Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm} and Coste~\cite{coste} in their structural and counting
+parts. The count is proved on a bracketing interval $[lo,hi]$ that strictly contains every tower root.
 
-\emph{What is not proved, and is the explicit sequel.} The exact Budan--Fourier count---that the
-number of virtual roots in $(a,b]$ equals $\V(a)-\V(b)$~\cite{coste}---is \emph{not} formalized here.
-It is not a missing line; it fuses two independent recursive constructions, the $\Rd_d$ minimiser of
-this file and the sign-variation function \lean{fourierVar} of the Budan--Fourier
-formalization~\cite{bflean}, and it is a development in its own right. Stating it as done would be
-dishonest; it is named here as the next milestone, with the two endpoints (the interlacing here, the
-inequality there) now both in place.
+\emph{What is not proved.} Two things, both genuinely beyond the present files. \emph{Continuity}:
+that the virtual roots vary continuously with the coefficients---half of why
+Gonz\'alez-Vega--Lombardi--Mah\'e introduced them~\cite{glm}---is not touched (Section~\ref{sec:questions}).
+\emph{The global object}: the construction and the count are on a fixed bracketing interval $[lo,hi]$;
+recovering the object on all of $\R$ by taking $lo,hi$ beyond every root of the derivative tower (a
+Cauchy bound, available in Mathlib as \lean{Polynomial.cauchyBound}) is routine but not carried out
+here.
 
-\emph{Scope of the construction.} The virtual roots are built on a fixed bracketing interval
-$[lo,hi]$. The global object on all of $\R$ is recovered by taking $lo,hi$ beyond every root of the
-derivative tower---a Cauchy bound, available in Mathlib (\lean{Polynomial.cauchyBound})---but that
-extension is not carried out in this file.
-
-\emph{Novelty.} To the best of my knowledge, virtual roots had not been formalized in any interactive
-theorem prover before this. The claim rests on searches in June~2026 of: Mathlib (no virtual roots;
-it has Descartes via \lean{Polynomial.signVariations}); the Coq \lean{mathcomp-real-closed} library
-(actual roots and the Thom encoding, not virtual roots); the Isabelle AFP, whose \lean{Budan\_Fourier}
-entry formalizes the inequality with multiplicity but not the virtual-root object; and HOL~Light
-(Sturm and Descartes, not virtual roots). I make this claim at the level of the named object; I cannot
-exclude an unpublished or differently-named development, and I would welcome a pointer.
+\emph{Novelty.} To the best of my knowledge, neither virtual roots nor the exact Budan--Fourier count
+through them had been formalized in any interactive theorem prover before this. The claim rests on
+searches in June~2026 of: Mathlib (no virtual roots; it has Descartes via
+\lean{Polynomial.signVariations}); the Coq \lean{mathcomp-real-closed} library (actual roots and the
+Thom encoding, not virtual roots); the Isabelle AFP, whose \lean{Budan\_Fourier} entry formalizes the
+inequality with multiplicity but not the virtual-root object nor the equality; and HOL~Light (Sturm and
+Descartes, not virtual roots). I make this claim at the level of the named object; I cannot exclude an
+unpublished or differently-named development, and I would welcome a pointer.
 
 \emph{Authorship.} The mathematics is classical, due to the authors cited. The formalization was
 carried out in close interaction with an AI assistant (Claude, Anthropic): the choice of target, the
@@ -472,19 +541,19 @@ reported above---but it is stated plainly here for scientific attribution.
 
 \section{What remains open}\label{sec:questions}
 
-Three facts this development does not settle mark where it points next; each is a place the work stops
-short, and each is the start of the following one.
+Three facts mark where the work points next; the first is now settled and names its own remaining
+question, the other two are still open.
 
 \begin{enumerate}\itemsep3pt
-\item \emph{From two constructions to one count.} The headline equality
-$\#\{\text{virtual roots in }(a,b]\}=\V(a)-\V(b)$ is the sequel, and there are two honest routes to it.
-One \emph{bridges} the construction here---the $\Rd_d$ minimiser---to the sign-variation function
-\lean{fourierVar} of the companion work~\cite{bflean}, turning that paper's
-inequality~\cite{coste,glm} into an equality. The other \emph{defines} virtual roots a second time, as
-the jumps of \lean{fourierVar}, where the count is almost definitional, and then proves the two
-definitions agree. The interlacing proved here is free in the first definition; the count is free in
-the second; \textbf{the equivalence of the two definitions is the real theorem}. Which route is
-shorter in Lean is itself the question.
+\item \emph{Two definitions of one object.} The headline equality
+$\#\{\text{virtual roots in }(a,b]\}=\V(a)-\V(b)$ is now proved (Section~\ref{sec:count}) by the first
+of two honest routes: it \emph{bridges} the construction here---the $\Rd_d$ minimiser---to the
+sign-variation function \lean{fourierVar} of the companion work~\cite{bflean}, turning that paper's
+inequality~\cite{coste,glm} into an equality. There is a second route, not taken: \emph{define} virtual
+roots a second time, as the jumps of \lean{fourierVar}, where the count is almost definitional, and
+prove the two definitions agree. The interlacing was free in the first definition; the count would be
+free in the second; \textbf{the equivalence of the two definitions is the theorem that route would
+isolate}, and which is shorter in Lean is still the question.
 \item \emph{Continuity, the other half of their reason for being.} Virtual roots vary
 \emph{continuously} with the coefficients---this is half of why Gonz\'alez-Vega--Lombardi--Mah\'e
 introduced them~\cite{glm}---and continuity is not touched here. A formalization would have to make

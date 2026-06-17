@@ -2,8 +2,9 @@
 % Raices que siempre estan ahi -- las raices virtuales de un polinomio real en Lean 4.
 % Version en espanol de virtual-roots-lean.tex. Mismas figuras tikz.
 % Build: pdflatex virtual-roots-lean-es.tex (dos veces, por refs)
-% Verificado contra la fuente Lean 2026-06-16 (lake env lean VirtualRoots.lean, exit 0;
-% #print axioms -> propext, Classical.choice, Quot.sound). Toolchain godsil v4.30.
+% Verificado contra la fuente Lean 2026-06-17 (lake env lean VirtualRoots.lean y
+% VirtualRootsCount.lean, exit 0; #print axioms sobre vroots_interlacing y
+% card_vroots_Ioc_eq_fourierVar -> propext, Classical.choice, Quot.sound). Toolchain godsil v4.30.
 
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
@@ -68,23 +69,25 @@ tiene una (\lean{R\_eval\_eq\_zero\_of\_le\_zero\_le}); y el \emph{entrelazado d
   \rho_{d,r}(p)\ \le\ \rho_{d-1,r}(p')\ \le\ \rho_{d,r+1}(p),
 \]
 que dice que cada ra\'iz virtual de $p'$ queda encajada entre dos ra\'ices virtuales consecutivas de
-$p$ (\lean{vroots\_interlacing}). Hasta donde s\'e---a partir de b\'usquedas en junio~2026 de Mathlib,
-la biblioteca \lean{mathcomp-real-closed} de Coq, el AFP de Isabelle y HOL~Light
-(Secci\'on~\ref{sec:boundary})---las ra\'ices virtuales no se hab\'ian formalizado en ning\'un
-asistente de pruebas; este es su primer desarrollo. Lo que deliberadamente \emph{no} est\'a aqu\'i es
-el recuento exacto de Budan--Fourier, que el n\'umero de ra\'ices virtuales en $(a,b]$ iguala la
-ca\'ida de variaciones de signo $\V(a)-\V(b)$: ese teorema funde esta construcci\'on con una segunda,
-independiente (el \lean{fourierVar} de la formalizaci\'on compa\~nera de Budan--Fourier~\cite{bflean})
-y es la secuela expl\'icita, nombrada con honestidad en la Secci\'on~\ref{sec:boundary}. Todo teorema
-aqu\'i depende solo de los tres axiomas est\'andar \lean{propext}, \lean{Classical.choice},
-\lean{Quot.sound}.
+$p$ (\lean{vroots\_interlacing}). Sobre esa estructura pruebo despu\'es el recuento exacto de
+Budan--Fourier mismo: el n\'umero de ra\'ices virtuales en $(a,b]$ iguala la ca\'ida de variaciones de
+signo $\V(a)-\V(b)$ de la torre de derivadas (\lean{card\_vroots\_Ioc\_eq\_fourierVar},
+Secci\'on~\ref{sec:count})---la igualdad que el teorema cl\'asico de Budan--Fourier solo acota para el
+recuento tembloroso de ra\'ices \emph{reales}. Esto funde la construcci\'on de aqu\'i con una segunda,
+recursiva de forma independiente, el recuento de signos \lean{fourierVar} de la formalizaci\'on
+compa\~nera de Budan--Fourier~\cite{bflean}. Hasta donde s\'e---a partir de b\'usquedas en junio~2026
+de Mathlib, la biblioteca \lean{mathcomp-real-closed} de Coq, el AFP de Isabelle y HOL~Light
+(Secci\'on~\ref{sec:boundary})---ni las ra\'ices virtuales ni este recuento exacto a trav\'es de ellas
+se hab\'ian formalizado en ning\'un asistente de pruebas; este es su primer desarrollo. Todo teorema
+depende solo de los tres axiomas est\'andar \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}.
 \end{abstract}
 
 \medskip
-\noindent El desarrollo es un \'unico fichero Lean, \lean{VirtualRoots.lean}; sus lemas que soportan el
-peso est\'an reunidos en la Secci\'on~\ref{sec:blocks}, y sus l\'imites---sobre todo el recuento exacto
-diferido---se enuncian en la Secci\'on~\ref{sec:boundary}. Si solo lees dos cosas, lee el entrelazado
-(Teorema~\ref{thm:interlace}) y la Figura~\ref{fig:fillin}.
+\noindent El desarrollo son dos ficheros Lean: \lean{VirtualRoots.lean} para la teor\'ia estructural, y
+\lean{VirtualRootsCount.lean} para el recuento exacto construido encima. Los lemas que soportan el peso
+est\'an reunidos en la Secci\'on~\ref{sec:blocks}, y los l\'imites que quedan---la continuidad, y el
+objeto global en todo $\R$---en la Secci\'on~\ref{sec:boundary}. Si solo lees dos cosas, lee el
+entrelazado (Teorema~\ref{thm:interlace}) y el recuento (Teorema~\ref{thm:count}).
 
 \section{Un recuento que no tiembla}\label{sec:intro}
 
@@ -109,13 +112,19 @@ son un recuento que tiembla y las virtuales son la familia estable de $d$ elemen
 estabilidad no se afirma sino que se \emph{construye}, lo bastante concreta como para que un n\'ucleo
 la verifique.
 
-El objeto es de Gonz\'alez-Vega, Lombardi y Mah\'e~\cite{glm}, y es el portador natural del recuento de
-Budan--Fourier, vuelto igualdad a trav\'es de \'el por Coste, Lajous, Lombardi y Roy~\cite{coste}. Este
-paper formaliza la parte estructural de esa historia---la construcci\'on, el recuento, el orden y el
-entrelazado de Rolle---y es honesto, en la Secci\'on~\ref{sec:boundary}, sobre el recuento aritm\'etico
-que deja a la secuela. Llegu\'e a \'el como llegu\'e a Sturm~\cite{sturmlean} y a
-Budan--Fourier~\cite{bflean}: preguntando qu\'e resultados cl\'asicos de recuento de ra\'ices le faltan
-a una biblioteca madura, y hallando las ra\'ices virtuales ausentes de todo asistente que pude buscar.
+La pregunta es vieja, y tambi\'en sus respuestas. Descartes (1637) acot\'o las ra\'ices positivas por
+los cambios de signo de los coeficientes; Budan y Fourier (1807--1831) leyeron el mismo recuento en la
+torre de derivadas $p,p',p'',\dots$; Sturm (1835) lo hizo exacto, pero solo para ra\'ices
+\emph{distintas}. Cada una de estas reglas cuenta una cantidad que tiembla---las ra\'ices reales---as\'i
+que las de Budan y Fourier solo la \emph{acotan}, con un excedente par que nadie supo nombrar. El
+arreglo lleg\'o tarde: Gonz\'alez-Vega, Lombardi y Mah\'e aislaron las ra\'ices virtuales en
+1998~\cite{glm}, la familia estable de $d$ elementos para la que esa cota se vuelve igualdad (Coste,
+Lajous, Lombardi y Roy~\cite{coste}). Este paper verifica por m\'aquina esa familia---su construcci\'on,
+su recuento, su orden y el entrelazado de Rolle---y luego la igualdad misma
+(Secci\'on~\ref{sec:count}): el excedente, resulta, no era m\'as que el recuento mirando las ra\'ices
+equivocadas. Llegu\'e a \'el como llegu\'e a Sturm~\cite{sturmlean} y a Budan--Fourier~\cite{bflean}:
+preguntando qu\'e resultados cl\'asicos de recuento de ra\'ices le faltan a una biblioteca madura, y
+hallando las ra\'ices virtuales ausentes de todo asistente que pude buscar.
 
 \begin{figure}[htbp]
 \centering
@@ -312,10 +321,75 @@ familia definida incluso cuando no hay ra\'ices reales es el punto.
 \emph{De qu\'e es el camino.} El entrelazado es la mitad estructural de la historia de Budan--Fourier.
 La mitad aritm\'etica---que el n\'umero de ra\'ices virtuales en un intervalo semiabierto $(a,b]$
 iguala la ca\'ida de variaciones de signo $\V(a)-\V(b)$ de la torre de derivadas~\cite{coste}---es la
-igualdad que la desigualdad cl\'asica de Budan--Fourier~\cite{bflean} solo acota. Deliberadamente no se
-prueba aqu\'i, por una raz\'on honesta que se explica a continuaci\'on: funde esta construcci\'on con
-una segunda, recursiva de forma independiente. La teor\'ia estructural est\'a completa; el recuento es
-la secuela.
+igualdad que la desigualdad cl\'asica de Budan--Fourier~\cite{bflean} solo acota. Funde esta
+construcci\'on con una segunda, recursiva de forma independiente, y por eso era la secuela; es el
+objeto de la secci\'on siguiente, ya probada.
+
+\section{El recuento exacto}\label{sec:count}
+
+El entrelazado era, en la primera versi\'on de este trabajo, donde el paper se deten\'ia: la teor\'ia
+estructural estaba probada y el recuento aritm\'etico se nombraba con honestidad como la secuela. Ya
+est\'a probado, y esta secci\'on lo reporta. Es la igualdad para la que era toda la construcci\'on.
+
+\begin{theorem}[El recuento exacto de Budan--Fourier; \lean{card\_vroots\_Ioc\_eq\_fourierVar}]\label{thm:count}
+Sup\'ongase que toda ra\'iz de todo miembro de la torre de derivadas $p,p',p'',\dots$ cae estrictamente
+dentro de $[lo,hi]$. Entonces para $a\le b$ en $[lo,hi)$,
+\[
+  \#\{\,\rho\ \text{ra\'iz virtual de }p\ :\ a<\rho\le b\,\}\;=\;\V(a)-\V(b),
+\]
+donde $\V=\lean{fourierVar}$ es el recuento de variaciones de signo de Budan--Fourier de la torre en un
+punto.
+\end{theorem}
+
+\noindent El teorema cl\'asico de Budan--Fourier~\cite{bflean} acota el n\'umero de ra\'ices
+\emph{reales} en $(a,b]$ por $\V(a)-\V(b)$, con un excedente par. Reemplaza las ra\'ices reales por las
+virtuales y la desigualdad se vuelve igualdad---el excedente nunca fue un defecto del recuento, solo de
+\emph{cu\'ales} ra\'ices se contaban. El recuento tembloroso de la Secci\'on~\ref{sec:intro} es lo que
+hac\'ia de Budan--Fourier una desigualdad; el recuento estable lo vuelve exacto.
+
+\emph{Por qu\'e es un teorema y no una l\'inea.} Funde las dos recursiones de las que est\'a hecho el
+desarrollo. Tanto $\V$ como \lean{vroots} bajan la misma torre $p\to p'$---$\V$ pelando el signo
+principal, \lean{vroots} por el entrelazado de Rolle---pero son objetos \emph{a priori} distintos, y el
+teorema es que marchan al un\'isono. La prueba pasa por la reformulaci\'on
+\[
+  \V_p(x)\;=\;\#\{\text{ra\'ices virtuales de }p \text{ estrictamente por encima de } x\}
+\]
+(\lean{fourierVar\_eq\_card\_vroots\_gt}, por inducci\'on que baja la torre), de la que el recuento en
+$(a,b]$ sale por resta; el teorema del intervalo es entonces una partici\'on de multiconjunto. El paso
+inductivo es un \'unico lema por escal\'on (\lean{count\_step}): de $p'$ a $p$, el recuento de ra\'ices
+virtuales por encima de $x$ sube exactamente el incremento de Fourier $\V_p(x)-\V_{p'}(x)$, y ese
+incremento es $0$ o $1$.
+
+\emph{D\'onde se encuentran los dos bits.} Localiza $x$ en su celda $[\mathrm{bps}[i],\mathrm{bps}[i+1]]$
+de la partici\'on de breakpoints de $p'$ (Figura~\ref{fig:construct}). El entrelazado ya obliga a cada
+celda estrictamente por encima de $x$ a aportar una ra\'iz virtual de $p$ y a cada celda por debajo a no
+aportar ninguna, as\'i que todo el incremento es si la \'unica ra\'iz virtual $v_i$ \emph{en la propia
+celda de $x$} cae por encima de $x$ (\lean{count\_diff\_eq\_cell}). En esa celda $p'$ no tiene ra\'iz---una
+ra\'iz de $p'$ ser\'ia una ra\'iz virtual de $p'$, es decir un breakpoint, y ninguno cae estrictamente
+entre dos breakpoints consecutivos (Prop.~2.2 de Coste, aqu\'i \lean{root\_mem\_vroots})---as\'i que $p$
+es estrictamente mon\'otona a trav\'es de ella, y su minimizador de $|p|$, $v_i$, cae por encima de $x$
+exactamente cuando $p(x)$ tiene el signo que a\'un no ha ``doblado la esquina'' hacia la ra\'iz
+(\lean{lt\_R\_iff\_eval\_neg} y su gemelo).
+
+\emph{El \'unico paso anal\'itico.} En el lado de Fourier el incremento es $1$ exactamente cuando
+$\mathrm{sign}\,p(x)$ discrepa del primer signo superviviente $d$ de la torre $p',p'',\dots$ en $x$. El
+puente entre los dos lados es una identidad:
+\keyeq{d \;=\; \text{el signo de } p' \text{ en la celda de } x.}
+La derivada de orden m\'as bajo que no se anula en $x$ fija $p'$ justo a la derecha de $x$, y en la
+celda sin ra\'ices ese signo es constante; as\'i que $d$ es la direcci\'on de monoton\'ia de la celda.
+(En Lean es \lean{fourier\_head\_right}, reutilizando \lean{signs\_right\_eq\_Rseq} del trabajo
+compa\~nero~\cite{bflean}: el patr\'on de signos justo a la derecha de $x$ es el patr\'on superviviente
+principal en $x$.) Esta identidad es la que elimina la contabilidad de multiplicidades que vuelve
+delicada la prueba cl\'asica: una vez fijado $d$ a la celda, ``$v_i$ por encima de $x$'' y ``una nueva
+variaci\'on de Fourier'' son el \emph{mismo} suceso, y las dos recursiones coinciden t\'ermino a
+t\'ermino. Sumar los escalones da el Teorema~\ref{thm:count}.
+
+\emph{Qu\'e necesita y qu\'e no.} La hip\'otesis de encuadre---toda ra\'iz de la torre estrictamente
+dentro de $[lo,hi]$---es justo lo que hace limpio el recuento: $\V(lo)$ es el grado, $\V(hi)=0$, y toda
+ra\'iz virtual es interior. Es la misma disciplina de intervalo fijo que la construcci\'on
+(Secci\'on~\ref{sec:q2}); levantarla a todo $\R$ por una cota de Cauchy es el mismo paso diferido
+(Secci\'on~\ref{sec:boundary}). No se calcula ninguna ra\'iz ni se construye ning\'un aislador---el
+teorema certifica el recuento, no un procedimiento.
 
 \section{Qu\'e habilita una teor\'ia certificada de ra\'ices virtuales}\label{sec:enables}
 
@@ -387,15 +461,19 @@ entrelazado.
     \lean{vroots\_getElem\_mem} & $\mathrm{bps}[r]\le\rho_{d,r}(p)\le\mathrm{bps}[r{+}1]$ & probado \\
     \rowcolor{ggband}
     \lean{vroots\_interlacing} & $\rho_{d,r}(p)\le\rho_{d-1,r}(p')\le\rho_{d,r+1}(p)$ & probado \\
-    \lean{card\_virtualRoot\_eq\_fourierVar} & $\#$ en $(a,b]=\V(a)-\V(b)$ & \textit{futuro (\S\ref{sec:boundary})} \\
+    \midrule
+    \lean{fourierVar\_eq\_card\_vroots\_gt} & $\V_p(x)=\#\{\text{ra\'ices virtuales}>x\}$ & probado \\
+    \rowcolor{ggband}
+    \lean{count\_step} & puente por escal\'on $\V_p{-}\V_{p'}=$ incremento de celda & probado \\
+    \lean{card\_vroots\_Ioc\_eq\_fourierVar} & $\#$ en $(a,b]=\V(a)-\V(b)$ & probado \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
-  \caption{La teor\'ia estructural de las ra\'ices virtuales, toda \lean{sorry}-free en
-  \lean{VirtualRoots.lean} (Lean~4 / Mathlib). \lean{\#print axioms} sobre \lean{vroots\_interlacing},
-  \lean{vroots\_isChain}, \lean{vroots\_getElem\_mem} reporta solo \lean{propext},
-  \lean{Classical.choice}, \lean{Quot.sound}. La \'ultima fila es la secuela nombrada, no parte de este
-  desarrollo.}
+  \caption{La teor\'ia de las ra\'ices virtuales, toda \lean{sorry}-free: los resultados estructurales
+  en \lean{VirtualRoots.lean} (arriba) y el recuento exacto en \lean{VirtualRootsCount.lean} (abajo),
+  Lean~4 / Mathlib. \lean{\#print axioms} sobre \lean{vroots\_interlacing} y sobre
+  \lean{card\_vroots\_Ioc\_eq\_fourierVar} reporta solo \lean{propext}, \lean{Classical.choice},
+  \lean{Quot.sound}.}
   \label{tab:results}
 \end{table}
 
@@ -408,17 +486,13 @@ entrelazado.
     \textcolor{white}{\textbf{Cantidad}} & \textcolor{white}{\textbf{Valor}} \\
     \midrule
     \rowcolor{ggband}
-    L\'ineas en \lean{VirtualRoots.lean} & $369$ \\
-    Teoremas / definiciones p\'ublicas ($+$ privado) & $16\,/\,2$ ($+1$) \\
+    L\'ineas: \lean{VirtualRoots.lean} $+$ \lean{VirtualRootsCount.lean} & $378+944$ \\
+    Teoremas estructurales / defs (\lean{VirtualRoots}) & $16\,/\,2$ \\
     \rowcolor{ggband}
-    Dependencias de Mathlib (imports) & $5$ m\'odulos \\
-    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Deriv.Polynomial}, \lean{Deriv.MeanValue}, \lean{Topology.Algebra.Polynomial},} \\
-    \multicolumn{2}{@{}l@{}}{\quad\footnotesize\lean{Topology.Order.Compact}, \lean{Topology.Order.IntermediateValue}} \\
-    \rowcolor{ggband}
+    Recuento: importa \lean{VirtualRoots} y \lean{BudanFourier} & dos recursiones fundidas \\
     \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
-    Axiomas fuera del n\'ucleo de Lean & $0$ (solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
     \rowcolor{ggband}
-    Tiempo de compilaci\'on (Mathlib precompilado) & ${\approx}\,8$\,s \\
+    Axiomas fuera del n\'ucleo de Lean & $0$ (solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
     Toolchain & Lean~4 (godsil pin v4.30) sobre Mathlib \\
     \bottomrule
   \end{tabular}
@@ -434,30 +508,29 @@ entrelazado.
 
 \emph{Qu\'e est\'a probado.} La teor\'ia estructural de las ra\'ices virtuales $\Rd_d$, sorry-free:
 existencia y recuento ($=\deg p$), que est\'an ordenadas y caen en el intervalo de encuadre, que
-$\Rd_d$ devuelve una ra\'iz real donde $p$ cambia de signo, y el entrelazado de Rolle. Son los
-resultados de Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm} en su parte estructural.
+$\Rd_d$ devuelve una ra\'iz real donde $p$ cambia de signo, y el entrelazado de Rolle
+(\lean{VirtualRoots.lean}); y, construido sobre ello, el recuento exacto de Budan--Fourier
+$\#\{(a,b]\}=\V(a)-\V(b)$ (\lean{VirtualRootsCount.lean}, Secci\'on~\ref{sec:count}). Son los resultados
+de Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm} y Coste~\cite{coste} en sus partes estructural y de
+recuento. El recuento se prueba sobre un intervalo de encuadre $[lo,hi]$ que contiene estrictamente
+toda ra\'iz de la torre.
 
-\emph{Qu\'e no est\'a probado, y es la secuela expl\'icita.} El recuento exacto de Budan--Fourier---que
-el n\'umero de ra\'ices virtuales en $(a,b]$ iguala $\V(a)-\V(b)$~\cite{coste}---\emph{no} est\'a
-formalizado aqu\'i. No es una l\'inea que falte; funde dos construcciones recursivas independientes, el
-minimizador $\Rd_d$ de este fichero y la funci\'on de variaci\'on de signos \lean{fourierVar} de la
-formalizaci\'on de Budan--Fourier~\cite{bflean}, y es un desarrollo en s\'i mismo. Enunciarlo como
-hecho ser\'ia deshonesto; se nombra aqu\'i como el pr\'oximo hito, con los dos extremos (el entrelazado
-aqu\'i, la desigualdad all\'i) ya en su sitio.
+\emph{Qu\'e no est\'a probado.} Dos cosas, ambas genuinamente m\'as all\'a de los ficheros presentes.
+\emph{La continuidad}: que las ra\'ices virtuales var\'ian de forma continua con los
+coeficientes---mitad de por qu\'e las introdujeron Gonz\'alez-Vega--Lombardi--Mah\'e~\cite{glm}---no se
+toca (Secci\'on~\ref{sec:questions}). \emph{El objeto global}: la construcci\'on y el recuento son sobre
+un intervalo de encuadre fijo $[lo,hi]$; recuperar el objeto en todo $\R$ tomando $lo,hi$ m\'as all\'a
+de toda ra\'iz de la torre de derivadas (una cota de Cauchy, disponible en Mathlib como
+\lean{Polynomial.cauchyBound}) es rutina pero no se realiza aqu\'i.
 
-\emph{Alcance de la construcci\'on.} Las ra\'ices virtuales se construyen sobre un intervalo de
-encuadre fijo $[lo,hi]$. El objeto global en todo $\R$ se recupera tomando $lo,hi$ m\'as all\'a de toda
-ra\'iz de la torre de derivadas---una cota de Cauchy, disponible en Mathlib
-(\lean{Polynomial.cauchyBound})---pero esa extensi\'on no se realiza en este fichero.
-
-\emph{Novedad.} Hasta donde s\'e, las ra\'ices virtuales no se hab\'ian formalizado en ning\'un
-asistente de pruebas antes. La afirmaci\'on se apoya en b\'usquedas en junio~2026 de: Mathlib (sin
-ra\'ices virtuales; tiene Descartes v\'ia \lean{Polynomial.signVariations}); la biblioteca
-\lean{mathcomp-real-closed} de Coq (ra\'ices reales y la codificaci\'on de Thom, no ra\'ices
-virtuales); el AFP de Isabelle, cuya entrada \lean{Budan\_Fourier} formaliza la desigualdad con
-multiplicidad pero no el objeto ra\'iz virtual; y HOL~Light (Sturm y Descartes, no ra\'ices virtuales).
-Hago la afirmaci\'on al nivel del objeto nombrado; no puedo excluir un desarrollo in\'edito o con otro
-nombre, y agradecer\'ia una indicaci\'on.
+\emph{Novedad.} Hasta donde s\'e, ni las ra\'ices virtuales ni el recuento exacto de Budan--Fourier a
+trav\'es de ellas se hab\'ian formalizado en ning\'un asistente de pruebas antes. La afirmaci\'on se
+apoya en b\'usquedas en junio~2026 de: Mathlib (sin ra\'ices virtuales; tiene Descartes v\'ia
+\lean{Polynomial.signVariations}); la biblioteca \lean{mathcomp-real-closed} de Coq (ra\'ices reales y
+la codificaci\'on de Thom, no ra\'ices virtuales); el AFP de Isabelle, cuya entrada \lean{Budan\_Fourier}
+formaliza la desigualdad con multiplicidad pero no el objeto ra\'iz virtual ni la igualdad; y HOL~Light
+(Sturm y Descartes, no ra\'ices virtuales). Hago la afirmaci\'on al nivel del objeto nombrado; no puedo
+excluir un desarrollo in\'edito o con otro nombre, y agradecer\'ia una indicaci\'on.
 
 \emph{Autor\'ia.} La matem\'atica es cl\'asica, debida a los autores citados. La formalizaci\'on se
 realiz\'o en interacci\'on estrecha con un asistente de IA (Claude, Anthropic): la elecci\'on del
@@ -469,19 +542,20 @@ cient\'ifica.
 
 \section{Qu\'e queda abierto}\label{sec:questions}
 
-Tres hechos que este desarrollo no resuelve marcan hacia d\'onde apunta; cada uno es un lugar donde el
-trabajo se queda corto, y cada uno es el comienzo del siguiente.
+Tres hechos marcan hacia d\'onde apunta el trabajo; el primero ya est\'a resuelto y nombra su propia
+pregunta pendiente, los otros dos siguen abiertos.
 
 \begin{enumerate}\itemsep3pt
-\item \emph{De dos construcciones a un recuento.} La igualdad principal
-$\#\{\text{ra\'ices virtuales en }(a,b]\}=\V(a)-\V(b)$ es la secuela, y hay dos rutas honestas hacia
-ella. Una \emph{puentea} la construcci\'on de aqu\'i---el minimizador $\Rd_d$---con la funci\'on de
-variaci\'on de signos \lean{fourierVar} del trabajo compa\~nero~\cite{bflean}, convirtiendo la
-desigualdad de aquel paper~\cite{coste,glm} en igualdad. La otra \emph{define} las ra\'ices virtuales
-una segunda vez, como los saltos de \lean{fourierVar}, donde el recuento es casi por definici\'on, y
-luego prueba que ambas definiciones coinciden. El entrelazado probado aqu\'i es gratis en la primera
-definici\'on; el recuento es gratis en la segunda; \textbf{la equivalencia de ambas definiciones es el
-teorema de verdad}. Cu\'al ruta es m\'as corta en Lean es la pregunta misma.
+\item \emph{Dos definiciones de un objeto.} La igualdad principal
+$\#\{\text{ra\'ices virtuales en }(a,b]\}=\V(a)-\V(b)$ ya est\'a probada (Secci\'on~\ref{sec:count}) por
+la primera de dos rutas honestas: \emph{puentea} la construcci\'on de aqu\'i---el minimizador
+$\Rd_d$---con la funci\'on de variaci\'on de signos \lean{fourierVar} del trabajo
+compa\~nero~\cite{bflean}, convirtiendo la desigualdad de aquel paper~\cite{coste,glm} en igualdad. Hay
+una segunda ruta, no tomada: \emph{definir} las ra\'ices virtuales una segunda vez, como los saltos de
+\lean{fourierVar}, donde el recuento es casi por definici\'on, y probar que ambas definiciones
+coinciden. El entrelazado fue gratis en la primera definici\'on; el recuento ser\'ia gratis en la
+segunda; \textbf{la equivalencia de ambas definiciones es el teorema que esa ruta aislar\'ia}, y cu\'al
+es m\'as corta en Lean sigue siendo la pregunta.
 \item \emph{La continuidad, la otra mitad de su raz\'on de ser.} Las ra\'ices virtuales var\'ian de
 forma \emph{continua} con los coeficientes---esto es la mitad de por qu\'e
 Gonz\'alez-Vega--Lombardi--Mah\'e las introdujeron~\cite{glm}---y la continuidad no se toca aqu\'i. Una
