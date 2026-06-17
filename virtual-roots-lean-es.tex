@@ -425,21 +425,21 @@ teorema certifica el recuento, no un procedimiento.
 \section{Qu\'e habilita una teor\'ia certificada de ra\'ices virtuales}\label{sec:enables}
 
 Una familia de ra\'ices virtuales verificada por m\'aquina es el t\'ermino medio que falta entre dos
-cosas que Mathlib ya tiene y una que no. Tiene la regla de Descartes (el recuento de signos de
-coeficientes) y, en el trabajo compa\~nero, la \emph{desigualdad} de Budan--Fourier; no tiene el objeto
-que convertir\'ia esa desigualdad en igualdad. Las ra\'ices virtuales son ese objeto. Aguas abajo, son
-la entrada correcta para un procedimiento certificado de \emph{aislamiento} de ra\'ices reales en la
-l\'inea de Vincent, Collins y Akritas~\cite{vincent,collinsakritas,akritas} y la teor\'ia de
-variaci\'on de signos de Basu--Pollack--Roy~\cite{bpr}---el recuento es exacto, as\'i que un m\'etodo de
-subdivisi\'on que lee $\V(a)-\V(b)$ en cada mitad tiene, en principio, una garant\'ia verificada una vez
-a\~nadido el teorema del recuento. Y como la familia
+cosas que Mathlib ya tiene y una que no ten\'ia. Tiene la regla de Descartes (el recuento de signos de
+coeficientes) y, en el trabajo compa\~nero, la \emph{desigualdad} de Budan--Fourier; no ten\'ia el
+objeto que vuelve esa desigualdad una igualdad. Las ra\'ices virtuales son ese objeto, y la
+Secci\'on~\ref{sec:count} cierra la igualdad. Aguas abajo, son la entrada correcta para un
+procedimiento certificado de \emph{aislamiento} de ra\'ices reales en la l\'inea de Vincent, Collins y
+Akritas~\cite{vincent,collinsakritas,akritas} y la teor\'ia de variaci\'on de signos de
+Basu--Pollack--Roy~\cite{bpr}---el recuento es ahora exacto, as\'i que un m\'etodo de subdivisi\'on que
+lee $\V(a)-\V(b)$ en cada mitad tiene, en principio, una garant\'ia verificada sobre la que construir. Y como la familia
 est\'a definida para todo polinomio, con ra\'ices reales o sin ellas, conecta los m\'etodos de
 intervalo con el \'algebra del discriminante: un par de ra\'ices virtuales colisiona exactamente cuando
 dos ra\'ices reales est\'an a punto de volverse complejas, que es de donde sale el excedente par de
 Budan--Fourier (Figura~\ref{fig:bifurc}). La teor\'ia estructural formalizada aqu\'i es el cimiento
 sobre el que se sostiene todo eso.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=1.35]
   \useasboundingbox (-1.85,-1.7) rectangle (1.95,1.8);
