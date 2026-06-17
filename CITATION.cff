@@ -115,3 +115,43 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20736391"
     notes: "Synthesis note over Sturm + Budan–Fourier; the dividing line and the Descartes bridge"
+  - type: article
+    title: "What a Determinant's Derivative Knows: Jacobi's Formula and Newton's Identity for Matrix Traces in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20578470"
+    notes: "Jacobi/Newton companion — resolvent, adjugate, charpolyRev log-derivative"
+  - type: article
+    title: "The Walks That Remember the Cycles: A Machine-Checked Sharp Gap Law between the Matching Polynomial and the Non-Backtracking Spectrum in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20648488"
+    notes: "Part VI — sharp trace-formula gap law tr(A^k)−p_k = tr(B^k) on 1 ≤ k ≤ g+1 (concept DOI, latest version)"
+  - type: article
+    title: "Certified Short-Cycle Counts for the IEEE 802.11n (WiFi) LDPC Codes"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20649056"
+    notes: "Applied companion — certified short-cycle census of the deployed WiFi LDPC codes"
+  - type: article
+    title: "The Clock That Never Ticks: A Machine-Checked Path from the Dilogarithm to Quantum Speed Limits in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20675270"
+    notes: "Independent strand — real dilogarithm, Clausen, Margolus–Levitin / Mandelstam–Tamm QSL (concept DOI)"
+  - type: article
+    title: "The Pentagon, Machine-Checked: Abel's Five-Term Relation for the Dilogarithm in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    doi: "10.5281/zenodo.20682715"
+    notes: "Sequel to The Clock That Never Ticks — Abel's five-term relation (concept DOI)"

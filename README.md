@@ -8,19 +8,22 @@ papers:
   the **Godsil–Gutman identity** — the average characteristic polynomial of a
   uniformly random `±1` signing of a graph is its **matching polynomial** — plus
   the first formalization of the matching polynomial and its deletion recurrence in
-  any proof assistant, and the Bilu–Linial 2-lift decomposition.
+  any proof assistant, and the Bilu–Linial 2-lift decomposition. EN + ES. DOI
+  [10.5281/zenodo.20517350](https://doi.org/10.5281/zenodo.20517350).
 - **Paper II — *Unfolding a Graph into a Tree*** ([`heilmann-lieb-lean.pdf`](heilmann-lieb-lean.pdf)):
   the **Heilmann–Lieb theorem** — `μ_G` is real-rooted, and for maximum degree
   `Δ ≥ 2` all its roots lie in the Ramanujan band `[−2√(Δ−1), 2√(Δ−1)]` — proved
   via Godsil's path tree, the divisibility `μ_G ∣ μ_{T(G,u)}`, the forest identity,
-  and a weighted Gershgorin / Collatz–Wielandt argument.
+  and a weighted Gershgorin / Collatz–Wielandt argument. EN + ES. DOI
+  [10.5281/zenodo.20561832](https://doi.org/10.5281/zenodo.20561832).
 - **Paper III — *Walks that Forget the Cycles*** ([`path-tree-walks-lean.pdf`](path-tree-walks-lean.pdf)):
   the **bijection** between the **tree-like walks** of a graph and the walks on Godsil's
   path tree (`card_treeLike_eq_pathTreeWalks`) — the *combinatorial half* of Godsil's
   **moment theorem** `p_k = Σ_i θ_i^k = treeLikeWalkCount` — together with the spectral
   form `treeLikeWalkCount = Σ_v [A(T(G,v))^k]_root` and the forest bridge `μ(T)=charpoly`.
   The same path tree of Paper II, taught to count walks. The spectral half was **mapped, not built**
-  there — now built in Paper IV; `sorry`-free, three standard axioms.
+  there — now built in Paper IV; `sorry`-free, three standard axioms. EN + ES. DOI
+  [10.5281/zenodo.20600326](https://doi.org/10.5281/zenodo.20600326).
 - **Paper IV — *When Walks Become a Spectrum*** ([`moment-theorem-lean.pdf`](moment-theorem-lean.pdf)):
   the **spectral half** that closes Godsil's **moment theorem**
   `p_k = Σ_i θ_i^k = treeLikeWalkCount` (`matchingPowerSum_eq_treeLikeWalkCount`). Each path tree's
@@ -390,6 +393,38 @@ the drop in sign variations of the Sturm sequence equals the root count. To our 
 Worked instance: for `x³−x` (chain `x³−x, 3x²−1, (2/3)x, 1`), `V(−2)=3` and `V(2)=0`, so there are
 `3` roots in `(−2,2]` — read off the signs, no root computed.
 
+### Budan–Fourier — *Counting with the Derivative Tower*
+
+Real-root counting **with multiplicity** via the derivative tower (`BudanFourier.lean`); first in Lean.
+`sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `BudanFourier.budan_fourier` | `#roots(a,b]` (with mult.) `≤ V(a)−V(b)`, and the difference is even | `BudanFourier.lean` |
+| `fourierSeq`, `fourierVar` | the derivative tower `p, p′, p″, …` and its sign-variation count | `BudanFourier.lean` |
+| `signs_right_eq_Rseq`, `signs_left_eq_Lseq` | block law: signs off `c` are `Rseq`/`Lseq` of the signs at `c` | `BudanFourier.lean` |
+| `fourierVar_drop_at_critical_point` | the local drop `V(c⁻) = V(c⁺) + μ_c + 2e` | `BudanFourier.lean` |
+| `fourierVar_zero_eq_signVariations` | `fourierVar p 0 = Polynomial.signVariations p` (the Descartes bridge) | `Descartes.lean` |
+
+### Virtual roots — *Roots That Are Always There*
+
+The `d` virtual roots and the **exact** Budan–Fourier count (`VirtualRoots.lean`,
+`VirtualRootsCount.lean`); first in any interactive theorem prover. `sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `vroots`, `vroots_length` | the virtual roots; count `= deg p` | `VirtualRoots.lean` |
+| `vroots_isChain`, `vroots_subset_Icc` | sorted, and inside the bracketing interval | `VirtualRoots.lean` |
+| `R_eval_eq_zero_of_le_zero_le` | `ℛ_d` returns an actual root where `p` changes sign | `VirtualRoots.lean` |
+| `vroots_interlacing` | Rolle interlacing `ρ_{d,r}(p) ≤ ρ_{d−1,r}(p′) ≤ ρ_{d,r+1}(p)` | `VirtualRoots.lean` |
+| `fourierVar_eq_card_vroots_gt` | `V_p(x) = #{virtual roots > x}` | `VirtualRootsCount.lean` |
+| `card_vroots_Ioc_eq_fourierVar` | exact count `#{virtual roots in (a,b]} = V(a) − V(b)` | `VirtualRootsCount.lean` |
+
+The synthesis note *One Engine, Three Counts* (`sign-variation-lean.tex`) ties these together: Descartes,
+Sturm and Budan–Fourier as one sign-variation engine and one local-drop law, with the Descartes bridge
+`fourierVar_zero_eq_signVariations` (`Descartes.lean`) and the placement of the derivative tower outside
+Eisermann's Sturm-chain axiom.
+
 ### The Ihara side — Jacobi's formula and Newton's identity
 
 The resolvent / trace-generating-function machinery that maps `tr(Bᵏ)` to closed
@@ -412,6 +447,10 @@ MatchingPoly.lean            matching polynomial μ_G, matching number, deletion
 RamanujanBound.lean          the band edge 2√(k−1) (bruhatTitsBound) and its algebra
 Newton.lean                  Newton's inequalities: real-rooted ⇒ log-concave (esymm + coeff form)
 Sturm.lean                   Sturm's theorem: real-root counting via the signed remainder sequence + sign variation
+BudanFourier.lean            Budan–Fourier: root counting (with mult.) via the derivative tower + Rseq/Lseq block law
+Descartes.lean               Descartes bridge: fourierVar p 0 = Polynomial.signVariations p
+VirtualRoots.lean            virtual roots: ℛ_d construction, count = deg, sortedness, Rolle interlacing
+VirtualRootsCount.lean       exact Budan–Fourier count: #{virtual roots in (a,b]} = V(a) − V(b)
 
 # MSS/ — Papers I–II
 MSS/Basic.lean               signed adjacency matrix
@@ -470,6 +509,9 @@ clock-never-ticks.tex        strand     — The Clock That Never Ticks (dilogari
 five-term-lean.tex           strand     — The Pentagon, Machine-Checked (Abel's five-term)
 newton-inequalities-lean.tex strand     — The Inward Bow of a Real-Rooted Polynomial (Newton)
 sturm-lean.tex               strand     — The Staircase of Signs (Sturm's theorem)
+budan-fourier-lean.tex       strand     — Counting with the Derivative Tower (Budan–Fourier)
+virtual-roots-lean.tex       strand     — Roots That Are Always There (virtual roots + exact count)
+sign-variation-lean.tex      strand     — One Engine, Three Counts (synthesis note)
 references.bib               bibliography
 figures/                     figure scripts + PDFs + per-paper tables.tex
 research/                    numerical locks, sweeps, the LDPC census pipeline
@@ -589,6 +631,24 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20707348},
   note   = {Real-root counting via the signed remainder sequence; first in Lean. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026BudanFourierLean,
+  author = {Mar\'in, Carles},
+  title  = {Counting with the Derivative Tower: the Budan--Fourier Theorem, Machine-Checked in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20736143},
+  note   = {Real-root counting via the derivative tower; first in Lean. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026VirtualRootsLean,
+  author = {Mar\'in, Carles},
+  title  = {Roots That Are Always There: the Virtual Roots of a Real Polynomial, Machine-Checked in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20736336},
+  note   = {Virtual roots + exact Budan--Fourier count; first in any ITP. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026SignVariationLean,
+  author = {Mar\'in, Carles},
+  title  = {One Engine, Three Counts: Descartes, Sturm and Budan--Fourier through one sign-variation engine in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.20736391},
+  note   = {Synthesis note, supplement to Budan--Fourier. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
@@ -604,7 +664,10 @@ Applied census [10.5281/zenodo.20649056](https://doi.org/10.5281/zenodo.20649056
 Clock paper (dilogarithm + QSL strand) [10.5281/zenodo.20675270](https://doi.org/10.5281/zenodo.20675270),
 Pentagon / five-term [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715),
 Newton's inequalities [10.5281/zenodo.20693064](https://doi.org/10.5281/zenodo.20693064),
-Sturm's theorem [10.5281/zenodo.20707348](https://doi.org/10.5281/zenodo.20707348).
+Sturm's theorem [10.5281/zenodo.20707348](https://doi.org/10.5281/zenodo.20707348),
+Budan–Fourier [10.5281/zenodo.20736143](https://doi.org/10.5281/zenodo.20736143),
+Virtual roots [10.5281/zenodo.20736336](https://doi.org/10.5281/zenodo.20736336),
+One Engine, Three Counts [10.5281/zenodo.20736391](https://doi.org/10.5281/zenodo.20736391).
 
 ## Author and license
 
