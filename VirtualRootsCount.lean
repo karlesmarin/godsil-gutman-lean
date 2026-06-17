@@ -171,6 +171,37 @@ theorem fourierVar_deriv_le {p : Polynomial ℝ} (hp : 0 < p.natDegree) (x : ℝ
     List.map_cons]
   exact signChanges_le_cons _ _
 
+/-! ### Toward `count_step`: foundational bricks
+
+The crux needs that `p` is strictly monotone on each `p'`-cell, which needs `p'` to be sign-constant
+there, which needs **Coste's Prop. 2.2**: every actual root of a polynomial is one of its virtual
+roots. These bricks build toward it: `brackets_ne_zero`, `brackets_derivative` (the bracket hypothesis
+descends the tower), and `exists_deriv_root_between` (Rolle: a root of `q'` between any two roots of
+`q`). -/
+
+/-- A bracketed polynomial is nonzero (`0` would force the right endpoint `hi` into the open interval
+`(lo,hi)`). -/
+theorem brackets_ne_zero {lo hi : ℝ} {q : Polynomial ℝ} (hbr : Brackets lo hi q) : q ≠ 0 := by
+  intro h
+  have hmem : q ∈ BudanFourier.fourierSeq q :=
+    (BudanFourier.fourierSeq_mem q q).mpr ⟨0, Nat.zero_le _, by simp⟩
+  have hz : q.eval hi = 0 := by rw [h]; simp
+  exact lt_irrefl hi (hbr q hmem hi hz).2
+
+/-- The bracket hypothesis descends to the derivative (its Fourier sequence is a tail of `q`'s, for
+`deg q ≥ 1`). -/
+theorem brackets_derivative {lo hi : ℝ} {q : Polynomial ℝ} (hq : 0 < q.natDegree)
+    (hbr : Brackets lo hi q) : Brackets lo hi (derivative q) := fun r hr z hz =>
+  hbr r (by rw [fourierSeq_cons hq]; exact List.mem_cons_of_mem _ hr) z hz
+
+/-- **Rolle for the derivative tower.** Between any two roots of `q` there is a root of `q'`. -/
+theorem exists_deriv_root_between {q : Polynomial ℝ} {z z' : ℝ} (hlt : z < z')
+    (hz : q.eval z = 0) (hz' : q.eval z' = 0) :
+    ∃ y ∈ Set.Ioo z z', (derivative q).eval y = 0 := by
+  have hcont : ContinuousOn (fun x => q.eval x) (Set.Icc z z') := q.continuous.continuousOn
+  obtain ⟨y, hy, hdy⟩ := exists_deriv_eq_zero hlt hcont (by simp [hz, hz'])
+  exact ⟨y, hy, by rwa [Polynomial.deriv] at hdy⟩
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
