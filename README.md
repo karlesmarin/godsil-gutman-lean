@@ -143,6 +143,17 @@ matching polynomial (Paper II) and much of modern combinatorics:
   Mathlib's Descartes `signVariations`. EN + ES. DOI
   [10.5281/zenodo.20707348](https://doi.org/10.5281/zenodo.20707348).
 
+- **Counting with the Derivative Tower** ([`budan-fourier-lean.pdf`](budan-fourier-lean.pdf)): the
+  **Budan–Fourier theorem** — for `p(a), p(b) ≠ 0`, the number of real roots in `(a, b]` *with
+  multiplicity* is at most `V(a) − V(b)`, the drop in sign variations of the **derivative tower**
+  `p, p′, p″, …`, and the difference is **even**. The same engine as Sturm, but its local analysis
+  must resolve a whole **vanishing block** of the tower at once (the tower is not a coprime/Sturm
+  chain at a multiple root), handled by the `Rseq`/`Lseq` block law. The `b → ∞` shadow is Descartes'
+  rule, reached via `fourierVar p 0 = Polynomial.signVariations p` (`Descartes.lean`). To our
+  knowledge the **first Budan–Fourier theorem in Lean** (not first in any system — prior Isabelle/HOL
+  by W. Li) (`BudanFourier.lean`, `sorry`-free, three standard axioms). EN + ES. DOI *(on
+  publication)*.
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.

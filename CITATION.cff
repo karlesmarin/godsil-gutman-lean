@@ -91,3 +91,10 @@ references:
     year: 2026
     doi: "10.5281/zenodo.20707348"
     notes: "Sturm's theorem (V(a)−V(b) = #distinct real roots in (a,b]); first in Lean"
+  - type: article
+    title: "Counting with the Derivative Tower: the Budan–Fourier Theorem, Machine-Checked in Lean 4"
+    authors:
+      - family-names: "Marín"
+        given-names: "Carles"
+    year: 2026
+    notes: "Budan–Fourier (#roots in (a,b] with mult. ≤ V(a)−V(b), even surplus); first in Lean. DOI on publication."
