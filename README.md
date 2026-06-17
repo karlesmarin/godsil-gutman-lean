@@ -170,7 +170,8 @@ matching polynomial (Paper II) and much of modern combinatorics:
   local-drop law `V(c⁻) = V(c⁺) + μ_c + 2e`; it locates the exact axiom where the derivative tower
   leaves the Sturm-chain world (the tower is not a Sturm chain at a multiple root) and ties the
   engine's `V(0)` to Mathlib's Descartes count via `fourierVar p 0 = Polynomial.signVariations p`
-  (`Descartes.lean`). A companion note to the Budan–Fourier paper. EN + ES. DOI *(on publication)*.
+  (`Descartes.lean`). A companion note to the Budan–Fourier paper. EN + ES. DOI
+  [10.5281/zenodo.20736391](https://doi.org/10.5281/zenodo.20736391).
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,

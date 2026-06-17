@@ -113,4 +113,5 @@ references:
       - family-names: "Marín"
         given-names: "Carles"
     year: 2026
-    notes: "Synthesis note over Sturm + Budan–Fourier; the dividing line and the Descartes bridge. DOI on publication."
+    doi: "10.5281/zenodo.20736391"
+    notes: "Synthesis note over Sturm + Budan–Fourier; the dividing line and the Descartes bridge"
