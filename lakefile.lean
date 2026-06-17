@@ -40,6 +40,11 @@ lean_lib «RealStable» where
   -- Foundation toward Heilmann–Lieb (real-rootedness), used by MatchingPoly.
 
 @[default_target]
+lean_lib «DeBruijnErdos» where
+  -- De Bruijn–Erdős colouring: an infinite graph is n-colourable iff every finite
+  -- induced subgraph is (compactness). First in any ITP, via Mathlib's rado_selection.
+
+@[default_target]
 lean_lib «MatchingPoly» where
   -- The matching polynomial μ_G, matching number, and the deletion recurrence.
   -- First such infrastructure in any proof assistant.

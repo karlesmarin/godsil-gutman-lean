@@ -457,6 +457,16 @@ non-backtracking walk counts (used by Part VI).
 | `coe_charpolyRev_eq_det` | `charpolyRev M = det(I − X·M)` | `Ihara/ResolventDiag.lean` |
 | `adjugate_diag_eq_det_submatrix_ne` | adjugate diagonal entry = principal minor | `Ihara/AdjugateDiagMinor.lean` |
 
+### De Bruijn–Erdős colouring (standalone)
+
+A self-contained compactness result (`DeBruijnErdos.lean`): an infinite graph is `n`-colourable iff every
+finite induced subgraph is. To our knowledge the first in any interactive theorem prover, via Mathlib's
+`rado_selection`. `sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `SimpleGraph.colorable_iff_forall_finite_induce` | `G.Colorable n ⟺ ∀ finite induced subgraph H, H.Colorable n` | `DeBruijnErdos.lean` |
+
 ## Repository layout
 
 ```
@@ -470,6 +480,7 @@ BudanFourier.lean            Budan–Fourier: root counting (with mult.) via the
 Descartes.lean               Descartes bridge: fourierVar p 0 = Polynomial.signVariations p
 VirtualRoots.lean            virtual roots: ℛ_d construction, count = deg, sortedness, Rolle interlacing
 VirtualRootsCount.lean       exact Budan–Fourier count: #{virtual roots in (a,b]} = V(a) − V(b)
+DeBruijnErdos.lean           De Bruijn–Erdős: infinite graph n-colourable ⟺ every finite subgraph is
 
 # MSS/ — Papers I–II
 MSS/Basic.lean               signed adjacency matrix
