@@ -83,11 +83,11 @@ depende solo de los tres axiomas est\'andar \lean{propext}, \lean{Classical.choi
 \end{abstract}
 
 \medskip
-\noindent El desarrollo son dos ficheros Lean: \lean{VirtualRoots.lean} para la teor\'ia estructural, y
-\lean{VirtualRootsCount.lean} para el recuento exacto construido encima. Los lemas que soportan el peso
-est\'an reunidos en la Secci\'on~\ref{sec:blocks}, y los l\'imites que quedan---la continuidad, y el
-objeto global en todo $\R$---en la Secci\'on~\ref{sec:boundary}. Si solo lees dos cosas, lee el
-entrelazado (Teorema~\ref{thm:interlace}) y el recuento (Teorema~\ref{thm:count}).
+{\sloppy\noindent El desarrollo son dos ficheros Lean. \lean{VirtualRoots.lean} lleva la teor\'ia
+estructural; \lean{VirtualRootsCount.lean}, el recuento exacto construido encima. Los lemas que soportan
+el peso est\'an reunidos en la Secci\'on~\ref{sec:blocks}, y los l\'imites que quedan---la continuidad, y
+el objeto global en todo $\R$---en la Secci\'on~\ref{sec:boundary}. Si solo lees dos cosas, lee el
+entrelazado (Teorema~\ref{thm:interlace}) y el recuento (Teorema~\ref{thm:count}).\par}
 
 \section{Un recuento que no tiembla}\label{sec:intro}
 
@@ -341,6 +341,15 @@ donde $\V=\lean{fourierVar}$ es el recuento de variaciones de signo de Budan--Fo
 punto.
 \end{theorem}
 
+\noindent En Lean el enunciado es, verbatim (los binders de tipo impl\'icitos $\{lo\,hi:\R\}$,
+$\{p:\R[X]\}$ omitidos):
+\begin{quote}\ttfamily\small\noindent
+theorem card\_vroots\_Ioc\_eq\_fourierVar (hp : p $\neq$ 0)\\
+\hspace*{1em}(hbr : Brackets lo hi p) (ha : a $\in$ Ico lo hi) (hb : b $\in$ Ico lo hi) (hab : a $\le$ b) :\\
+\hspace*{1em}((vroots lo hi p : Multiset $\mathbb{R}$).filter (fun r => a < r $\wedge$ r $\le$ b)).card\\
+\hspace*{2em}= fourierVar p a - fourierVar p b
+\end{quote}
+
 \noindent El teorema cl\'asico de Budan--Fourier~\cite{bflean} acota el n\'umero de ra\'ices
 \emph{reales} en $(a,b]$ por $\V(a)-\V(b)$, con un excedente par. Reemplaza las ra\'ices reales por las
 virtuales y la desigualdad se vuelve igualdad---el excedente nunca fue un defecto del recuento, solo de
@@ -474,7 +483,7 @@ ladrillos de monoton\'ia dan la existencia y las dos propiedades de $\Rd_d$; la 
 entrelazado.
 
 \begin{table}[H]
-  \centering\small
+  \centering\footnotesize
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}llc@{}}
     \toprule
@@ -509,7 +518,7 @@ entrelazado.
 \end{table}
 
 \begin{table}[H]
-  \centering\small
+  \centering\footnotesize
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}lc@{}}
     \toprule
@@ -517,21 +526,27 @@ entrelazado.
     \textcolor{white}{\textbf{Cantidad}} & \textcolor{white}{\textbf{Valor}} \\
     \midrule
     \rowcolor{ggband}
-    L\'ineas: \lean{VirtualRoots.lean} $+$ \lean{VirtualRootsCount.lean} & $378+944$ \\
-    Teoremas estructurales / defs (\lean{VirtualRoots}) & $16\,/\,2$ \\
+    L\'ineas: \lean{VirtualRoots.lean} $/$ \lean{VirtualRootsCount.lean} & $378\,/\,944$ \\
+    Teoremas $+$ defs: estructural $/$ recuento & $16{+}2\,/\,33$ \\
     \rowcolor{ggband}
-    Recuento: importa \lean{VirtualRoots} y \lean{BudanFourier} & dos recursiones fundidas \\
+    M\'odulos de Mathlib usados (ambos ficheros, distintos) & $12$ \\
     \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
-    \rowcolor{ggband}
     Axiomas fuera del n\'ucleo de Lean & $0$ (solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
+    \rowcolor{ggband}
+    Compilaci\'on, Mathlib precompilado (\lean{VirtualRoots} $/$ recuento) & ${\approx}\,8\text{s}\,/\,9$\,s \\
     Toolchain & Lean~4 (godsil pin v4.30) sobre Mathlib \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
-  \caption{El desarrollo, medido. Build: \lean{lake env lean VirtualRoots.lean}, exit~0; el tiempo de
-  compilaci\'on es para verificar el fichero contra un Mathlib precompilado. La huella es
-  deliberadamente peque\~na---cinco m\'odulos de an\'alisis/topolog\'ia y nada de \'algebra
-  pesada---porque la construcci\'on es elemental.}
+  \caption{El desarrollo, medido. Build: \lean{lake env lean VirtualRoots.lean} y
+  \lean{VirtualRootsCount.lean}, exit~0; el tiempo de compilaci\'on es para verificar cada fichero
+  contra un Mathlib precompilado. La huella es deliberadamente ligera---nada de \'algebra pesada,
+  porque la construcci\'on es elemental. Los doce m\'odulos de Mathlib son
+  \lean{Analysis.Calculus.Deriv.Polynomial}, \lean{Deriv.MeanValue}, \lean{Topology.Algebra.Polynomial},
+  \lean{Topology.Order.Compact}, \lean{Topology.Order.IntermediateValue},
+  \lean{Algebra.Polynomial.Derivative}, \lean{Algebra.Polynomial.Roots},
+  \lean{Algebra.Polynomial.FieldDivision}, \lean{Data.List.Destutter}, \lean{Data.Sign.Basic},
+  \lean{Data.Real.Basic} y \lean{Algebra.Ring.Parity}.}
   \label{tab:metrics}
 \end{table}
 

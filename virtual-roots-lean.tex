@@ -311,7 +311,7 @@ For $lo\le hi$ and each index $r$ in range,
 \[
   \rho_{d,r}(p)\ \le\ \rho_{d-1,r}(p')\ \le\ \rho_{d,r+1}(p),
 \]
-i.e.\ \lean{(vroots lo hi p)[r] $\le$ (vroots lo hi (derivative p))[r] $\le$ (vroots lo hi p)[r+1]}.
+{\sloppy i.e.\ \lean{(vroots lo hi p)[r] $\le$ (vroots lo hi (derivative p))[r] $\le$ (vroots lo hi p)[r+1]}.\par}
 \end{theorem}
 \noindent The proof is two applications of the localization \lean{vroots\_getElem\_mem}---each virtual
 root of $p$ lies between two breakpoints---together with the identity that the interior breakpoints
@@ -342,6 +342,15 @@ $[lo,hi]$. Then for $a\le b$ in $[lo,hi)$,
 \]
 where $\V=\lean{fourierVar}$ is the Budan--Fourier sign-variation count of the tower at a point.
 \end{theorem}
+
+\noindent In Lean the statement reads, verbatim (implicit type binders $\{lo\,hi:\R\}$,
+$\{p:\R[X]\}$ elided):
+\begin{quote}\ttfamily\small\noindent
+theorem card\_vroots\_Ioc\_eq\_fourierVar (hp : p $\neq$ 0)\\
+\hspace*{1em}(hbr : Brackets lo hi p) (ha : a $\in$ Ico lo hi) (hb : b $\in$ Ico lo hi) (hab : a $\le$ b) :\\
+\hspace*{1em}((vroots lo hi p : Multiset $\mathbb{R}$).filter (fun r => a < r $\wedge$ r $\le$ b)).card\\
+\hspace*{2em}= fourierVar p a - fourierVar p b
+\end{quote}
 
 \noindent The classical Budan--Fourier theorem~\cite{bflean} bounds the number of \emph{real} roots in
 $(a,b]$ by $\V(a)-\V(b)$, off by an even surplus. Replace the real roots by the virtual ones and the
@@ -478,7 +487,7 @@ the monotonicity bricks give the existence and the two properties of $\Rd_d$; th
 the interlacing.
 
 \begin{table}[htbp]
-  \centering\small
+  \centering\footnotesize
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}llc@{}}
     \toprule
@@ -513,7 +522,7 @@ the interlacing.
 \end{table}
 
 \begin{table}[htbp]
-  \centering\small
+  \centering\footnotesize
   \arrayrulecolor{ggteal}
   \begin{tabular}{@{}lc@{}}
     \toprule
@@ -521,20 +530,26 @@ the interlacing.
     \textcolor{white}{\textbf{Quantity}} & \textcolor{white}{\textbf{Value}} \\
     \midrule
     \rowcolor{ggband}
-    Lines: \lean{VirtualRoots.lean} $+$ \lean{VirtualRootsCount.lean} & $378+944$ \\
-    Structural theorems / defs (\lean{VirtualRoots}) & $16\,/\,2$ \\
+    Lines: \lean{VirtualRoots.lean} $/$ \lean{VirtualRootsCount.lean} & $378\,/\,944$ \\
+    Theorems $+$ defs: structural $/$ count & $16{+}2\,/\,33$ \\
     \rowcolor{ggband}
-    Count: it imports \lean{VirtualRoots} and \lean{BudanFourier} & two recursions fused \\
+    Mathlib modules used (both files, distinct) & $12$ \\
     \lean{sorry} / \lean{admit} / \lean{native\_decide} & $0$ \\
-    \rowcolor{ggband}
     Axioms beyond Lean's core & $0$ (only \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) \\
+    \rowcolor{ggband}
+    Compile, warm Mathlib (\lean{VirtualRoots} $/$ count) & ${\approx}\,8\text{s}\,/\,9$\,s \\
     Toolchain & Lean~4 (godsil pin v4.30) over Mathlib \\
     \bottomrule
   \end{tabular}
   \arrayrulecolor{black}
-  \caption{The development measured. Build: \lean{lake env lean VirtualRoots.lean}, exit~0; compile
-  time is for checking the file against a prebuilt Mathlib. The footprint is deliberately small---five
-  analysis/topology modules and no heavy algebra---because the construction is elementary.}
+  \caption{The development measured. Build: \lean{lake env lean VirtualRoots.lean} and
+  \lean{VirtualRootsCount.lean}, exit~0; compile time is for checking each file against a prebuilt
+  Mathlib. The footprint is deliberately light---no heavy algebra, because the construction is
+  elementary. The twelve Mathlib modules are \lean{Analysis.Calculus.Deriv.Polynomial},
+  \lean{Deriv.MeanValue}, \lean{Topology.Algebra.Polynomial}, \lean{Topology.Order.Compact},
+  \lean{Topology.Order.IntermediateValue}, \lean{Algebra.Polynomial.Derivative},
+  \lean{Algebra.Polynomial.Roots}, \lean{Algebra.Polynomial.FieldDivision}, \lean{Data.List.Destutter},
+  \lean{Data.Sign.Basic}, \lean{Data.Real.Basic} and \lean{Algebra.Ring.Parity}.}
   \label{tab:metrics}
 \end{table}
 
