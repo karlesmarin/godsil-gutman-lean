@@ -82,12 +82,13 @@ built---is stated as plainly as the result.
 
 \begin{figure}[h]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
   node distance=5mm and 9mm,
   box/.style={draw=ggteal,fill=ggband!40,rounded corners=3pt,line width=0.8pt,
-    align=center,inner sep=5pt,text width=25mm,font=\small},
+    align=center,inner sep=5pt,text width=34mm,font=\small},
   mbox/.style={draw=ggamber,fill=white,rounded corners=3pt,line width=0.8pt,dashed,
-    align=center,inner sep=5pt,text width=25mm,font=\small},
+    align=center,inner sep=5pt,text width=34mm,font=\small},
   arr/.style={-{Stealth[length=2.4mm]},ggteal,line width=0.9pt},
   marr/.style={-{Stealth[length=2.4mm]},ggamber,line width=0.9pt,dashed},
   lab/.style={font=\scriptsize\itshape,align=center}]
@@ -98,7 +99,7 @@ built---is stated as plainly as the result.
 \draw[arr] (tl) -- node[lab,above,text=ggteal]{bijection\\(proved)} (pt);
 \draw[arr] (pt) -- node[lab,above,text=ggteal]{matrix\\power} (am);
 \draw[marr] (am) -- node[lab,above,text=ggamber]{resolvent\,$+$\\Newton (mapped)} (pk);
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{The route of the paper, and where it stops. The tree-like walk count of $G$ equals the walk
 count at the root of Godsil's path tree (the bijection, Theorem~\ref{thm:bij}), which is a power of the
 tree's adjacency matrix (Theorem~\ref{thm:spectral}); and each path tree is a forest, so that matrix's
@@ -349,8 +350,10 @@ $\lean{liftSeq}\,(y_1::M)\,s.\mathrm{support}=\lean{liftSeq}\,M\,y.\mathrm{suppo
 
 \begin{lemma}[Invariant, \lean{liftSeq\_map\_invariant}]\label{lem:inv}
 For a path-tree walk $W\colon s\to x$,
-$\lean{liftSeq}\,(W.\mathrm{map}\,\pi).\mathrm{support}.\mathrm{tail}\,\;s.\mathrm{support}
-=\lean{some}\,x.\mathrm{support}$.
+\[
+  \lean{liftSeq}\,(W.\mathrm{map}\,\pi).\mathrm{support}.\mathrm{tail}\;\,s.\mathrm{support}
+  =\lean{some}\,x.\mathrm{support}.
+\]
 \end{lemma}
 
 Lemma~\ref{lem:img} is the case $s=x=\mathrm{root}$, whose path-support is $[v]$. The same invariant
