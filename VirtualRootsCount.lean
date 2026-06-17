@@ -462,6 +462,110 @@ theorem countP_gt_of_split (x : ℝ) : ∀ (L : List ℝ) (k : ℕ), k ≤ L.len
       rw [hrec, if_neg (by simp [not_lt.mpr hxa])]
       omega
 
+/-- A chain (`≤`-sorted list) is monotone in its index. -/
+theorem chain_getElem_mono {L : List ℝ} (hL : List.IsChain (· ≤ ·) L) {s t : ℕ}
+    (hst : s ≤ t) (ht : t < L.length) :
+    L[s]'(lt_of_le_of_lt hst ht) ≤ L[t]'ht := by
+  rcases eq_or_lt_of_le hst with rfl | hlt
+  · exact le_rfl
+  · exact List.pairwise_iff_getElem.mp hL.pairwise s t (lt_of_le_of_lt hst ht) ht hlt
+
+/-- The `j`-th virtual root of `p'` is the `(j+1)`-th breakpoint of the partition
+`bps = lo :: vroots(p') ++ [hi]`. -/
+theorem deriv_vroot_eq_bps {lo hi : ℝ} {p : Polynomial ℝ} {j : ℕ}
+    (hj : j < (vroots lo hi (derivative p)).length)
+    (hb : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length) :
+    (lo :: (vroots lo hi (derivative p) ++ [hi]))[j + 1]'hb
+      = (vroots lo hi (derivative p))[j]'hj := by
+  rw [List.getElem_cons_succ]
+  exact List.getElem_append_left hj
+
+/-- **(c) The count increment is the cell indicator.** With `x` located in the cell
+`[bps[i], bps[i+1]]` of the `p'`-breakpoint partition (`bps = lo :: vroots(p') ++ [hi]`), the number of
+virtual roots of `p` strictly above `x` exceeds that of `p'` by exactly whether the virtual root of `p`
+sitting in that cell lies above `x`. Purely combinatorial: the interlacing forces every cell above `x`
+to contribute a root, every cell below to contribute none, and only `x`'s own cell to be in question. -/
+theorem count_diff_eq_cell {lo hi : ℝ} (hab : lo ≤ hi) {p : Polynomial ℝ} (hp : 0 < p.natDegree)
+    {x : ℝ} {i : ℕ} (hiv : i < (vroots lo hi p).length)
+    (hi1 : i + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length)
+    (hbiz : (lo :: (vroots lo hi (derivative p) ++ [hi]))[i]'(Nat.lt_of_succ_lt hi1) ≤ x)
+    (hzbi : x < (lo :: (vroots lo hi (derivative p) ++ [hi]))[i + 1]'hi1) :
+    (vroots lo hi p).countP (fun r => decide (x < r))
+      = (vroots lo hi (derivative p)).countP (fun r => decide (x < r))
+        + (if x < (vroots lo hi p)[i]'hiv then 1 else 0) := by
+  have hchain : List.IsChain (· ≤ ·) (lo :: (vroots lo hi (derivative p) ++ [hi])) :=
+    vroots_isChain lo hi hab (derivative p)
+  have hm : (vroots lo hi p).length = p.natDegree := vroots_length lo hi p
+  have hmd : (vroots lo hi (derivative p)).length = p.natDegree - 1 := by
+    rw [vroots_length, natDegree_derivative_eq hp]
+  have hbpslen : (lo :: (vroots lo hi (derivative p) ++ [hi])).length = p.natDegree + 1 := by
+    simp only [List.length_cons, List.length_append, List.length_nil, hmd]; omega
+  have hilt : i < p.natDegree := by rw [hbpslen] at hi1; omega
+  -- count for `p'`: split the sorted `vroots(p')` at `i`
+  have hNderiv : (vroots lo hi (derivative p)).countP (fun r => decide (x < r))
+      = (vroots lo hi (derivative p)).length - i := by
+    apply countP_gt_of_split x (vroots lo hi (derivative p)) i (by rw [hmd]; omega)
+    · intro j hj hji
+      have hb1 : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+        rw [hmd] at hj; rw [hbpslen]; omega
+      calc (vroots lo hi (derivative p))[j]
+          = (lo :: (vroots lo hi (derivative p) ++ [hi]))[j + 1]'hb1 :=
+            (deriv_vroot_eq_bps hj hb1).symm
+        _ ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[i]'(Nat.lt_of_succ_lt hi1) :=
+            chain_getElem_mono hchain (by omega) (Nat.lt_of_succ_lt hi1)
+        _ ≤ x := hbiz
+    · intro j hj hij
+      have hb1 : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+        rw [hmd] at hj; rw [hbpslen]; omega
+      calc x < (lo :: (vroots lo hi (derivative p) ++ [hi]))[i + 1]'hi1 := hzbi
+        _ ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[j + 1]'hb1 :=
+            chain_getElem_mono hchain (by omega) hb1
+        _ = (vroots lo hi (derivative p))[j] := deriv_vroot_eq_bps hj hb1
+  rw [hNderiv]
+  by_cases htrue : x < (vroots lo hi p)[i]'hiv
+  · rw [if_pos htrue]
+    have hNp : (vroots lo hi p).countP (fun r => decide (x < r)) = (vroots lo hi p).length - i := by
+      apply countP_gt_of_split x (vroots lo hi p) i (by rw [hm]; omega)
+      · intro j hj hji
+        have hbj : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+          rw [hm] at hj; rw [hbpslen]; omega
+        calc (vroots lo hi p)[j]
+            ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[j + 1]'hbj := (vroots_getElem_mem lo hi hab p j hj hbj).2
+          _ ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[i]'(Nat.lt_of_succ_lt hi1) :=
+              chain_getElem_mono hchain (by omega) (Nat.lt_of_succ_lt hi1)
+          _ ≤ x := hbiz
+      · intro j hj hij
+        rcases eq_or_lt_of_le hij with rfl | hlt
+        · exact htrue
+        · have hbj : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+            rw [hm] at hj; rw [hbpslen]; omega
+          calc x < (lo :: (vroots lo hi (derivative p) ++ [hi]))[i + 1]'hi1 := hzbi
+            _ ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[j]'(Nat.lt_of_succ_lt hbj) :=
+                chain_getElem_mono hchain (by omega) (Nat.lt_of_succ_lt hbj)
+            _ ≤ (vroots lo hi p)[j] := (vroots_getElem_mem lo hi hab p j hj hbj).1
+    rw [hNp, hm, hmd]; omega
+  · rw [if_neg htrue]
+    have hNp : (vroots lo hi p).countP (fun r => decide (x < r)) = (vroots lo hi p).length - (i + 1) := by
+      apply countP_gt_of_split x (vroots lo hi p) (i + 1) (by rw [hm]; omega)
+      · intro j hj hji
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hji with hlt | rfl
+        · have hbj : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+            rw [hm] at hj; rw [hbpslen]; omega
+          calc (vroots lo hi p)[j]
+              ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[j + 1]'hbj := (vroots_getElem_mem lo hi hab p j hj hbj).2
+            _ ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[i]'(Nat.lt_of_succ_lt hi1) :=
+                chain_getElem_mono hchain (by omega) (Nat.lt_of_succ_lt hi1)
+            _ ≤ x := hbiz
+        · exact not_lt.mp htrue
+      · intro j hj hij
+        have hbj : j + 1 < (lo :: (vroots lo hi (derivative p) ++ [hi])).length := by
+          rw [hm] at hj; rw [hbpslen]; omega
+        calc x < (lo :: (vroots lo hi (derivative p) ++ [hi]))[i + 1]'hi1 := hzbi
+          _ ≤ (lo :: (vroots lo hi (derivative p) ++ [hi]))[j]'(Nat.lt_of_succ_lt hbj) :=
+              chain_getElem_mono hchain (by omega) (Nat.lt_of_succ_lt hbj)
+          _ ≤ (vroots lo hi p)[j] := (vroots_getElem_mem lo hi hab p j hj hbj).1
+    rw [hNp, hm, hmd]; omega
+
 /-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
 `x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
 inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
