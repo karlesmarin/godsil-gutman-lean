@@ -769,7 +769,99 @@ theorem count_step {lo hi : ℝ} {p : Polynomial ℝ} (hp : 0 < p.natDegree)
     (((vroots lo hi p : Multiset ℝ)).filter (fun r => x < r)).card
       = (((vroots lo hi (derivative p) : Multiset ℝ)).filter (fun r => x < r)).card
         + (BudanFourier.fourierVar p x - BudanFourier.fourierVar (derivative p) x) := by
-  sorry
+  classical
+  have hab : lo ≤ hi := le_of_lt (lt_of_le_of_lt hx.1 hx.2)
+  have hp' : derivative p ≠ 0 := by
+    intro h
+    have hd := degree_derivative_eq p hp
+    rw [h, degree_zero] at hd
+    simp at hd
+  set bps := lo :: (vroots lo hi (derivative p) ++ [hi]) with hbps
+  have hchain : List.IsChain (· ≤ ·) bps := vroots_isChain lo hi hab (derivative p)
+  have hbne : bps ≠ [] := by simp [hbps]
+  have hmd : (vroots lo hi (derivative p)).length = p.natDegree - 1 := by
+    rw [vroots_length, natDegree_derivative_eq hp]
+  have hbpslen : bps.length = p.natDegree + 1 := by
+    rw [hbps]; simp only [List.length_cons, List.length_append, List.length_nil, hmd]; omega
+  have hlen2 : 2 ≤ bps.length := by rw [hbpslen]; omega
+  have hheadle : bps.head hbne ≤ x := by simp only [hbps]; simpa using hx.1
+  have hlastlt : x < bps.getLast hbne := by
+    simp only [hbps, List.getLast_cons (by simp : vroots lo hi (derivative p) ++ [hi] ≠ []),
+      List.getLast_append_singleton]
+    exact hx.2
+  obtain ⟨i, hi1, hbiz, hzbi⟩ := exists_bracket_lt bps hchain hbne hheadle hlastlt hlen2
+  set a := bps[i]'(Nat.lt_of_succ_lt hi1) with ha
+  set b := bps[i + 1]'hi1 with hb
+  have hab2 : a < b := lt_of_le_of_lt hbiz hzbi
+  have hxIco : x ∈ Set.Ico a b := ⟨hbiz, hzbi⟩
+  have hilt : i < p.natDegree := by rw [hbpslen] at hi1; omega
+  have hiv : i < (vroots lo hi p).length := by rw [vroots_length]; exact hilt
+  have hdne : p.natDegree ≠ 0 := by omega
+  have hvR : (vroots lo hi p)[i]'hiv = R p a b := by
+    simp only [ha, hb, vroots_eq_zipWith hdne, ← hbps, List.getElem_zipWith, List.getElem_tail]
+  have hno : ∀ w ∈ Set.Ioo a b, (derivative p).eval w ≠ 0 := by
+    intro w hw
+    exact deriv_root_free_on_cell hab hp hbr hi1 (ha ▸ hw.1) (hb ▸ hw.2)
+  have hxmid : x < (x + b) / 2 := by have := hzbi; linarith
+  obtain ⟨z, hzx, hzle, hgap⟩ := exists_tower_gap_right (BudanFourier.fourierSeq (derivative p))
+    (BudanFourier.fourierSeq_mem_ne_zero hp') hxmid
+  have hzcell : z ∈ Set.Ioo a b := by
+    refine ⟨lt_of_le_of_lt hbiz hzx, ?_⟩
+    have := hzbi; linarith
+  have hd := fourier_head_right hp' hzx hgap
+  have hp'z : (derivative p).eval z ≠ 0 := hno z hzcell
+  have hVfin : BudanFourier.fourierVar p x
+      = BudanFourier.fourierVar (derivative p) x + (if x < R p a b then 1 else 0) := by
+    rcases lt_or_gt_of_ne hp'z with hzneg | hzpos
+    · have hsign1 : SignType.sign ((derivative p).eval z) = -1 := sign_neg hzneg
+      have hmono : StrictAntiOn (fun t => p.eval t) (Set.Icc a b) := by
+        apply strictAntiOn_of_deriv_neg (convex_Icc a b) p.continuous.continuousOn
+        intro w hw
+        rw [interior_Icc] at hw
+        rw [Polynomial.deriv]
+        have hsw := deriv_sign_const_on_cell hno hw hzcell
+        rw [hsign1] at hsw
+        exact sign_eq_neg_one_iff.mp hsw
+      have hiff := lt_R_iff_eval_pos hab2.le hmono hxIco
+      by_cases hpx0 : p.eval x = 0
+      · have hnlt : ¬ (x < R p a b) := by rw [hiff, hpx0]; exact lt_irrefl 0
+        rw [if_neg hnlt, fourierVar_succ_root hp hpx0, add_zero]
+      · rw [fourierVar_succ_ne hp hpx0 hd, hsign1]
+        congr 1
+        by_cases hlt : x < R p a b
+        · have hpxpos : 0 < p.eval x := hiff.mp hlt
+          rw [if_pos hlt, if_neg (by rw [sign_pos hpxpos]; decide)]
+        · have hpxneg : p.eval x < 0 := by
+            rcases lt_or_gt_of_ne hpx0 with h | h
+            · exact h
+            · exact absurd (hiff.mpr h) hlt
+          rw [if_neg hlt, if_pos (by rw [sign_neg hpxneg])]
+    · have hsign1 : SignType.sign ((derivative p).eval z) = 1 := sign_pos hzpos
+      have hmono : StrictMonoOn (fun t => p.eval t) (Set.Icc a b) := by
+        apply strictMonoOn_of_deriv_pos (convex_Icc a b) p.continuous.continuousOn
+        intro w hw
+        rw [interior_Icc] at hw
+        rw [Polynomial.deriv]
+        have hsw := deriv_sign_const_on_cell hno hw hzcell
+        rw [hsign1] at hsw
+        exact sign_eq_one_iff.mp hsw
+      have hiff := lt_R_iff_eval_neg hab2.le hmono hxIco
+      by_cases hpx0 : p.eval x = 0
+      · have hnlt : ¬ (x < R p a b) := by rw [hiff, hpx0]; exact lt_irrefl 0
+        rw [if_neg hnlt, fourierVar_succ_root hp hpx0, add_zero]
+      · rw [fourierVar_succ_ne hp hpx0 hd, hsign1]
+        congr 1
+        by_cases hlt : x < R p a b
+        · have hpxneg : p.eval x < 0 := hiff.mp hlt
+          rw [if_pos hlt, if_neg (by rw [sign_neg hpxneg]; decide)]
+        · have hpxpos : 0 < p.eval x := by
+            rcases lt_or_gt_of_ne hpx0 with h | h
+            · exact absurd (hiff.mpr h) hlt
+            · exact h
+          rw [if_neg hlt, if_pos (by rw [sign_pos hpxpos])]
+  rw [card_filter_gt_eq_countP, card_filter_gt_eq_countP,
+    count_diff_eq_cell hab hp hiv hi1 hbiz hzbi, hvR]
+  omega
 
 /-- **Core reformulation.** The Budan–Fourier count at `x` equals the number of virtual roots of `p`
 strictly above `x`. The whole development is now `sorry`-free except for the single crux `count_step`:
@@ -849,3 +941,4 @@ public theorem card_vroots_Ioc_eq_fourierVar {lo hi : ℝ} {p : Polynomial ℝ} 
   rw [ka, kb]; omega
 
 end VirtualRoots
+
