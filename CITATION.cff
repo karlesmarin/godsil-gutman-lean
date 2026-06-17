@@ -97,4 +97,5 @@ references:
       - family-names: "Marín"
         given-names: "Carles"
     year: 2026
-    notes: "Budan–Fourier (#roots in (a,b] with mult. ≤ V(a)−V(b), even surplus); first in Lean. DOI on publication."
+    doi: "10.5281/zenodo.20736143"
+    notes: "Budan–Fourier (#roots in (a,b] with mult. ≤ V(a)−V(b), even surplus); first in Lean"

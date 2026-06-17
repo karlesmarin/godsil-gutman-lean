@@ -151,8 +151,8 @@ matching polynomial (Paper II) and much of modern combinatorics:
   chain at a multiple root), handled by the `Rseq`/`Lseq` block law. The `b → ∞` shadow is Descartes'
   rule, reached via `fourierVar p 0 = Polynomial.signVariations p` (`Descartes.lean`). To our
   knowledge the **first Budan–Fourier theorem in Lean** (not first in any system — prior Isabelle/HOL
-  by W. Li) (`BudanFourier.lean`, `sorry`-free, three standard axioms). EN + ES. DOI *(on
-  publication)*.
+  by W. Li) (`BudanFourier.lean`, `sorry`-free, three standard axioms). EN + ES. DOI
+  [10.5281/zenodo.20736143](https://doi.org/10.5281/zenodo.20736143).
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
