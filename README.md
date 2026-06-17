@@ -1,8 +1,25 @@
-# The Path-Tree Program — Godsil–Gutman & Heilmann–Lieb in Lean 4
+# A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, and Real-Root Counting
 
-A machine-checked formalization, in **Lean 4 / Mathlib**, of classical results
-about the **matching polynomial** of a graph and the road between them, in a series of
-papers:
+A machine-checked formalization in **Lean 4 / Mathlib** of classical mathematics — every headline
+theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`, `Quot.sound`) — in
+**four strands**:
+
+1. **Matching polynomials & the path-tree program** — the Godsil–Gutman identity, the Heilmann–Lieb
+   theorem (matching roots in the Ramanujan band), Godsil's moment theorem, Kirchhoff's matrix-tree
+   theorem, and a sharp matching ↔ non-backtracking trace-formula gap law (Papers I–VI), with an
+   applied **certified short-cycle census of the WiFi (IEEE 802.11n) LDPC codes**.
+2. **The Ihara zeta / non-backtracking side** — Bass's determinant formula and the Jacobi–Newton
+   trace machinery: the cycle/π₁ counterpart of the matching polynomial.
+3. **The dilogarithm & quantum speed limits** — the real (and complex) dilogarithm that Mathlib
+   lacks, Abel's five-term relation, and the Margolus–Levitin / Mandelstam–Tamm speed limits.
+4. **Real-root counting** — Newton's inequalities, Sturm's theorem, the Budan–Fourier theorem, the
+   virtual roots (with the *exact* Budan–Fourier count), and a synthesis note: the real-rooted ⇒
+   log-concave bridge and the sign-variation root counts.
+
+The four share one repository and one build-as-oracle style — the Lean kernel has the last word. The
+papers, strand by strand:
+
+**Strand 1 — matching polynomials & the path-tree program.**
 
 - **Paper I — *Random Signs into Matchings*** ([`godsil-gutman-lean.pdf`](godsil-gutman-lean.pdf)):
   the **Godsil–Gutman identity** — the average characteristic polynomial of a
@@ -67,7 +84,8 @@ papers:
 > The mathematics did not change on the way out; it acquired a use. The same pipeline targets
 > 5G NR and quantum LDPC codes next.
 
-A companion strand formalizes the **Ihara side** of spectral graph theory:
+**Strand 2 — the Ihara zeta / non-backtracking side.** The cycle/π₁ counterpart of the matching
+polynomial (the tree/Plancherel side of strand 1):
 
 - **Bass's determinant formula** ([`Ihara/Bass.lean`](Ihara/Bass.lean)): the
   **Ihara–Bass identity** `(1−u²)^|V| · det(I − uB) = (1−u²)^|E| · det(I − uA + u²(D−I))`,
@@ -86,8 +104,8 @@ A companion strand formalizes the **Ihara side** of spectral graph theory:
   non-backtracking walk counts, used by Part VI. DOI
   [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470).
 
-A second, **independent strand** (different subject area, same repository) formalizes the
-**real dilogarithm and quantum speed limits**:
+**Strand 3 — the dilogarithm & quantum speed limits.** A subject area of its own, in the same
+repository — the **real dilogarithm** Mathlib lacks, followed to a quantum-mechanics ending:
 
 - **The Clock That Never Ticks** ([`clock-never-ticks.pdf`](clock-never-ticks.pdf)):
   a `sorry`-free development (∼1 500 lines) that fills a hole in Mathlib — the dilogarithm
@@ -121,8 +139,9 @@ A second, **independent strand** (different subject area, same repository) forma
   → boundary value. EN + ES. DOI
   [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715) (concept, latest version).
 
-A third strand formalizes the **real-rooted ⇒ log-concave** bridge that underlies the
-matching polynomial (Paper II) and much of modern combinatorics:
+**Strand 4 — real-root counting.** From the **real-rooted ⇒ log-concave** bridge (which underlies
+Paper II and much of modern combinatorics) to counting real roots in an interval *without finding a
+single one* — sign variations, the derivative tower, and the virtual roots that make the count exact:
 
 - **The Inward Bow of a Real-Rooted Polynomial** ([`newton-inequalities-lean.pdf`](newton-inequalities-lean.pdf)):
   **Newton's inequalities** (1707) — if a real polynomial of degree `n` has all real roots, its
