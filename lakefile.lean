@@ -31,6 +31,10 @@ lean_lib «VirtualRoots» where
   -- construction, count = degree, sortedness, and the Rolle interlacing. First in any ITP.
 
 @[default_target]
+lean_lib «Descartes» where
+  -- Descartes' rule of signs through the engine: fourierVar p 0 = Polynomial.signVariations p.
+
+@[default_target]
 lean_lib «RealStable» where
   -- RealRooted predicate + closure algebra + Interlaces (pencil form).
   -- Foundation toward Heilmann–Lieb (real-rootedness), used by MatchingPoly.

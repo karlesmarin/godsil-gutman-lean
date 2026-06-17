@@ -203,7 +203,7 @@ always shows exactly one variation regardless of its middle (the interior-root c
 P1's antipodal property, in combinatorial form). -/
 
 /-- Sign changes in a raw list of signs: drop the zeros, then count adjacent differences. -/
-public def signChanges (s : List SignType) : ℕ :=
+@[expose] public def signChanges (s : List SignType) : ℕ :=
   ((s.filter (· ≠ 0)).destutter (· ≠ ·)).length - 1
 
 /-- `signVarAt` is `signChanges` of the evaluated sign pattern. -/
