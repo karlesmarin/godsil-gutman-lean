@@ -26,7 +26,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{definition}{Definition}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\tr}{\operatorname{tr}}
@@ -387,7 +387,7 @@ those counts and the adjacency data they are usually computed from; Theorem~\ref
 that the counts mean what they are said to mean.
 
 \begin{table}[h]
-\centering\small
+\centering\footnotesize
 \caption{Every machine-checked ingredient. All are \lean{sorry}-free; \lean{\#print axioms} reports
 only \lean{[propext, Classical.choice, Quot.sound]}. Sources: \lean{Ihara/TraceFormula.lean} and
 \lean{MathlibPR/MatrixWalkCount.lean}.}
@@ -413,7 +413,7 @@ only \lean{[propext, Classical.choice, Quot.sound]}. Sources: \lean{Ihara/TraceF
 \end{table}
 
 \begin{table}[h]
-\centering\small
+\centering\footnotesize
 \caption{Independent numerical cross-checks (\texttt{SymPy}), exact symbolic equality. The graph row
 is the triangle $K_3$: the trace of $B^k$ matches a brute-force enumeration of rooted closed
 non-backtracking walks, $0,0,6,0,0,6$ for $k=1,\dots,6$ (the cycle and its reverse, three basepoints
@@ -545,10 +545,10 @@ axioms), are available at
 \begin{center}
 \url{https://github.com/karlesmarin/godsil-gutman-lean}
 \end{center}
-in \lean{Ihara/TraceFormula.lean} (Jacobi, Newton, the Ihara composition) and
+{\sloppy in \lean{Ihara/TraceFormula.lean} (Jacobi, Newton, the Ihara composition) and
 \lean{MathlibPR/MatrixWalkCount.lean} (the resolvent series, the walk count, the cyclic structure).
 Verify the axiom footprint with, e.g., \lean{\#print axioms Matrix.charpolyRev\_logDeriv}
-$\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.
+$\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.\par}
 
 \begin{thebibliography}{99}
 \bibitem{Bass1992} H.~Bass, \emph{The Ihara--Selberg zeta function of a tree lattice}, Internat. J.

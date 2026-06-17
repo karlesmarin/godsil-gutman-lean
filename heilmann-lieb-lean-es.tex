@@ -20,12 +20,12 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
 \usepackage[most]{tcolorbox}
-\setlength{\emergencystretch}{2em}
+\setlength{\emergencystretch}{4em}
 \graphicspath{{figures/}}
 \newtheorem{theorem}{Teorema}
 \newtheorem{lemma}{Lema}
 \newtheorem{definition}{Definici\'on}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
 \newcommand{\R}{\mathbb{R}}
 \hypersetup{colorlinks=true,linkcolor=ggteal,citecolor=ggteal,urlcolor=ggteal}
 \newtcbox{\keybox}{on line,boxrule=0.9pt,colframe=ggteal,colback=ggband!40,

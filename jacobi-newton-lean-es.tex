@@ -27,7 +27,7 @@
 \newtheorem{theorem}{Teorema}
 \newtheorem{lemma}{Lema}
 \newtheorem{definition}{Definici\'on}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\tr}{\operatorname{tr}}
@@ -401,7 +401,7 @@ suelen computarse; el Teorema~\ref{thm:Nk} certifica que los conteos significan 
 significan.
 
 \begin{table}[h]
-\centering\small
+\centering\footnotesize
 \caption{Cada ingrediente verificado por m\'aquina. Todos son sin \lean{sorry}; \lean{\#print axioms}
 reporta s\'olo \lean{[propext, Classical.choice, Quot.sound]}. Fuentes:
 \lean{Ihara/TraceFormula.lean} y \lean{MathlibPR/MatrixWalkCount.lean}.}
@@ -427,7 +427,7 @@ reporta s\'olo \lean{[propext, Classical.choice, Quot.sound]}. Fuentes:
 \end{table}
 
 \begin{table}[h]
-\centering\small
+\centering\footnotesize
 \caption{Comprobaciones num\'ericas independientes (\texttt{SymPy}), igualdad simb\'olica exacta. La
 fila del grafo es el tri\'angulo $K_3$: la traza de $B^k$ coincide con una enumeraci\'on por fuerza
 bruta de caminos cerrados sin retroceso con punto base, $0,0,6,0,0,6$ para $k=1,\dots,6$ (el ciclo y
@@ -571,10 +571,10 @@ axiomas est\'andar) est\'an disponibles en
 \begin{center}
 \url{https://github.com/karlesmarin/godsil-gutman-lean}
 \end{center}
-en \lean{Ihara/TraceFormula.lean} (Jacobi, Newton, la composici\'on de Ihara) y
+{\sloppy en \lean{Ihara/TraceFormula.lean} (Jacobi, Newton, la composici\'on de Ihara) y
 \lean{MathlibPR/MatrixWalkCount.lean} (la serie resolvente, el conteo de caminos, la estructura
 c\'iclica). Verifica la huella de axiomas con, p.\,ej., \lean{\#print axioms Matrix.charpolyRev\_logDeriv}
-$\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.
+$\rightsquigarrow$ \lean{[propext, Classical.choice, Quot.sound]}.\par}
 
 \begin{thebibliography}{99}
 \bibitem{Bass1992} H.~Bass, \emph{The Ihara--Selberg zeta function of a tree lattice}, Internat. J.

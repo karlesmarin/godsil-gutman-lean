@@ -23,7 +23,7 @@
 \newtheorem{theorem}{Teorema}
 \newtheorem{lemma}{Lema}
 \newtheorem{definition}{Definici\'on}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\C}{\mathbb{C}}
@@ -341,9 +341,9 @@ comparten longitud y $\sum_v\rev(\mu(G-v))=\reflect_n(\sum_v\mu(G-v))$ (\lean{su
 La ley derivada de borrado de v\'ertices $\sum_v\mu(G-v)=X\,\mu'(G)$
 (\lean{sum\_matchingPoly\_deleteIncidenceSet}) cierra el movimiento:
 \keyeq{W(G)\cdot\overline{\mu(G)}\;=\;\overline{X\,\mu'(G)}.}
-Todo el lado de la traza es ahora un polinomio de emparejamientos reflejado
+{\sloppy Todo el lado de la traza es ahora un polinomio de emparejamientos reflejado
 (\lean{mk\_treeLikeWalkCount\_mul\_reverse\_eq}). Usar $\reflect_n$, en vez de $\rev$, para el numerador
-es lo que permite no calcular nunca el grado de $X\mu'$.
+es lo que permite no calcular nunca el grado de $X\mu'$.\par}
 
 % ---------------------------------------------------------------
 \section{El lado de los emparejamientos se vuelve lo mismo}
@@ -635,7 +635,7 @@ fijada de Mathlib; $\ast$ marca los lemas generales y libres de grafos ausentes 
 para su env\'io aguas arriba.}
 \label{tab:results}
 \rowcolors{2}{ggband!30}{white}
-\begin{tabular}{@{}llc@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.40\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}c@{}}
 \toprule
 \rowcolor{ggteal}
 {\color{white}\textbf{Nombre en Lean}} & {\color{white}\textbf{Enunciado}} & {\color{white}\textbf{\S}}\\

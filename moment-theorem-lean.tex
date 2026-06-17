@@ -22,7 +22,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{definition}{Definition}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\C}{\mathbb{C}}
@@ -328,9 +328,9 @@ $\sum_v\rev(\mu(G-v))=\reflect_n(\sum_v\mu(G-v))$ (\lean{sum\_reverse\_eq\_refle
 vertex-deletion derivative law $\sum_v\mu(G-v)=X\,\mu'(G)$ (\lean{sum\_matchingPoly\_deleteIncidenceSet},
 proved in the companion to Part~II) finishes the move:
 \keyeq{W(G)\cdot\overline{\mu(G)}\;=\;\overline{X\,\mu'(G)}.}
-The entire trace side is now one reflected matching polynomial
+{\sloppy The entire trace side is now one reflected matching polynomial
 (\lean{mk\_treeLikeWalkCount\_mul\_reverse\_eq}). Using $\reflect_n$, rather than $\rev$, for the
-numerator is what lets us avoid ever computing the degree of $X\mu'$.
+numerator is what lets us avoid ever computing the degree of $X\mu'$.\par}
 
 % ---------------------------------------------------------------
 \section{The matching side becomes the same}
@@ -606,7 +606,7 @@ canonical form for upstreaming to Mathlib.
 revision; $\ast$ marks the general, graph-free lemmas absent from Mathlib and kept for upstreaming.}
 \label{tab:results}
 \rowcolors{2}{ggband!30}{white}
-\begin{tabular}{@{}llc@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.40\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}c@{}}
 \toprule
 \rowcolor{ggteal}
 {\color{white}\textbf{Lean name}} & {\color{white}\textbf{Statement}} & {\color{white}\textbf{\S}}\\

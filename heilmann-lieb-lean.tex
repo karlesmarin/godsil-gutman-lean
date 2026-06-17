@@ -21,12 +21,12 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
 \usepackage[most]{tcolorbox}
-\setlength{\emergencystretch}{2em}
+\setlength{\emergencystretch}{6em}
 \graphicspath{{figures/}}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{definition}{Definition}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\R}{\mathbb{R}}
 \hypersetup{colorlinks=true,linkcolor=ggteal,citecolor=ggteal,urlcolor=ggteal}
