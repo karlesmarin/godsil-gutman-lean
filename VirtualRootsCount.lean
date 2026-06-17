@@ -19,8 +19,10 @@ proved by induction down the derivative tower; the `(a,b]` count follows by subt
 (`#(a,b] = N(a) − N(b)` with `N(x) = #{ρ > x}`). The induction step matches the leading sign-change of
 `fourierVar` (p vs the p'-tower) against the extra virtual root the interlacing inserts above `x`.
 
-**STATUS: scaffold, `sorry`-marked, under construction.** Kept in a separate file so
-`VirtualRoots.lean` stays `sorry`-free.
+**STATUS: reduced to ONE crux.** The induction down the derivative tower (base case + plumbing) is
+`sorry`-free; the whole capstone now rests on the single analytic lemma `count_step` (the δ=δ' bit:
+the interlacing inserts a virtual root above `x` iff the leading Fourier sign flips). Kept in a
+separate file so `VirtualRoots.lean` stays `sorry`-free.
 -/
 public import VirtualRoots
 public import BudanFourier
@@ -145,13 +147,85 @@ theorem N_le_N_deriv_succ {lo hi : ℝ} (hab : lo ≤ hi) (p : Polynomial ℝ) (
     _ ≤ (vroots lo hi (derivative p)).countP (fun r => decide (x < r)) + 1 :=
         Nat.add_le_add_right (countP_gt_le_of_forall₂ x hforall) 1
 
-/-- **Core reformulation (WIP).** The Budan–Fourier count at `x` equals the number of virtual roots of
-`p` strictly above `x`. Everything else is bookkeeping around this. -/
+/-- Prepending a sign can only add variations: `signChanges` is monotone under `cons`
+(a leading nonzero sign adds `0` or `1`; a leading zero adds nothing). -/
+theorem signChanges_le_cons (c : SignType) (s : List SignType) :
+    Sturm.signChanges s ≤ Sturm.signChanges (c :: s) := by
+  rcases hfilt : s.filter (· ≠ 0) with _ | ⟨a, f'⟩
+  · have h0 : Sturm.signChanges s = 0 := by
+      rw [← Sturm.signChanges_cons_zero s]
+      exact Sturm.signChanges_cons_of_filter_nil hfilt
+    rw [Sturm.signChanges_cons_of_filter_nil hfilt]; omega
+  · rcases eq_or_ne c 0 with hc | hc
+    · subst hc; simp
+    · rw [Sturm.signChanges_cons_of_ne_zero hc
+        (show (s.filter (· ≠ 0)).head? = some a by rw [hfilt]; rfl)]
+      omega
+
+/-- The derivative's Fourier count never exceeds `p`'s: the extra leading derivative `p` contributes
+at most one new sign variation. The monotonicity that makes the count recursion telescope. -/
+theorem fourierVar_deriv_le {p : Polynomial ℝ} (hp : 0 < p.natDegree) (x : ℝ) :
+    BudanFourier.fourierVar (derivative p) x ≤ BudanFourier.fourierVar p x := by
+  rw [BudanFourier.fourierVar_eq_signVarAt, BudanFourier.fourierVar_eq_signVarAt,
+    Sturm.signVarAt_eq_signChanges, Sturm.signVarAt_eq_signChanges, fourierSeq_cons hp,
+    List.map_cons]
+  exact signChanges_le_cons _ _
+
+/-- **THE crux (the one remaining analytic fact).** The increment in the count of virtual roots above
+`x` going from `p'` to `p` equals the Fourier increment `V_p − V_{p'}`. Geometrically: the interlacing
+inserts a virtual root of `p` above `x` **iff** the virtual root of `p` in `x`'s own `p'`-cell lies
+above `x`, and that happens exactly when the leading sign of `p` at `x` produces a new Fourier
+variation. Both recursions are pinned to `{0,1}` (the Fourier side by `fourierVar_deriv_le`, the count
+side by `N_deriv_le_N`/`N_le_N_deriv_succ`); this lemma says the two bits agree. -/
+theorem count_step {lo hi : ℝ} {p : Polynomial ℝ} (hp : 0 < p.natDegree)
+    (hbr : Brackets lo hi p) {x : ℝ} (hx : x ∈ Set.Ico lo hi) :
+    (((vroots lo hi p : Multiset ℝ)).filter (fun r => x < r)).card
+      = (((vroots lo hi (derivative p) : Multiset ℝ)).filter (fun r => x < r)).card
+        + (BudanFourier.fourierVar p x - BudanFourier.fourierVar (derivative p) x) := by
+  sorry
+
+/-- **Core reformulation.** The Budan–Fourier count at `x` equals the number of virtual roots of `p`
+strictly above `x`. The whole development is now `sorry`-free except for the single crux `count_step`:
+the induction down the derivative tower (base case + plumbing) is closed here. -/
 public theorem fourierVar_eq_card_vroots_gt {lo hi : ℝ} {p : Polynomial ℝ} (hp : p ≠ 0)
     (hbr : Brackets lo hi p) {x : ℝ} (hx : x ∈ Set.Ico lo hi) :
     BudanFourier.fourierVar p x
       = (((vroots lo hi p : Multiset ℝ)).filter (fun r => x < r)).card := by
-  sorry
+  suffices H : ∀ n, ∀ q : Polynomial ℝ, q.natDegree = n → q ≠ 0 → Brackets lo hi q →
+      BudanFourier.fourierVar q x
+        = (((vroots lo hi q : Multiset ℝ)).filter (fun r => x < r)).card from
+    H p.natDegree p rfl hp hbr
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro p hn hp hbr
+    rcases Nat.eq_zero_or_pos n with h0 | hpos
+    · -- base case: `p` is a nonzero constant; both sides are `0`
+      subst h0
+      have hV : BudanFourier.fourierVar p x = 0 := by
+        rw [BudanFourier.fourierVar_eq_signVarAt, Sturm.signVarAt_eq_signChanges]
+        have hfs : BudanFourier.fourierSeq p = [p] := by
+          rw [BudanFourier.fourierSeq, hn]; simp
+        rw [hfs, List.map_cons, List.map_nil]
+        exact Sturm.signChanges_cons_of_filter_nil (by simp)
+      have hvr : vroots lo hi p = [] := by
+        rw [← List.length_eq_zero_iff, vroots_length]; exact hn
+      rw [hV, hvr]; simp
+    · -- inductive step: peel one derivative
+      have hdeg : 0 < p.natDegree := by rw [hn]; exact hpos
+      have hp' : derivative p ≠ 0 := by
+        intro h
+        have hd := degree_derivative_eq p hdeg
+        rw [h, degree_zero] at hd
+        simp at hd
+      have hbr' : Brackets lo hi (derivative p) := by
+        intro q hq z hz
+        exact hbr q (by rw [fourierSeq_cons hdeg]; exact List.mem_cons_of_mem _ hq) z hz
+      have hdn : (derivative p).natDegree = n - 1 := by rw [natDegree_derivative_eq hdeg, hn]
+      have ihv := ih (n - 1) (by omega) (derivative p) hdn hp' hbr'
+      have hmono := fourierVar_deriv_le hdeg x
+      rw [count_step hdeg hbr hx, ← ihv]
+      omega
 
 /-- **The exact virtual-root count (WIP).** The number of virtual roots in `(a,b]` equals the
 Budan–Fourier drop `V(a) − V(b)`, turning the inequality of `BudanFourier.budan_fourier` into an
