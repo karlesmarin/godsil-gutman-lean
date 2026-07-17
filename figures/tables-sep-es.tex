@@ -1,0 +1,49 @@
+% Tabla del cuerpo (Tabla de contrastes) + macros de estado (edición ES).
+% La tabla de resultados formales vive en el apéndice del fichero principal.
+\newcommand{\stproven}{\textcolor{sepblue}{\ding{51}}\,probado}
+\newcommand{\stfuture}{\textcolor{restgrey}{$\circ$}\,futuro}
+\newcommand{\stdef}{\textcolor{sepblue}{$\bullet$}\,definido}
+
+% ---------- Tabla de contrastes computacionales ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{sepblue}
+  \caption{Contrastes computacionales (GAP / Sage, exactos). \emph{Izquierda:} la
+  dicotomía de separación, verificada sin contraejemplo en todo grupo transitivo de
+  grado pequeño, más el testigo de canon en $\Z/12$. \emph{Derecha:} una
+  recomputación independiente de la tabla distinguidora de Chan
+  $D(\GL_n(\mathbb{F}_q)\curvearrowright\mathbb{F}_q^n)$ para $n>2$, $q\le n{+}1$,
+  coincidente con Klavžar--Wong--Zhu; el color de celda codifica $D$ (pálido $D{=}2$
+  $\to$ intenso $D{=}4$), así que las dos excepciones destacan de un vistazo.}
+  \label{tab:checks}
+  \renewcommand{\arraystretch}{1.2}
+  \begin{minipage}[t]{0.46\textwidth}
+    \centering
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      \rowcolor{sepblue}
+      \textcolor{white}{\textbf{Contraste}} & \textcolor{white}{\textbf{Resultado}} \\
+      \midrule
+      \rowcolor{sepband}
+      barrido dicotomía & \multirow{1}{*}{0 contraejemplos} \\
+      \small 120 grps.\ transitivos, gr.\ 2--9 & \\
+      canon $\Z/12$ $\{0,3,6,9\}{\oplus}\{0,1,2\}$ & tesela (extremal) \\
+      \bottomrule
+    \end{tabular}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.5\textwidth}
+    \centering
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{@{}c|cccc@{}}
+      \multicolumn{1}{@{}c}{\scriptsize $n\backslash q$} & \scriptsize 2 & \scriptsize 3 & \scriptsize 4 & \scriptsize 5 \\
+      \hline
+      \scriptsize 3 & \cellcolor{dFour}\textbf{4} & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & --- \\
+      \scriptsize 4 & \cellcolor{dThree}\textbf{3} & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 \\
+      \scriptsize 5 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 \\
+      \scriptsize 6 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 \\
+    \end{tabular}
+    \\[3pt]
+    {\scriptsize\colorbox{dTwo}{\,$D{=}2$\,}\ \colorbox{dThree}{\,$D{=}3$\,}\ \colorbox{dFour}{\textcolor{white}{\,$D{=}4$\,}}\quad(``---'': $q$ no es potencia de primo)}
+  \end{minipage}
+\end{table}

@@ -1,0 +1,603 @@
+% =====================================================================
+% Part I — TotD cluster A (grupos de permutaciones). Edición española.
+% Autores: Carles Marín (Claude, Anthropic, como asistente IA).
+% Traducción paralela de neumann-separation-lean.tex.
+% =====================================================================
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref}
+\usepackage{xurl}
+\usepackage[table]{xcolor}
+\usepackage{pifont}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+\definecolor{sepblue}{HTML}{1B4F8C}
+\definecolor{sepband}{HTML}{DCE3EB}
+\definecolor{sepamber}{HTML}{E08A1E}
+\definecolor{sepred}{HTML}{C0392B}
+\definecolor{voiceA}{HTML}{1B6F8C}
+\definecolor{voiceB}{HTML}{E08A1E}
+\definecolor{voiceC}{HTML}{8C2D6F}
+\definecolor{restgrey}{HTML}{B9C2CC}
+\definecolor{dTwo}{HTML}{DCE7EB}
+\definecolor{dThree}{HTML}{F4C46B}
+\definecolor{dFour}{HTML}{D9663A}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Teorema}
+\newtheorem{lemma}{Lema}
+\newtheorem{definition}{Definición}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\GL}{\mathrm{GL}}
+
+\title{\bf Cuando la separación falla, aparece un canon\\[3pt]
+  \large\normalfont Una identidad de conteo tras la separación, la sincronización
+  y la ruptura de simetría en grupos de permutaciones, formalizada en Lean~4
+  (Parte~I)}
+\author{Carles Mar\'in\thanks{Formalizado con asistencia de IA (Claude,
+  Anthropic); las matemáticas y todas las afirmaciones son responsabilidad del
+  autor.}\\[3pt]
+  \normalsize Investigador independiente\\
+  \normalsize \texttt{karlesmarin@gmail.com}}
+\date{Julio 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Una identidad aritmética recorre este artículo: el promedio, sobre un grupo finito
+$G$ que actúa en $\Omega$, de cuántos puntos comparte una traslación $gA$ con un
+conjunto $B$ es exactamente $|A|\,|B|/|\Omega|$. Leída de un modo demuestra el lema
+de separación de P.~M. Neumann; leída de otro fuerza los teoremas de uniformidad de
+la jerarquía de sincronización de P.~J. Cameron; y en la frontera
+$|A|\,|B|=|\Omega|$ produce una dicotomía---o algún $g$ separa $A$ de $B$, o
+\emph{toda} traslación corta a $B$ en exactamente un punto. Ese caso extremal es una
+factorización exacta del grupo, y sobre $\Z/n$ un canon rítmico por teselación: la
+frontera de la teoría de separación y la teoría de los cánones musicales son el
+mismo objeto, en dos literaturas que no se citan entre sí. Formalizo este
+conglomerado en Lean~4 / Mathlib, junto con el \emph{número distinguidor} de una
+acción de grupo y el valor del plano de Fano $D(\GL_3(\mathbb{F}_2))=4$. La
+matemática es clásica; lo nuevo aquí es la forma órbita-local de la dicotomía, la
+identificación de su caso extremal con los cánones rítmicos y---hasta donde
+sé---la primera formalización de cualquiera de estos en un asistente de pruebas.
+Todo es \lean{sorry}-free, dependiendo solo de los tres axiomas estándar: una perla,
+y la primera parte de una serie planeada.
+\end{abstract}
+
+% ---------------------------------------------------------------
+\section{Un argumento, varias caras}
+\label{sec:intro}
+
+Sea un grupo finito $G$ actuando en un conjunto $\Omega$, y tomemos dos subconjuntos
+finitos $A,B\subseteq\Omega$. Aplicar $g\in G$ desliza $A$ a su traslación $gA$.
+Casi todo en este artículo se sigue de contar, de dos maneras, las ternas
+$(a,b,g)$ con $a\in A$, $b\in B$ y $g\cdot a=b$. Cuando $G$ actúa transitivamente en
+$\Omega$, sumar sobre el grupo y despejar denominadores da la identidad
+\[
+  \boxed{\;\Bigl(\sum_{g\in G}|gA\cap B|\Bigr)\cdot|\Omega|
+  \;=\;|A|\cdot|B|\cdot|G|\;}
+\]
+---el tamaño promedio de $gA\cap B$ es $|A|\,|B|/|\Omega|$; una forma local a las
+órbitas vale para cualquier acción, y es la que necesita la dicotomía de la
+Sección~\ref{sec:dichotomy}. Parece una observación de
+contabilidad. Es, de hecho, el motor de un conglomerado sorprendentemente amplio de
+teoremas, y el único mensaje de este artículo es que son un argumento visto desde
+distintos lados (Figura~\ref{fig:map}).
+
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[
+      font=\small,
+      box/.style={rounded corners=2pt,draw=sepblue,line width=0.9pt,fill=sepband,
+                  align=center,inner sep=5pt,minimum height=8mm},
+      hero/.style={rounded corners=2pt,draw=sepblue,line width=1.3pt,fill=sepblue,
+                   text=white,align=center,inner sep=6pt},
+      star/.style={rounded corners=2pt,draw=voiceC,line width=1.1pt,fill=voiceC!12,
+                   align=center,inner sep=5pt},
+      dual/.style={rounded corners=2pt,draw=restgrey,line width=0.9pt,fill=white,
+                   align=center,inner sep=5pt,text=black!75},
+      fl/.style={-{Stealth[length=2.4mm]},sepblue,line width=0.9pt}]
+    \node[hero] (id) at (0,5.2) {\textbf{Una identidad de conteo}\\[1pt]
+      $\bigl(\sum_g|gA\cap B|\bigr)|\Omega|=|A||B||G|$};
+    \node[box] (sep) at (-2.6,3.5) {Separación\\{\footnotesize (Neumann)}};
+    \node[box] (uni) at (2.6,3.5) {Uniformidad\\{\footnotesize (Cameron 8--9)}};
+    \node[box] (dic) at (0,2.0) {Dicotomía de separación\\{\footnotesize en $|A||B|=|\Omega|$}};
+    \node[box] (fac) at (0,0.7) {Factorización exacta\\{\footnotesize $G=B\cdot A^{-1}$}};
+    \node[star] (can) at (0,-0.7) {\textbf{Canon rítmico}\\{\footnotesize $A\oplus B=\Z/n$}};
+    \node[dual] (dist) at (4.55,1.35) {\emph{La lente dual}\\ Número distinguidor\\{\footnotesize Fano $D=4$}};
+    \draw[fl] (id) -- (sep); \draw[fl] (id) -- (uni);
+    \draw[fl] (sep) -- (dic); \draw[fl] (uni) -- (dic);
+    \draw[fl] (dic) -- (fac); \draw[fl] (fac) -- (can);
+    \draw[-{Stealth[length=2.4mm]},restgrey,line width=0.9pt,dashed]
+      (id.east) to[bend left=22] node[right,midway,text=black!55,font=\scriptsize]{kit órbita--}
+      node[right,midway,yshift=-3.2mm,text=black!55,font=\scriptsize]{estabilizador} (dist.north);
+  \end{tikzpicture}
+  \caption{El artículo en una imagen. Una única identidad de conteo fuerza tanto la
+  separación de Neumann como los teoremas de uniformidad de Cameron; donde se
+  encuentran, en el umbral $|A||B|=|\Omega|$, produce una dicotomía cuyo caso no
+  separable es una factorización exacta del grupo---sobre $\Z/n$, un canon rítmico
+  por teselación. El número distinguidor (la excepción de Fano $D=4$) es una
+  pregunta paralela sobre romper la simetría, que comparte el mismo kit
+  órbita--estabilizador.}
+  \label{fig:map}
+\end{figure}
+
+\paragraph{Qué es nuevo, en tres registros.} Como este artículo se sitúa entre un
+survey y una formalización, separo sus afirmaciones con nitidez.
+\emph{Matemáticamente}, el contenido nuevo es una forma afinada, órbita-local, de la
+dicotomía de separación (Sección~\ref{sec:dichotomy}), y la observación de que su
+caso extremal, sobre un grupo cíclico, es exactamente el canon rítmico por
+teselación de Vuza~\cite{Vuza1991} y Coven--Meyerowitz~\cite{CovenMeyerowitz1999}.
+\emph{En un asistente de pruebas}: hasta donde sé, tras una búsqueda bibliográfica
+extensa por los sistemas principales, esta es la primera formalización del lema de
+separación, de la jerarquía de sincronización de Cameron y del número distinguidor
+de una acción de grupo. \emph{Conceptualmente}, la contribución es hacer explícito
+el motor compartido: separación, uniformidad, la dicotomía extremal y la
+factorización se reducen todas, por nombre y en el grafo de dependencias, a la única
+identidad de arriba. El Apéndice~\ref{app:results} lista los resultados formales con
+sus nombres Lean; la matemática es clásica en todo momento, y nombro a sus autores
+según avanzo.
+
+\input{figures/tables-sep-es}
+
+% ---------------------------------------------------------------
+\section{Separar un conjunto de su imagen}
+\label{sec:setting}
+
+La cara más antigua de la identidad es una pregunta de respuesta intuitiva:
+\begin{quote}\itshape
+  ¿cuándo podemos hallar siempre un $g$ que aparte $A$ enteramente de $B$---con
+  $gA\cap B=\emptyset$?
+\end{quote}
+Si las órbitas son grandes hay sitio para deslizar $A$ lejos de $B$. Neumann lo
+precisó. En el caso finito transitivo el umbral limpio es $|A|\cdot|B|<|\Omega|$: por
+debajo, la separación siempre es posible (Figura~\ref{fig:sep}); la identidad de
+conteo es toda la prueba, pues si ningún $g$ separara, cada término $|gA\cap B|\ge1$,
+forzando la suma a al menos $|G|$ y el promedio a al menos $1$, es decir
+$|A|\,|B|\ge|\Omega|$.
+
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[scale=0.88,
+      pt/.style={circle,draw=restgrey,line width=0.6pt,fill=white,minimum size=10pt,inner sep=0pt},
+      inA/.style={circle,draw=sepblue,line width=1pt,fill=sepblue,minimum size=10pt,inner sep=0pt},
+      inB/.style={circle,draw=sepred,line width=1.4pt,fill=white,minimum size=15pt,inner sep=0pt}]
+    \begin{scope}[shift={(0,0)}]
+      \foreach \i in {0,...,9} { \coordinate (l\i) at ({90-36*\i}:1.7); }
+      \draw[restgrey!60] (0,0) circle (1.7);
+      \foreach \i in {0,...,9} { \node[pt] at (l\i) {}; }
+      \foreach \i in {5,6} { \node[inB] at (l\i) {}; }
+      \foreach \i in {4,5,6} { \node[inA] at (l\i) {}; }
+      \node at (0,-2.25) {\small \textbf{antes:} $A\cap B\neq\emptyset$};
+    \end{scope}
+    \draw[-{Stealth[length=3.5mm]},sepamber,line width=1.3pt]
+      (2.15,0.15) to[bend left=18] node[above,midway,text=sepamber]{\small rota por $g$} (3.55,0.15);
+    \begin{scope}[shift={(5.7,0)}]
+      \foreach \i in {0,...,9} { \coordinate (r\i) at ({90-36*\i}:1.7); }
+      \draw[restgrey!60] (0,0) circle (1.7);
+      \foreach \i in {0,...,9} { \node[pt] at (r\i) {}; }
+      \foreach \i in {5,6} { \node[inB] at (r\i) {}; }
+      \foreach \i in {0,1,2} { \node[inA] at (r\i) {}; }
+      \node at (0,-2.25) {\small \textbf{después:} $gA\cap B=\emptyset$};
+    \end{scope}
+    \begin{scope}[shift={(-1.3,-3.15)}]
+      \node[inA,scale=0.8] at (0,0) {}; \node[right=1pt,anchor=west] at (0.15,0) {\scriptsize $A$ ($|A|{=}3$)};
+      \node[inB,scale=0.7] at (2.4,0) {}; \node[right=1pt,anchor=west] at (2.6,0) {\scriptsize $B$ ($|B|{=}2$)};
+      \node[anchor=west] at (4.6,0) {\scriptsize $|A||B|=6<10=|\Omega|$};
+    \end{scope}
+  \end{tikzpicture}
+  \caption{Separación en un decágono (acción regular de $\Z/10$). Como
+  $|A|\cdot|B|<|\Omega|$, alguna rotación desliza $A$ (azul) fuera de $B$ (anillos
+  rojos). El umbral $|A||B|=|\Omega|$, donde la separación puede fallar, es donde la
+  historia gira (Sección~\ref{sec:dichotomy}).}
+  \label{fig:sep}
+\end{figure}
+
+Una sutileza merece una frase, porque una paráfrasis popular la yerra. El umbral es
+\emph{estricto}. La fuente cuantitativa---Birch, Burns, Oates Macdonald y
+Neumann~\cite{BBMN1976}---separa bajo la hipótesis de que toda órbita tenga
+\emph{más de} $|A|\,|B|$ elementos, y observa que $|A|\,|B|+1$ es óptimo: un grupo
+transitivo de grado $|A|\,|B|$ construido con $|A|$ bloques de tamaño $|B|$ tiene un
+par no separable. Debilitar «más de» a «al menos» hace falsa la afirmación (el grupo
+trivial en un punto nunca separa), y el caso frontera $|A|\,|B|=|\Omega|$---donde el
+lema estricto calla---es exactamente donde vive la Sección~\ref{sec:dichotomy}.
+
+Para $\Omega$ infinito la hipótesis correcta es sobre órbitas, y la forma afinada
+pide solo que la órbita de cada punto de $A$ sea infinita. La prueba es la dual
+placentera de la finita: si ningún $g$ separara, los cosets $\{g\mid g\cdot a=b\}$
+cubrirían $G$, así que por el lema de recubrimiento de B.~H.
+Neumann~\cite{BHNeumann1954} algún estabilizador de punto tendría índice finito---pero
+su índice es el tamaño (infinito) de la órbita. Mathlib ya lleva el lema de
+recubrimiento de B.~H. Neumann; el envoltorio para acciones de grupo que le faltaba
+se aporta aquí.
+
+% ---------------------------------------------------------------
+\section{Uniformidad: el mismo promedio, leído como igualdad}
+\label{sec:engine}
+
+Las lecciones de sincronización de Cameron~\cite{CameronSync} convierten la identidad
+en una familia de enunciados de rigidez. Si toda intersección-traslación tiene por
+casualidad el \emph{mismo} tamaño $\ell$, la identidad da de inmediato
+$|A|\,|B|=\ell\,|\Omega|$; su instancia $\ell=1$ dice que una partición
+sección-regular es uniforme, todas las partes del mismo tamaño. Más fino, y el hecho
+que impulsa la sección siguiente: si todas las intersecciones son meramente $\ge\ell$
+(o todas $\le\ell$) mientras $|A|\,|B|=\ell\,|\Omega|$, entonces cada una vale
+exactamente $\ell$.
+
+El punto notable merece decirse en palabras llanas. Un promedio es un enunciado sobre
+una \emph{suma}; aquí baja y fija cada término individual. Como la media de los
+$|gA\cap B|$ está forzada a ser exactamente $\ell$, ninguna traslación puede quedar
+por encima ni por debajo sin que otra compense---así que en cuanto una cota unilateral
+retira esa libertad, el promedio dicta cada término por sí solo. Es un promedio que
+legisla puntualmente.
+
+Soy cuidadoso con lo que es esta «unificación». No probé un meta-teorema del que la
+separación, la uniformidad y la dicotomía sean corolarios; más bien, las tres llaman
+al mismo conteo de ternas. La unidad es real pero modesta, y vive en el grafo de
+dependencias, no en un enunciado grandioso---que es precisamente el tipo de afirmación
+que una formalización deja comprobar a un lector en vez de aceptar por fe.
+
+% ---------------------------------------------------------------
+\section{Cuando la separación falla: una dicotomía, y un canon}
+\label{sec:dichotomy}
+
+Volvamos a la frontera $|A|\cdot|B|=|\Omega|$, donde el lema estricto de separación no
+dice nada. Aquí el motor fuerza una bifurcación limpia.
+
+\begin{theorem}[Dicotomía de separación, forma órbita-local]
+Sea $G$ finito actuando en $\Omega$, y $A,B$ finitos no vacíos con toda órbita que
+corta a la vez $A$ y $B$ de tamaño $\ge|A|\cdot|B|$. Entonces o bien
+\begin{enumerate}
+\item[\rm(1)] algún $g$ separa $A$ de $B$, o bien
+\item[\rm(2)] \emph{(extremal)} $|gA\cap B|=1$ para \emph{todo} $g\in G$, y $A$ y $B$
+  yacen en una única órbita común de tamaño exactamente $|A|\cdot|B|$.
+\end{enumerate}
+\end{theorem}
+
+La prueba es el promedio una vez más: si ningún $g$ separa, cada término es $\ge1$; la
+identidad fija su media en $1$; así que por el estrujón puntual de la sección anterior
+cada $|gA\cap B|$ vale exactamente $1$, y el caso de igualdad colapsa $A\cup B$ en una
+órbita del tamaño extremal. Estrictamente por encima del umbral se obtiene separación
+sin más.
+
+Enuncio la honestidad con claridad, porque el núcleo transitivo de la bifurcación no
+es mío. Que $|A|\,|B|=|\Omega|$ fuerce o bien separación o bien
+todas-las-intersecciones-uno es, en esencia literalmente, la definición de un
+\emph{grupo separador} en Araújo--Cameron--Steinberg~\cite{ACS2017}. Lo que reclamo es
+la forma órbita-local, débil, no transitiva de arriba---la hipótesis restringe solo las
+órbitas que cortan ambos conjuntos, y la conclusión \emph{produce} la única órbita
+común---y su formalización.
+
+\paragraph{El caso extremal es una factorización.} ¿Cuáles son los pares extremales?
+Para la acción regular de $G$ sobre sí mismo, «$|gA\cap B|=1$ para todo $g$» dice
+exactamente que todo elemento del grupo es de forma única $b\,a^{-1}$ con $a\in A$,
+$b\in B$: una \emph{factorización exacta} $G=B\cdot A^{-1}$. Escrita aditivamente para
+$G=\Z/n$ hace del mapa diferencia $(a,b)\mapsto b-a$ una biyección; equivalentemente,
+como $|A|\,|B|=n$, las traslaciones $\{A+b : b\in B\}$ particionan $\Z/n$---la
+teselación $A\oplus B=\Z/n$. Tal teselación es un \emph{canon rítmico}: un ritmo $A$ y
+un conjunto de entradas $B$ cuyas copias desplazadas cubren cada pulso una vez, sin
+hueco ni choque (Figura~\ref{fig:canon}). Un par extremal no separable \emph{es} un
+canon.
+
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[scale=1.0]
+    \begin{scope}[shift={(-3.4,0)}]
+      \draw[restgrey!55,line width=0.8pt] (0,0) circle (2.15);
+      \foreach \i in {0,...,11} { \coordinate (c\i) at ({90-30*\i}:2.15); }
+      \foreach \i in {0,3,6,9}  { \fill[voiceA] (c\i) circle (7pt); }
+      \foreach \i in {1,4,7,10} { \fill[voiceB] (c\i) circle (7pt); }
+      \foreach \i in {2,5,8,11} { \fill[voiceC] (c\i) circle (7pt); }
+      \foreach \i in {0,...,11} { \node[white,font=\scriptsize\bfseries] at (c\i) {\i}; }
+      \node at (0,-2.7) {\small cada pulso cubierto \emph{exactamente una vez}};
+    \end{scope}
+    \begin{scope}[shift={(0.2,-1.55)}]
+      \foreach \t in {0,...,12} { \draw[restgrey!35,line width=0.4pt] (\t*0.42,0) -- (\t*0.42,2.1); }
+      \foreach \r in {0,1,2,3} { \draw[restgrey!35,line width=0.4pt] (0,\r*0.7) -- (5.04,\r*0.7); }
+      \foreach \t in {0,3,6,9} { \node[font=\tiny,text=restgrey!80] at (\t*0.42+0.21,-0.28) {\t}; }
+      \foreach \t in {0,3,6,9}  { \fill[voiceA] (\t*0.42+0.05,1.45) rectangle (\t*0.42+0.37,2.05); }
+      \foreach \t in {1,4,7,10} { \fill[voiceB] (\t*0.42+0.05,0.75) rectangle (\t*0.42+0.37,1.35); }
+      \foreach \t in {2,5,8,11} { \fill[voiceC] (\t*0.42+0.05,0.05) rectangle (\t*0.42+0.37,0.65); }
+      \node[left,font=\scriptsize,text=voiceA] at (-0.1,1.75) {v.\,1};
+      \node[left,font=\scriptsize,text=voiceB] at (-0.1,1.05) {v.\,2};
+      \node[left,font=\scriptsize,text=voiceC] at (-0.1,0.35) {v.\,3};
+      \node[font=\scriptsize] at (2.5,2.5) {\small entradas $B=\{0,1,2\}$, cada voz toca $A=\{0,3,6,9\}$};
+    \end{scope}
+  \end{tikzpicture}
+  \caption{El par extremal (no separable) $A=\{0,3,6,9\}$, $B=\{0,1,2\}$ en $\Z/12$ es
+  un canon rítmico. Izquierda: las tres traslaciones $A$ (turquesa), $A{+}1$ (ámbar),
+  $A{+}2$ (violeta) particionan los doce pulsos---sin hueco, sin solapamiento.
+  Derecha: como música, tres voces entran a un pulso de distancia, cada una tocando el
+  ritmo $A$. Una versión sonificada acompaña a la nota musical compañera.}
+  \label{fig:canon}
+\end{figure}
+
+Señalo los vecinos cercanos para que un revisor no tenga que hacerlo. La idea «no
+separación $=$ factorización» aparece, para acciones diagonales, en
+Araújo--Cameron--Steinberg~\cite{ACS2017} (factorizaciones perfectas de grupos
+simples), y para el caso $A=B$ en Barbieri et~al.~\cite{Barbieri2025} (conjuntos
+diferencia y planos proyectivos). Lo que parece no señalado es la identificación del
+caso extremal regular de dos conjuntos sobre $\Z/n$ con los cánones rítmicos por
+teselación: la literatura de separación y la de teselación (Vuza~\cite{Vuza1991},
+Coven--Meyerowitz~\cite{CovenMeyerowitz1999}, Amiot~\cite{Amiot2016}) no se citan
+mutuamente. La conexión es nueva como \emph{observación}, no como matemática; su valor
+es que ahora es un lema en vez de una analogía---que es para lo que sirve un asistente
+de pruebas.
+
+% ---------------------------------------------------------------
+\section{La pregunta dual: ¿cuánta simetría hay que romper?}
+\label{sec:distinguishing}
+
+Hasta aquí el motor de conteo ha medido cómo un grupo \emph{mueve} conjuntos---cuánto
+puede empujar $A$ fuera de $B$. Una cantidad espejo mide cuán difícil es \emph{fijar}
+la acción: cuánto etiquetado hace falta para eliminar su simetría por completo. Veo a
+las dos como extremos opuestos de un mismo programa---la separación añade sitio hasta
+que el grupo puede mover un conjunto a un lado; la distinción añade colores hasta que
+el grupo no puede mover nada---y una única desigualdad probada abajo las une: una base
+de tamaño $b$ (un conjunto cuyo estabilizador puntual es trivial) da $D\le b+1$, la
+cota que ata la distinción a la teoría de bases y matroides (IBIS) que forma la
+espina dorsal de la Parte~II. Por eso el tema pertenece aquí, como la cara dual del
+programa de conteo y no como un apéndice.
+
+Coloreamos los puntos de $\Omega$; el coloreo es \emph{distinguidor} si la identidad es
+el único elemento de $G$ que lo preserva, y el \emph{número distinguidor}
+$D(G\curvearrowright\Omega)$ es el mínimo de colores que basta
+(Albertson--Collins~\cite{AlbertsonCollins1996}; Tymoczko~\cite{Tymoczko2004} para
+acciones generales). Mathlib no tenía noción de ello; la definición, su monotonía y la
+cota de base $D\le b+1$ se aportan aquí.
+
+\begin{quote}\itshape
+  Para $\GL_n(\mathbb{F}_q)$ actuando en los vectores no nulos de $\mathbb{F}_q^n$,
+  ¿cuántos colores hacen falta?
+\end{quote}
+Melody Chan preguntó exactamente esto~\cite{Chan2006}; la respuesta es
+Klavžar--Wong--Zhu~\cite{KWZ2006}: dos colores bastan siempre, con cuatro excepciones,
+de las que el máximo único es $D(\GL_3(\mathbb{F}_2))=4$. Ese grupo, de orden $168$, es
+el grupo de colineaciones del plano de Fano en sus siete puntos, y el valor excepcional
+es el que verifico (Figura~\ref{fig:fano}).
+
+La sorpresa es el tamaño del salto. Para toda acción lineal mayor dos colores rompen
+toda la simetría; aquí, en solo siete puntos, ni siquiera \emph{tres} colores
+pueden---cada uno de los $3^7=2187$ tres-coloreos es preservado por alguna
+colineación---mientras que un cuatro-coloreo concreto sí. La cota inferior es la mitad
+exhaustiva: veintiuna colineaciones bastan para fijar entre ellas cada tres-coloreo,
+comprobado por el núcleo. La cota superior es pura geometría: tres puntos llevan
+colores únicos y quedan fijados, tres rectas por ellos fijan tres más, y la
+inyectividad fija el último. El plano de Fano es lo bastante pequeño para verlo y lo
+justo de grande para ser rígido.
+
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[scale=1.5,
+      fp/.style={circle,draw=black!55,line width=0.7pt,minimum size=13pt,inner sep=0pt,font=\scriptsize\bfseries}]
+    \coordinate (P0) at (90:1.5);
+    \coordinate (P1) at (210:1.5);
+    \coordinate (P2) at (330:1.5);
+    \coordinate (P3) at ($(P0)!0.5!(P1)$);
+    \coordinate (P4) at ($(P1)!0.5!(P2)$);
+    \coordinate (P5) at ($(P2)!0.5!(P0)$);
+    \coordinate (P6) at (0,0);
+    \draw[sepblue,line width=0.9pt] (P0)--(P1)--(P2)--cycle;
+    \draw[sepblue,line width=0.9pt] (P0)--(P4); \draw[sepblue,line width=0.9pt] (P1)--(P5); \draw[sepblue,line width=0.9pt] (P2)--(P3);
+    \draw[sepblue,line width=0.9pt] (P6) circle (0.75);
+    \node[fp,fill=restgrey,text=white] at (P0) {0};
+    \node[fp,fill=restgrey,text=white] at (P1) {1};
+    \node[fp,fill=restgrey,text=white] at (P2) {2};
+    \node[fp,fill=restgrey,text=white] at (P3) {3};
+    \node[fp,fill=voiceB,text=white] at (P4) {4};
+    \node[fp,fill=voiceC,text=white] at (P5) {5};
+    \node[fp,fill=sepred,text=white]  at (P6) {6};
+    \begin{scope}[shift={(2.35,1.15)},every node/.style={anchor=west,font=\scriptsize}]
+      \fill[restgrey] (0,0) circle (3pt);   \node at (0.18,0) {color 0: $\{0,1,2,3\}$};
+      \fill[voiceB]  (0,-0.42) circle (3pt);\node at (0.18,-0.42) {color 1: $\{4\}$};
+      \fill[voiceC]  (0,-0.84) circle (3pt);\node at (0.18,-0.84) {color 2: $\{5\}$};
+      \fill[sepred]  (0,-1.26) circle (3pt);\node at (0.18,-1.26) {color 3: $\{6\}$};
+    \end{scope}
+    \node[font=\small] at (0,-1.95) {ningún $3$-coloreo mata las $168$ colineaciones; este $4$-coloreo sí};
+  \end{tikzpicture}
+  \caption{El plano de Fano ($7$ puntos, $7$ rectas), cuyas $168$ colineaciones son
+  $\GL_3(\mathbb{F}_2)$ en los vectores no nulos de $\mathbb{F}_2^3$. Los colores
+  únicos $1,2,3$ fijan los puntos $4,5,6$; tres rectas fijan entonces $2,0,1$ y la
+  inyectividad fija $3$. Por tanto $D=4$.}
+  \label{fig:fano}
+\end{figure}
+
+% ---------------------------------------------------------------
+\section{Por qué importa}
+\label{sec:why}
+
+Me dirijo a tres lectores directamente, porque el trabajo habla a cada uno de forma
+distinta.
+
+\paragraph{A un teórico de grupos de permutaciones.} El caso extremal de la separación
+suele encontrarse como una curiosidad en la frontera de un teorema de umbral. Leerlo
+como una factorización exacta, y luego como una teselación, lo conecta con un cuerpo de
+trabajo amplio y activo---los cánones aperiódicos de Vuza~\cite{Vuza1991}, las
+condiciones de Coven--Meyerowitz~\cite{CovenMeyerowitz1999}, la pregunta de conjuntos
+espectrales de Fuglede~\cite{Fuglede1974}---del que la literatura de sincronización no
+se nutre ahora. El diccionario corre en ambos sentidos: construcciones de teselaciones
+aperiódicas se vuelven construcciones de pares extremales no separables, y viceversa.
+La forma órbita-local de la dicotomía es además, creo, el enunciado natural---no
+necesita ni transitividad ni una cota de órbita global.
+
+\paragraph{A quien construye matemáticas en Lean.} Estos cimientos no estaban antes
+disponibles en un asistente de pruebas. La identidad de promedios, los teoremas de
+uniformidad, la cota de base $D\le b+1$ y la API del número distinguidor son ahora
+reutilizables; son exactamente las piezas sobre las que se construye la teoría de
+matroides (IBIS) de la Parte~II. Mathlib gana un rincón pequeño pero portante de la
+combinatoria de grupos de permutaciones que no tenía.
+
+\paragraph{A quien trabaja en teoría de sincronización.} La jerarquía
+separador/sincronizador se define precisamente a través de la condición de intersección
+estudiada aquí. Hacer formal el motor de conteo y la dicotomía extremal, y atar el caso
+extremal a una teoría de teselación bien desarrollada, ofrece al campo tanto un cimiento
+comprobado como una fuente de ejemplos y contraejemplos que no ha estado explotando.
+Los cánones de $\Z/n$ son un suministro inagotable de pares extremales.
+
+% ---------------------------------------------------------------
+\section{Dónde me detuve}
+\label{sec:future}
+
+Este es el primer conglomerado de una serie, honestamente mapeado, no una teoría
+acabada. Hecho: separación de Neumann (finita e infinita); el motor de conteo y los
+teoremas de uniformidad; la dicotomía órbita-local con la factorización y la
+identificación con el canon rítmico; los números distinguidores, su API y la excepción
+de Fano. Por delante, fijado pero aún no construido: el teorema IBIS de
+Cameron--Fon-Der-Flaass~\cite{CFF1995} (las bases irredundantes de tamaño constante son
+un matroide), el ladrillo central de la Parte~II y el hogar natural de la cota de base
+probada aquí; los lemas puente explícitos que convierten este conglomerado de una lista
+en un tejido; y los valores distinguidores restantes de Chan, junto con el análogo
+proyectivo aparentemente no tratado $D(\mathrm{PGL}_n(\mathbb{F}_q)\curvearrowright
+\mathrm{PG}^{n-1})$. El camino es clásico, pero no está construido.
+
+% ---------------------------------------------------------------
+\section{Trabajo relacionado}
+\label{sec:related}
+
+La matemática es clásica: el lema de separación es Birch--Burns--Oates
+Macdonald--Neumann~\cite{BBMN1976} y la versión infinita de Neumann; la jerarquía de
+conteo y la dicotomía separador/sincronizador son de Cameron y de
+Araújo--Cameron--Steinberg~\cite{ACS2017}; la teoría extremal del caso $A=B$ es de
+Barbieri et~al.~\cite{Barbieri2025}; los números distinguidores son de
+Albertson--Collins y, para grupos lineales, de Chan~\cite{Chan2006} y
+Klavžar--Wong--Zhu~\cite{KWZ2006}; el lado de la teselación es de Vuza y
+Coven--Meyerowitz. En el lado formal, Mathlib aporta acciones de grupo,
+órbita--estabilizador, Burnside, matroides y el lema de recubrimiento por cosets de
+B.~H. Neumann, pero ninguno del lema de separación, la jerarquía de sincronización ni
+los números distinguidores; no conozco tratamiento previo verificado por máquina de
+estos en ningún asistente.
+
+% ---------------------------------------------------------------
+\section{Conclusión}
+
+Una identidad de conteo, vista a través de distintas lentes, genera separación,
+sincronización, factorizaciones exactas, cánones rítmicos y---por la pregunta dual del
+coloreo---ruptura de simetría. La formalización no crea esta unidad; la hace explícita,
+y comprobable, y convierte el cruce entre grupos de permutaciones y cánones musicales
+de una analogía en un teorema. Nada de la matemática es nuevo; la contribución es que
+ahora vive en un asistente de pruebas, y que el motor compartido es visible en el grafo
+de dependencias en vez de afirmado. Cada pieza nueva surgió de mirar el caso que un
+teorema clásico deja de lado---la igualdad en una desigualdad estricta, la frontera de
+un umbral---que es a menudo donde se sienta un objeto sin nombre. Lo ofrezco como una
+perla, y como la primera parte de una serie.
+
+La Parte~II retoma el único ladrillo que este artículo solo nombra: el teorema de
+Cameron y Fon-Der-Flaass de que un grupo de permutaciones cuyas bases irredundantes
+tienen todas el mismo tamaño porta un matroide sobre sus puntos. Es el corazón
+estructural al que ya apunta la cota de base $D\le b+1$, y con él las piezas reunidas
+aquí---separación, conteo, uniformidad, distinción---se vuelven un capítulo conectado
+en vez de una primera piedra. La identidad de conteo de la Sección~\ref{sec:intro}
+seguirá por debajo; el objetivo de la serie es seguir haciendo visibles esos motores
+compartidos, un ladrillo comprobado cada vez.
+
+\paragraph{Sobre el método.} Este desarrollo se llevó a cabo con asistencia de IA
+(Claude, Anthropic): definiciones, lemas y tácticas se propusieron y luego se aceptaron
+o rechazaron contra el núcleo. El cuidado de alcance de este artículo---los núcleos
+clásicos nombrados como tales, el único valor que no pude probar de forma factible en
+Lean (el orden $168$) señalado y contrastado en GAP en vez de afirmado---refleja que el
+núcleo, no el asistente, tiene la última palabra.
+
+\paragraph{Artefactos.} Todas las fuentes Lean (\lean{sorry}-free; el informe de
+axiomas está en la Tabla~\ref{tab:results}), los contrastes GAP de la
+Tabla~\ref{tab:checks} y las figuras están en
+\url{https://github.com/karlesmarin/godsil-gutman-lean}, archivado en
+\textsc{doi}~\href{https://doi.org/10.5281/zenodo.21419285}{10.5281/zenodo.21419285}.
+
+% ---------------------------------------------------------------
+\appendix
+\section{Los resultados formales}
+\label{app:results}
+
+La Tabla~\ref{tab:results} lista cada enunciado formalizado con su nombre Lean y su
+estado. Todos los teoremas son \lean{sorry}-free y no vacíos, y \lean{\#print axioms}
+reporta solo \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} (el
+recubrimiento exhaustivo \lean{fanoWitnesses\_cover} necesita aún menos). Las tres
+filas \stfuture{} son la frontera mapeada en la Sección~\ref{sec:future}.
+
+\begin{table}[ht]
+  \centering
+  \small
+  \arrayrulecolor{sepblue}
+  \caption{Los resultados formalizados (Lean~4 / Mathlib).}
+  \label{tab:results}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \rowcolor{sepblue}
+    \textcolor{white}{\textbf{Nombre Lean}} & \textcolor{white}{\textbf{Enunciado}} & \textcolor{white}{\textbf{Estado}} \\
+    \midrule
+    \rowcolor{sepband}
+    \texttt{separation\_lemma\_of\_pretransitive} & $|A||B|<|\Omega|\Rightarrow\exists g,\ gA\cap B=\emptyset$ & \stproven \\
+    \texttt{neumann\_separation\_lemma} & órbitas de $A$ infinitas $\Rightarrow$ separable & \stproven \\
+    \rowcolor{sepband}
+    \texttt{sum\_card\_smul\_inter\_mul\_card} & $(\sum_g|gA\cap B|)\,|\Omega|=|A||B||G|$ \; (Cameron Thm~10) & \stproven \\
+    \texttt{card\_smul\_inter\_eq\_of\_forall\_le} & promedio-igual-a-extremo \; (Cameron Thm~8) & \stproven \\
+    \rowcolor{sepband}
+    \texttt{IsSectionRegular.card\_part\_mul\dots} & sección-regular $\Rightarrow$ uniforme \; (Cameron Thm~9) & \stproven \\
+    \texttt{separation\_dichotomy} & separa, \emph{o} $|gA\cap B|{=}1\ \forall g$ en una $|A||B|$-órbita & \stproven \\
+    \rowcolor{sepband}
+    \texttt{\dots\_eq\_one\_iff\_factorization} & extremal $\iff$ factorización exacta $G=B\cdot A^{-1}$ & \stproven \\
+    \texttt{\dots\_vadd\_inter\_eq\_one\_iff\_tiling} & sobre $\Z/n$: extremal $\iff$ canon rítmico & \stproven \\
+    \rowcolor{sepband}
+    \texttt{distinguishingNumber} \small(+API) & mínimo $k$ con un $k$-coloreo que mata la simetría & \stdef \\
+    \texttt{distinguishingNumber\_le\_card\_base\dots} & base de tamaño $b\Rightarrow D\le b{+}1$ \; (puente a IBIS) & \stproven \\
+    \rowcolor{sepband}
+    \texttt{fano\_distinguishingNumber} & $D(\GL_3(\mathbb{F}_2)\curvearrowright\mathbb{F}_2^3)=4$ & \stproven \\
+    \midrule
+    \emph{IBIS} (Cameron--Fon-Der-Flaass) & bases irredundantes tamaño cte.\ $\iff$ matroide & \stfuture \\
+    \emph{lemas puente} & separación $\leftarrow$ motor; extremal $=$ Thm~8 $\ell{=}1$ & \stfuture \\
+    \emph{clasificación completa de Chan} & los casos $D{=}3$; $D{=}2$ general; análogo $\mathrm{PGL}$ & \stfuture \\
+    \bottomrule
+  \end{tabular}
+  \arrayrulecolor{black}
+\end{table}
+
+\bibliographystyle{plain}
+\begin{thebibliography}{99}
+\bibitem{BBMN1976} B.~J. Birch, R.~G. Burns, S. Oates Macdonald, P.~M. Neumann,
+  \emph{On the orbit-sizes of permutation groups containing elements separating
+  finite subsets}, Bull. Austral. Math. Soc. \textbf{14} (1976) 7--10.
+\bibitem{BHNeumann1954} B.~H. Neumann, \emph{Groups covered by permutable
+  subsets}, J. London Math. Soc. \textbf{29} (1954) 236--248.
+\bibitem{ACS2017} J. Araújo, P.~J. Cameron, B. Steinberg, \emph{Between primitive
+  and 2-transitive: synchronization and its friends}, EMS Surv. Math. Sci.
+  \textbf{4} (2017) 101--184.
+\bibitem{CameronSync} P.~J. Cameron, \emph{Synchronization}, lecture notes
+  (LTCC), 2010; \url{https://cameroncounts.wordpress.com/lecture-notes/}.
+\bibitem{Barbieri2025} M. Barbieri, P. Lekše, P. Potočnik, K. Rekvényi,
+  \emph{Separating subsets from their images} (2025), arXiv:2508.20731.
+\bibitem{CFF1995} P.~J. Cameron, D.~G. Fon-Der-Flaass, \emph{Bases for
+  permutation groups and matroids}, European J. Combin. \textbf{16} (1995)
+  537--544.
+\bibitem{AlbertsonCollins1996} M.~O. Albertson, K.~L. Collins, \emph{Symmetry
+  breaking in graphs}, Electron. J. Combin. \textbf{3} (1996) \#R18.
+\bibitem{Tymoczko2004} J. Tymoczko, \emph{Distinguishing numbers for graphs and
+  groups}, Electron. J. Combin. \textbf{11} (2004) \#R63.
+\bibitem{Chan2006} M. Chan, \emph{The maximum distinguishing number of a group},
+  Electron. J. Combin. \textbf{13} (2006) \#R70.
+\bibitem{KWZ2006} S. Klavžar, T.-L. Wong, X. Zhu, \emph{Distinguishing labelings
+  of group action on vector spaces and graphs}, J. Algebra \textbf{303} (2006)
+  626--641.
+\bibitem{CovenMeyerowitz1999} E.~M. Coven, A. Meyerowitz, \emph{Tiling the
+  integers with translates of one finite set}, J. Algebra \textbf{212} (1999)
+  161--174.
+\bibitem{Vuza1991} D.~T. Vuza, \emph{Supplementary sets and regular complementary
+  unending canons (Parts One--Four)}, Perspectives of New Music \textbf{29}(2)
+  (1991), \textbf{30}(1),(2) (1992), \textbf{31}(1) (1993).
+\bibitem{Fuglede1974} B. Fuglede, \emph{Commutative sets of self-adjoint partial
+  differential operators and the group of orthogonal exponentials}, J. Funct.
+  Anal. \textbf{16} (1974) 101--121.
+\bibitem{Amiot2016} E. Amiot, \emph{Music Through Fourier Space: Discrete Fourier
+  Transform in Music Theory}, Springer, 2016.
+\bibitem{Mathlib2020} The mathlib Community, \emph{The Lean mathematical library},
+  CPP 2020.
+\end{thebibliography}
+
+\end{document}

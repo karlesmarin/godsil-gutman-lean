@@ -1,0 +1,51 @@
+% Body table (Table 2: computational cross-checks) + shared status macros.
+% Table 1 (formal results, Lean-heavy) lives in the appendix of the main file.
+% Requires booktabs, amsmath/amssymb, xcolor[table]; colors sepblue/sepband,
+% dTwo/dThree/dFour (defined in the main preamble).
+\newcommand{\stproven}{\textcolor{sepblue}{\ding{51}}\,proven}
+\newcommand{\stfuture}{\textcolor{restgrey}{$\circ$}\,future}
+\newcommand{\stdef}{\textcolor{sepblue}{$\bullet$}\,defined}
+
+% ---------- Table 2: computational cross-checks ----------
+\begin{table}[t]
+  \centering
+  \small
+  \arrayrulecolor{sepblue}
+  \caption{Computational cross-checks (GAP / Sage, exact). \emph{Left:} the
+  separation dichotomy, verified with no counterexample across every transitive
+  group of small degree, plus the $\Z/12$ canon witness. \emph{Right:} an
+  independent recomputation of Chan's distinguishing table
+  $D(\GL_n(\mathbb{F}_q)\curvearrowright\mathbb{F}_q^n)$ for $n>2$, $q\le n{+}1$,
+  matching Klavžar--Wong--Zhu; cell colour encodes $D$ (pale $D{=}2$ $\to$ deep
+  $D{=}4$), so the two exceptions stand out at a glance.}
+  \label{tab:checks}
+  \renewcommand{\arraystretch}{1.2}
+  \begin{minipage}[t]{0.46\textwidth}
+    \centering
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      \rowcolor{sepblue}
+      \textcolor{white}{\textbf{Check}} & \textcolor{white}{\textbf{Result}} \\
+      \midrule
+      \rowcolor{sepband}
+      dichotomy sweep & \multirow{1}{*}{0 counterexamples} \\
+      \small 120 transitive grps, deg.\ 2--9 & \\
+      $\Z/12$ canon $\{0,3,6,9\}{\oplus}\{0,1,2\}$ & tiles (extremal) \\
+      \bottomrule
+    \end{tabular}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.5\textwidth}
+    \centering
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{@{}c|cccc@{}}
+      \multicolumn{1}{@{}c}{\scriptsize $n\backslash q$} & \scriptsize 2 & \scriptsize 3 & \scriptsize 4 & \scriptsize 5 \\
+      \hline
+      \scriptsize 3 & \cellcolor{dFour}\textbf{4} & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & --- \\
+      \scriptsize 4 & \cellcolor{dThree}\textbf{3} & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 \\
+      \scriptsize 5 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 \\
+      \scriptsize 6 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 & \cellcolor{dTwo}2 \\
+    \end{tabular}
+    \\[3pt]
+    {\scriptsize\colorbox{dTwo}{\,$D{=}2$\,}\ \colorbox{dThree}{\,$D{=}3$\,}\ \colorbox{dFour}{\textcolor{white}{\,$D{=}4$\,}}\quad(``---'': $q$ not a prime power)}
+  \end{minipage}
+\end{table}
