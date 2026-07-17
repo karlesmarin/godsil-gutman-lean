@@ -1,25 +1,28 @@
-# A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, and Real-Root Counting
+# 📐 A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, Real-Root Counting, and Permutation Groups
 
 A machine-checked formalization in **Lean 4 / Mathlib** of classical mathematics — every headline
 theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`, `Quot.sound`) — in
-**four strands**:
+**five strands**:
 
-1. **Matching polynomials & the path-tree program** — the Godsil–Gutman identity, the Heilmann–Lieb
+1. 🌳 **Matching polynomials & the path-tree program** — the Godsil–Gutman identity, the Heilmann–Lieb
    theorem (matching roots in the Ramanujan band), Godsil's moment theorem, Kirchhoff's matrix-tree
    theorem, and a sharp matching ↔ non-backtracking trace-formula gap law (Papers I–VI), with an
    applied **certified short-cycle census of the WiFi (IEEE 802.11n) LDPC codes**.
-2. **The Ihara zeta / non-backtracking side** — Bass's determinant formula and the Jacobi–Newton
+2. 🔄 **The Ihara zeta / non-backtracking side** — Bass's determinant formula and the Jacobi–Newton
    trace machinery: the cycle/π₁ counterpart of the matching polynomial.
-3. **The dilogarithm & quantum speed limits** — the real (and complex) dilogarithm that Mathlib
+3. ⏱️ **The dilogarithm & quantum speed limits** — the real (and complex) dilogarithm that Mathlib
    lacks, Abel's five-term relation, and the Margolus–Levitin / Mandelstam–Tamm speed limits.
-4. **Real-root counting** — Newton's inequalities, Sturm's theorem, the Budan–Fourier theorem, the
+4. 📉 **Real-root counting** — Newton's inequalities, Sturm's theorem, the Budan–Fourier theorem, the
    virtual roots (with the *exact* Budan–Fourier count), and a synthesis note: the real-rooted ⇒
    log-concave bridge and the sign-variation root counts.
+5. 🎼 **Permutation groups, separation & synchronization** — Neumann's separation lemma, Cameron's
+   synchronization counting hierarchy, and distinguishing numbers, tied by one counting identity;
+   the extremal case turns out to be a rhythmic tiling canon (Part I).
 
-The four share one repository and one build-as-oracle style — the Lean kernel has the last word. The
+The five share one repository and one build-as-oracle style — the Lean kernel has the last word. The
 papers, strand by strand:
 
-**Strand 1 — matching polynomials & the path-tree program.**
+**🌳 Strand 1 — matching polynomials & the path-tree program.**
 
 - **Paper I — *Random Signs into Matchings*** ([`godsil-gutman-lean.pdf`](godsil-gutman-lean.pdf)):
   the **Godsil–Gutman identity** — the average characteristic polynomial of a
@@ -84,7 +87,7 @@ papers, strand by strand:
 > The mathematics did not change on the way out; it acquired a use. The same pipeline targets
 > 5G NR and quantum LDPC codes next.
 
-**Strand 2 — the Ihara zeta / non-backtracking side.** The cycle/π₁ counterpart of the matching
+**🔄 Strand 2 — the Ihara zeta / non-backtracking side.** The cycle/π₁ counterpart of the matching
 polynomial (the tree/Plancherel side of strand 1):
 
 - **Bass's determinant formula** ([`Ihara/Bass.lean`](Ihara/Bass.lean)): the
@@ -104,7 +107,7 @@ polynomial (the tree/Plancherel side of strand 1):
   non-backtracking walk counts, used by Part VI. DOI
   [10.5281/zenodo.20578470](https://doi.org/10.5281/zenodo.20578470).
 
-**Strand 3 — the dilogarithm & quantum speed limits.** A subject area of its own, in the same
+**⏱️ Strand 3 — the dilogarithm & quantum speed limits.** A subject area of its own, in the same
 repository — the **real dilogarithm** Mathlib lacks, followed to a quantum-mechanics ending:
 
 - **The Clock That Never Ticks** ([`clock-never-ticks.pdf`](clock-never-ticks.pdf)):
@@ -139,7 +142,7 @@ repository — the **real dilogarithm** Mathlib lacks, followed to a quantum-mec
   → boundary value. EN + ES. DOI
   [10.5281/zenodo.20682715](https://doi.org/10.5281/zenodo.20682715) (concept, latest version).
 
-**Strand 4 — real-root counting.** From the **real-rooted ⇒ log-concave** bridge (which underlies
+**📉 Strand 4 — real-root counting.** From the **real-rooted ⇒ log-concave** bridge (which underlies
 Paper II and much of modern combinatorics) to counting real roots in an interval *without finding a
 single one* — sign variations, the derivative tower, and the virtual roots that make the count exact:
 
@@ -195,6 +198,21 @@ single one* — sign variations, the derivative tower, and the virtual roots tha
   (`Descartes.lean`). A companion note to the Budan–Fourier paper. EN + ES. DOI
   [10.5281/zenodo.20736391](https://doi.org/10.5281/zenodo.20736391).
 
+**🎼 Strand 5 — permutation groups, separation & synchronization.** A new strand
+(files under `TotD/`), organized around a single counting identity of orbit–stabilizer
+type.
+
+- **Part I — *When Separation Fails, a Canon Appears*** ([`neumann-separation-lean.pdf`](neumann-separation-lean.pdf)):
+  **P. M. Neumann's separation lemma** (finite transitive `|A||B| < |Ω| ⇒ ∃g, gA ∩ B = ∅`
+  and the infinite-orbit form via B. H. Neumann's coset covering), the counting engine
+  of **Cameron's synchronization hierarchy** (the averaging identity and the uniformity
+  theorems it forces), a sharp **orbit-local separation dichotomy** whose extremal case
+  is an **exact factorization** and, over `ℤ/n`, a **rhythmic tiling canon**
+  (Vuza / Coven–Meyerowitz) — a bridge between two literatures that do not cite each
+  other — and the first formalization of the **distinguishing number** of a group action,
+  with the Fano-plane value `D(GL₃(𝔽₂)) = 4`, kernel-checked. EN + ES. DOI
+  [10.5281/zenodo.21419285](https://doi.org/10.5281/zenodo.21419285).
+
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
 `Quot.sound`.
@@ -204,7 +222,7 @@ are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`
 > search of the Lean/Mathlib, Isabelle/AFP and Coq/mathcomp ecosystems, not by an
 > exhaustive byte-level audit.
 
-## What is formalized
+## 🔬 What is formalized
 
 All theorems below are `sorry`-free (axioms: `propext`, `Classical.choice`,
 `Quot.sound`).
@@ -467,7 +485,7 @@ finite induced subgraph is. To our knowledge the first in any interactive theore
 |---|---|---|
 | `SimpleGraph.colorable_iff_forall_finite_induce` | `G.Colorable n ⟺ ∀ finite induced subgraph H, H.Colorable n` | `DeBruijnErdos.lean` |
 
-## Repository layout
+## 🗂️ Repository layout
 
 ```
 # core
@@ -525,6 +543,12 @@ Dilog/FejerJackson.lean      the Fejér–Jackson inequality
 QSL/Basic.lean               Margolus–Levitin quantum speed limit (+ the cosine inequality)
 QSL/MandelstamTamm.lean      Mandelstam–Tamm, L¹ form
 
+# TotD/ — Strand 5: permutation groups, separation & synchronization (Part I)
+TotD/Separation.lean         Neumann separation lemma (finite transitive + infinite-orbit)
+TotD/SectionRegular.lean     Cameron synchronization counting (averaging Thm 10, uniformity Thm 8/9)
+TotD/Dichotomy.lean          orbit-local separation dichotomy; extremal = exact factorization = ℤ/n canon
+TotD/Distinguishing.lean     distinguishing number (1st ITP) + Fano D(GL₃(𝔽₂))=4, kernel-checked
+
 # papers — each with an -es Spanish edition and a compiled .pdf
 godsil-gutman-lean.tex       Paper I    — Random Signs into Matchings
 heilmann-lieb-lean.tex       Paper II   — Unfolding a Graph into a Tree
@@ -542,12 +566,13 @@ sturm-lean.tex               strand     — The Staircase of Signs (Sturm's theo
 budan-fourier-lean.tex       strand     — Counting with the Derivative Tower (Budan–Fourier)
 virtual-roots-lean.tex       strand     — Roots That Are Always There (virtual roots + exact count)
 sign-variation-lean.tex      strand     — One Engine, Three Counts (synthesis note)
+neumann-separation-lean.tex  Part I     — When Separation Fails, a Canon Appears (permutation groups)
 references.bib               bibliography
 figures/                     figure scripts + PDFs + per-paper tables.tex
 research/                    numerical locks, sweeps, the LDPC census pipeline
 ```
 
-## Building
+## 🔨 Building
 
 Requires [`elan`](https://github.com/leanprover/elan). The toolchain is pinned in
 `lean-toolchain` (`leanprover/lean4:v4.30.0-rc2`); Mathlib is pinned in
