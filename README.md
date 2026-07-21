@@ -502,16 +502,6 @@ non-backtracking walk counts (used by Part VI).
 | `coe_charpolyRev_eq_det` | `charpolyRev M = det(I − X·M)` | `Ihara/ResolventDiag.lean` |
 | `adjugate_diag_eq_det_submatrix_ne` | adjugate diagonal entry = principal minor | `Ihara/AdjugateDiagMinor.lean` |
 
-### De Bruijn–Erdős colouring (standalone)
-
-A self-contained compactness result (`DeBruijnErdos.lean`): an infinite graph is `n`-colourable iff every
-finite induced subgraph is. To our knowledge the first in any interactive theorem prover, via Mathlib's
-`rado_selection`. `sorry`-free; three standard axioms.
-
-| Lean name | Statement | File |
-|---|---|---|
-| `SimpleGraph.colorable_iff_forall_finite_induce` | `G.Colorable n ⟺ ∀ finite induced subgraph H, H.Colorable n` | `DeBruijnErdos.lean` |
-
 ### Transversal matroids — *The Set That Says No* (Strand 6, Part I)
 
 For a finite family `A : Fin t → Finset α`, a finite set is a **partial transversal** when its
@@ -539,6 +529,16 @@ Cross-checks are exhaustive, not sampled: all 56 partial transversals of the run
 and all 180 insertion decisions agree with the criterion, and Ore's defect formula
 `r(X) = min_S (|X∖S| + |N(S)|)` is verified on all 64 subsets — that last one **checked but not
 formalized**, which is why the paper files it as future work rather than as a result.
+
+### De Bruijn–Erdős colouring (standalone)
+
+A self-contained compactness result (`DeBruijnErdos.lean`): an infinite graph is `n`-colourable iff every
+finite induced subgraph is. To our knowledge the first in any interactive theorem prover, via Mathlib's
+`rado_selection`. `sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `SimpleGraph.colorable_iff_forall_finite_induce` | `G.Colorable n ⟺ ∀ finite induced subgraph H, H.Colorable n` | `DeBruijnErdos.lean` |
 
 ## 🗂️ Repository layout
 
