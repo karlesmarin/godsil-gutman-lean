@@ -1,8 +1,8 @@
-# 📐 A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, Real-Root Counting, and Permutation Groups
+# 📐 A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, Real-Root Counting, Permutation Groups, and Transversal Matroids
 
 A machine-checked formalization in **Lean 4 / Mathlib** of classical mathematics — every headline
 theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`, `Quot.sound`) — in
-**five strands**:
+**six strands**:
 
 1. 🌳 **Matching polynomials & the path-tree program** — the Godsil–Gutman identity, the Heilmann–Lieb
    theorem (matching roots in the Ramanujan band), Godsil's moment theorem, Kirchhoff's matrix-tree
@@ -18,8 +18,11 @@ theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`
 5. 🎼 **Permutation groups, separation & synchronization** — Neumann's separation lemma, Cameron's
    synchronization counting hierarchy, and distinguishing numbers, tied by one counting identity;
    the extremal case turns out to be a rhythmic tiling canon (Part I).
+6. 🪢 **Transversal theory & matroids** — the Transversal Matroid Theorem, proved by Hall's
+   obstruction method rather than augmenting paths; the obstruction, factored into its own layer,
+   turns out to form a **lattice**, so one canonical set decides every insertion (Part I).
 
-The five share one repository and one build-as-oracle style — the Lean kernel has the last word. The
+The six share one repository and one build-as-oracle style — the Lean kernel has the last word. The
 papers, strand by strand:
 
 **🌳 Strand 1 — matching polynomials & the path-tree program.**
@@ -212,6 +215,30 @@ type.
   other — and the first formalization of the **distinguishing number** of a group action,
   with the Fano-plane value `D(GL₃(𝔽₂)) = 4`, kernel-checked. EN + ES. DOI
   [10.5281/zenodo.21419285](https://doi.org/10.5281/zenodo.21419285).
+
+**🪢 Strand 6 — transversal theory & matroids.** A new strand (files under
+`Theorems/`), drawn from *Theorem of the Day*'s list of theorems by women
+mathematicians, and built on the observation that Mathlib had Hall's marriage theorem
+and Mathlib had matroids, with nothing joining them.
+
+- **Part I — *The Set That Says No*** ([`transversal-matroid-lean.pdf`](transversal-matroid-lean.pdf)):
+  the **Transversal Matroid Theorem** (Edmonds–Fulkerson 1965; independently, and in an
+  infinite version, Mirsky–Perfect 1967) — the partial transversals of a finite family
+  `A : Fin t → Finset α` are exactly the independent sets of a matroid
+  (`transversalMatroid_indep`), the first matroid in Mathlib built from a **combinatorial
+  presentation** rather than by a trivial or dual construction. Augmentation is proved by
+  **Hall's obstruction method** rather than augmenting paths, with the obstruction factored
+  into its own layer: a ***tight*** set `R`, one whose compatible slots are exactly saturated,
+  `|N(R)| = |R|`. That factoring pays a dividend the classical statement does not advertise —
+  tight sets are closed under **intersection** as well as union, hence form a **lattice**, so
+  every partial transversal carries a *maximum* tight subset `maxTight A I` and a single
+  containment test against it decides **every** insertion (`insert_iff_not_subset_maxTight`);
+  in Mathlib's own vocabulary, that same set computes the matroid's closure operator
+  (`mem_closure_iff_subset_maxTight`). Hazel Perfect, whose name puts the theorem on that
+  list, went on to introduce the **gammoids** — the class containing the transversal
+  matroids — the year before her doctorate, *Studies in Transversal Theory*. `sorry`-free,
+  three standard axioms. EN + ES. DOI
+  [10.5281/zenodo.21470201](https://doi.org/10.5281/zenodo.21470201).
 
 Each paper has an English and a Spanish edition (`*-es.pdf`). All headline theorems
 are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`,
@@ -549,6 +576,15 @@ TotD/SectionRegular.lean     Cameron synchronization counting (averaging Thm 10,
 TotD/Dichotomy.lean          orbit-local separation dichotomy; extremal = exact factorization = ℤ/n canon
 TotD/Distinguishing.lean     distinguishing number (1st ITP) + Fano D(GL₃(𝔽₂))=4, kernel-checked
 
+# Theorems/ — Strand 6: transversal theory & matroids (Part I)
+Theorems/TransversalMatroid.lean      the construction: Hall characterization, tight witness,
+                                      augmentation, and the packaged transversalMatroid
+Theorems/TransversalObstruction.lean  the canonical obstruction: the tight-set lattice, maxTight,
+                                      the insertion criterion, and Mathlib's closure operator
+Theorems/AxiomReport.lean             #print axioms on the six headline theorems
+Theorems/check_canonical_obstruction.sage   exhaustive cross-check (56 transversals, 180 decisions)
+Theorems/generate_obstruction_figures.py    the figure generator (asserts the data before drawing)
+
 # papers — each with an -es Spanish edition and a compiled .pdf
 godsil-gutman-lean.tex       Paper I    — Random Signs into Matchings
 heilmann-lieb-lean.tex       Paper II   — Unfolding a Graph into a Tree
@@ -567,6 +603,7 @@ budan-fourier-lean.tex       strand     — Counting with the Derivative Tower (
 virtual-roots-lean.tex       strand     — Roots That Are Always There (virtual roots + exact count)
 sign-variation-lean.tex      strand     — One Engine, Three Counts (synthesis note)
 neumann-separation-lean.tex  Part I     — When Separation Fails, a Canon Appears (permutation groups)
+transversal-matroid-lean.tex Part I     — The Set That Says No (transversal matroids)
 references.bib               bibliography
 figures/                     figure scripts + PDFs + per-paper tables.tex
 research/                    numerical locks, sweeps, the LDPC census pipeline
