@@ -613,6 +613,11 @@ Theorems/TransversalMatroid.lean      the construction: Hall characterization, t
 Theorems/TransversalObstruction.lean  the canonical obstruction: the tight-set lattice, maxTight,
                                       the insertion criterion, and Mathlib's closure operator
 Theorems/AxiomReport.lean             #print axioms on the six headline theorems
+Theorems/HallTight.lean               the same mathematics restated for donation: submodularity of
+                                      the neighbourhood function and the equality case of Hall's
+                                      condition, with no mention of matroids. Proposed for Mathlib
+                                      as Mathlib/Combinatorics/Hall/Tight.lean; builds against
+                                      Mathlib master (v4.33.0-rc1), runLinter clean
 Theorems/check_canonical_obstruction.sage   exhaustive cross-check (56 transversals, 180 decisions)
 Theorems/generate_obstruction_figures.py    the figure generator (asserts the data before drawing)
 
