@@ -512,6 +512,34 @@ finite induced subgraph is. To our knowledge the first in any interactive theore
 |---|---|---|
 | `SimpleGraph.colorable_iff_forall_finite_induce` | `G.Colorable n ⟺ ∀ finite induced subgraph H, H.Colorable n` | `DeBruijnErdos.lean` |
 
+### Transversal matroids — *The Set That Says No* (Strand 6, Part I)
+
+For a finite family `A : Fin t → Finset α`, a finite set is a **partial transversal** when its
+elements can be assigned injectively to compatible indices. Those sets are exactly the independent
+sets of a matroid. Augmentation is proved by **Hall's obstruction method**, organized around
+***tight*** sets — those with `|N(R)| = |R|`, no slack at all — and split into three named layers
+(matching, tight-set, counting). Because the obstruction was factored out, the tight sets can be
+asked what they do as a family: they are closed under **intersection** as well as union, hence form
+a **lattice**, so one canonical set decides every insertion. `sorry`-free; three standard axioms.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `partialTransversal_iff_hall` | feasible ⟺ `\|S\| ≤ \|N(S)\|` on every `S ⊆ I` | `TransversalMatroid.lean` |
+| `exists_tight_witness_of_not_insert` | a failed insertion yields a tight witness | `TransversalMatroid.lean` |
+| `tight_union`, `tight_biUnion` | tightness survives finite union | `TransversalMatroid.lean` |
+| `card_sdiff_le_of_tight_cover` | a tight cover forces `\|J∖I\| ≤ \|I∖J\|` | `TransversalMatroid.lean` |
+| `partialTransversal_augmentation` | the matroid exchange axiom | `TransversalMatroid.lean` |
+| `transversalMatroid_indep` | `Indep I ⟺ I` is a partial transversal | `TransversalMatroid.lean` |
+| `tight_union_and_inter` | the tight sets form a **lattice** | `TransversalObstruction.lean` |
+| `maxTight_isTight`, `subset_maxTight` | `maxTight A I` is the **maximum** tight subset | `TransversalObstruction.lean` |
+| `insert_iff_not_subset_maxTight` | one set decides every insertion | `TransversalObstruction.lean` |
+| `mem_closure_iff_subset_maxTight` | it computes Mathlib's `Matroid.closure` | `TransversalObstruction.lean` |
+
+Cross-checks are exhaustive, not sampled: all 56 partial transversals of the running presentation
+and all 180 insertion decisions agree with the criterion, and Ore's defect formula
+`r(X) = min_S (|X∖S| + |N(S)|)` is verified on all 64 subsets — that last one **checked but not
+formalized**, which is why the paper files it as future work rather than as a result.
+
 ## 🗂️ Repository layout
 
 ```
@@ -577,6 +605,9 @@ TotD/Dichotomy.lean          orbit-local separation dichotomy; extremal = exact 
 TotD/Distinguishing.lean     distinguishing number (1st ITP) + Fano D(GL₃(𝔽₂))=4, kernel-checked
 
 # Theorems/ — Strand 6: transversal theory & matroids (Part I)
+#   NOTE: built and verified against Lean v4.32.0 / Mathlib 84fdd0bf, NOT this repository's
+#   pinned v4.30.0-rc2, and not registered in this lakefile. To build it, use the reproduction
+#   bundle transversal-matroid-lean4.zip, which carries its own lakefile and lean-toolchain.
 Theorems/TransversalMatroid.lean      the construction: Hall characterization, tight witness,
                                       augmentation, and the packaged transversalMatroid
 Theorems/TransversalObstruction.lean  the canonical obstruction: the tight-set lattice, maxTight,
@@ -621,6 +652,28 @@ lake build              # core, MSS/* (Papers I–II)
 lake build Ihara        # Ihara/* (Papers III–VI and the companions)
 lake build Dilog QSL    # dilogarithm + quantum speed limits (independent strand)
 ```
+
+**Strand 6 builds separately.** `Theorems/` (the transversal matroid) was developed against
+Lean **v4.32.0** and Mathlib **`84fdd0bf`** (2026-07-15), not against this repository's pinned
+`v4.30.0-rc2`, and it is not registered in this `lakefile.lean`. Its sources are archived here for
+reading; to *build* it, use the self-contained reproduction bundle, which ships its own
+`lakefile.lean` and `lean-toolchain`:
+
+```bash
+unzip transversal-matroid-lean4.zip && cd transversal-matroid-lean4
+# point the `require mathlib from "…"` line in lakefile.lean at your compiled Mathlib at v4.32.0
+lake build Theorems.TransversalMatroid          # 1156 jobs
+lake build Theorems.TransversalObstruction      # 1164 jobs
+lake env lean lean/Theorems/AxiomReport.lean    # six theorems, three standard axioms each
+python sage/check_canonical_obstruction.sage    # 56 transversals, 180 decisions, all agreeing
+python paper/figures/generate_obstruction_figures.py
+```
+
+That sequence was run end to end from a clean extraction of the ZIP in this repository, and every
+command above is its verified output. One caveat for the copy archived on Zenodo: its
+`lakefile.lean` carries the `srcDir` of the development tree rather than of the bundle — change it
+to `srcDir := "lean"` (the ZIP here already has that fix). It is the same file you must edit anyway
+to point `require mathlib` at your own Mathlib.
 
 Axiom footprint of the headline theorems:
 
@@ -741,6 +794,18 @@ Paper II figures and SageMath cross-checks:
   year   = {2026}, doi = {10.5281/zenodo.20736391},
   note   = {Synthesis note, supplement to Budan--Fourier. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
 }
+@misc{Marin2026NeumannSeparationLean,
+  author = {Mar\'in, Carles},
+  title  = {When Separation Fails, a Canon Appears: one counting identity behind separation, synchronization and symmetry-breaking in permutation groups, formalized in Lean 4},
+  year   = {2026}, doi = {10.5281/zenodo.21419285},
+  note   = {Strand 5, Part I. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
+@misc{Marin2026TransversalMatroidLean,
+  author = {Mar\'in, Carles},
+  title  = {The Set That Says No: Transversal Matroids in Lean 4, a Tight-Set Proof of Augmentation, and the Canonical Obstruction It Makes Possible},
+  year   = {2026}, doi = {10.5281/zenodo.21470201},
+  note   = {Strand 6, Part I. \url{https://github.com/karlesmarin/godsil-gutman-lean}}
+}
 ```
 
 The papers are archived on Zenodo:
@@ -760,6 +825,11 @@ Sturm's theorem [10.5281/zenodo.20707348](https://doi.org/10.5281/zenodo.2070734
 Budan–Fourier [10.5281/zenodo.20736143](https://doi.org/10.5281/zenodo.20736143),
 Virtual roots [10.5281/zenodo.20736336](https://doi.org/10.5281/zenodo.20736336),
 One Engine, Three Counts [10.5281/zenodo.20736391](https://doi.org/10.5281/zenodo.20736391).
+Separation / canons — Strand 5 Part I [10.5281/zenodo.21419285](https://doi.org/10.5281/zenodo.21419285),
+Transversal matroids — Strand 6 Part I [10.5281/zenodo.21470201](https://doi.org/10.5281/zenodo.21470201).
+
+Each link above is the **concept DOI** where one exists: it always resolves to the latest version
+of that record.
 
 ## Author and license
 
