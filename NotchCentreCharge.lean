@@ -1,4 +1,9 @@
 /-
+Copyright (c) 2026 Carles Marín. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Carles Marín
+-/
+/-
   NotchCentreCharge.lean
   Author: Carles Marín <karlesmarin@gmail.com>  (Claude, Anthropic, as AI assistant).
 

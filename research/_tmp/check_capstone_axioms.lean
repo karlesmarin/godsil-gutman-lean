@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Carles Marín. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Carles Marín
+-/
 import Ihara.GapWindow
 #print axioms SimpleGraph.treeLikeGap_eq_trace_hashimoto
 #print axioms SimpleGraph.sum_card_not_treeLike_eq_sum_card_relWalks

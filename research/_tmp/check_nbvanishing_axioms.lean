@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Carles Marín. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Carles Marín
+-/
 import Ihara.NbVanishing
 
 #print axioms SimpleGraph.Walk.exists_isCycle_of_nbChain_of_not_nodup

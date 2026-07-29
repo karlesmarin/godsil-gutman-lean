@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Carles Marín. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Carles Marín
+-/
 import Mathlib.Combinatorics.SimpleGraph.IncMatrix
 import Mathlib.Combinatorics.SimpleGraph.LapMatrix
 import Mathlib.Data.Sym.Sym2.Order

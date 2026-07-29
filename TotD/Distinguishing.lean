@@ -1,4 +1,9 @@
 /-
+Copyright (c) 2026 Carles Marín. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Carles Marín
+-/
+/-
 Authors: Carles Marín, Claude (Anthropic) as AI assistant.
 
 Distinguishing numbers of group actions, and the Fano exception
