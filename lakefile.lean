@@ -45,6 +45,12 @@ lean_lib «DeBruijnErdos» where
   -- induced subgraph is (compactness). First in any ITP, via Mathlib's rado_selection.
 
 @[default_target]
+lean_lib «Erdos617» where
+  -- Arithmetic kernel for the 60-edge near-Turán reduction in Erdős problem 617.
+  -- The external Füredi stability theorem and the graph-structural layer are not
+  -- imported or postulated here; this target is a standalone, sorry-free endgame.
+
+@[default_target]
 lean_lib «MatchingPoly» where
   -- The matching polynomial μ_G, matching number, and the deletion recurrence.
   -- First such infrastructure in any proof assistant.

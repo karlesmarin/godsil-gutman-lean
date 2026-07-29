@@ -1,8 +1,8 @@
-# 📐 A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, Real-Root Counting, Permutation Groups, and Transversal Matroids
+# 📐 A Lean 4 Formalization Library — Matching Polynomials, the Ihara Zeta, the Dilogarithm, Real-Root Counting, Permutation Groups, Transversal Matroids, and Erdős #617
 
 A machine-checked formalization in **Lean 4 / Mathlib** of classical mathematics — every headline
 theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`, `Quot.sound`) — in
-**six strands**:
+**seven strands**:
 
 1. 🌳 **Matching polynomials & the path-tree program** — the Godsil–Gutman identity, the Heilmann–Lieb
    theorem (matching roots in the Ramanujan band), Godsil's moment theorem, Kirchhoff's matrix-tree
@@ -21,8 +21,11 @@ theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`
 6. 🪢 **Transversal theory & matroids** — the Transversal Matroid Theorem, proved by Hall's
    obstruction method rather than augmenting paths; the obstruction, factored into its own layer,
    turns out to form a **lattice**, so one canonical set decides every insertion (Part I).
+7. 🎨 **Extremal graph colouring** — the checked arithmetic kernel of a near-Turán reduction for
+   Erdős problem #617 at the first open instance, balanced 5-colourings of `K_26`. This records a
+   finite consequence of the reduction, not a resolution of the open problem.
 
-The six share one repository and one build-as-oracle style — the Lean kernel has the last word. The
+The seven share one repository and one build-as-oracle style — the Lean kernel has the last word. The
 papers, strand by strand:
 
 **🌳 Strand 1 — matching polynomials & the path-tree program.**
@@ -540,6 +543,25 @@ finite induced subgraph is. To our knowledge the first in any interactive theore
 |---|---|---|
 | `SimpleGraph.colorable_iff_forall_finite_induce` | `G.Colorable n ⟺ ∀ finite induced subgraph H, H.Colorable n` | `DeBruijnErdos.lean` |
 
+### Erdős #617 — 60-edge near-Turán arithmetic kernel (standalone)
+
+For the first open balanced-colouring instance (`r=5`, `K_26`), the present file formalises the
+finite arithmetic endgame of a proposed near-Turán reduction.  A 60-edge colour graph is compared
+with a `6+5+5+5+5` union-of-cliques template.  The formal layer proves that the template has 55
+internal pairs, that the six-set local cap yields defect at least 13, and that an external
+structural reduction giving `q ∈ {4,5}` forces defect 13 or 15.
+
+This is deliberately scoped: the cited Füredi stability theorem and the preceding finite
+graph-counting reduction are **not** postulated in Lean here, and this module does not claim to
+solve Erdős #617.  It is a small, reusable, `sorry`-free kernel whose exact assumptions are
+visible in its declarations.
+
+| Lean name | Statement | File |
+|---|---|---|
+| `Erdos617.cliqueTemplateEdges` | the `6+5+5+5+5` clique template has 55 pairs | `Erdos617.lean` |
+| `Erdos617.localCapDefectLowerBound` | at most 51 internal edges implies defect at least 13 | `Erdos617.lean` |
+| `Erdos617.defectOfQFourOrFive` | `q ∈ {4,5}` implies defect `∈ {13,15}` | `Erdos617.lean` |
+
 ## 🗂️ Repository layout
 
 ```
@@ -554,6 +576,8 @@ Descartes.lean               Descartes bridge: fourierVar p 0 = Polynomial.signV
 VirtualRoots.lean            virtual roots: ℛ_d construction, count = deg, sortedness, Rolle interlacing
 VirtualRootsCount.lean       exact Budan–Fourier count: #{virtual roots in (a,b]} = V(a) − V(b)
 DeBruijnErdos.lean           De Bruijn–Erdős: infinite graph n-colourable ⟺ every finite subgraph is
+Erdos617.lean                60-edge near-Turán arithmetic kernel for Erdős problem #617
+Erdos617AxiomReport.lean     #print axioms on the four public defect theorems
 
 # MSS/ — Papers I–II
 MSS/Basic.lean               signed adjacency matrix
@@ -656,6 +680,8 @@ lake exe cache get      # prebuilt Mathlib oleans (recommended)
 lake build              # core, MSS/* (Papers I–II)
 lake build Ihara        # Ihara/* (Papers III–VI and the companions)
 lake build Dilog QSL    # dilogarithm + quantum speed limits (independent strand)
+lake build Erdos617     # Erdős #617 near-Turán arithmetic kernel
+lake env lean Erdos617AxiomReport.lean  # Lean's trust report for that kernel
 ```
 
 **Strand 6 builds separately.** `Theorems/` (the transversal matroid) was developed against
