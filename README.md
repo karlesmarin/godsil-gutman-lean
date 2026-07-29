@@ -26,7 +26,7 @@ theorem `sorry`-free (`#print axioms` reports only `propext`, `Classical.choice`
    finite consequence of the reduction, not a resolution of the open problem.
 
 The seven share one repository and one build-as-oracle style — the Lean kernel has the last word. The
-papers, strand by strand:
+developments, strand by strand:
 
 **🌳 Strand 1 — matching polynomials & the path-tree program.**
 
@@ -251,6 +251,24 @@ are **`sorry`-free**: `#print axioms` reports only `propext`, `Classical.choice`
 > new theorem and claims none. The "first formalization" claim is supported by a
 > search of the Lean/Mathlib, Isabelle/AFP and Coq/mathcomp ecosystems, not by an
 > exhaustive byte-level audit.
+
+**🎨 Strand 7 — extremal graph colouring and Erdős #617.** The standalone
+[`Erdos617.lean`](Erdos617.lean) file records a deliberately small,
+machine-checked arithmetic kernel for the first open balanced-colouring
+instance: five edge colours on `K_26`.  A proposed near-Turán reduction for a
+60-edge colour class yields a `6+5+5+5+5` block template.  The file verifies
+the exact endgame: 55 template pairs; local six-set load at most 11 implies
+defect at least 13; and the structural alternatives `q=4` or `q=5` imply
+defect 13 or 15.
+
+The scope is intentionally narrow.  The preceding graph-structural step uses
+Füredi's exact stability theorem and is **not** postulated or formalised in
+this module; the module neither resolves Erdős #617 nor asserts a new theorem
+beyond its displayed arithmetic assumptions.  It is a `sorry`-free reusable
+kernel, with its own [`Erdos617AxiomReport.lean`](Erdos617AxiomReport.lean).
+The mathematical sources are Erdős--Gyárfás, [*Split and balanced colorings
+of complete graphs* (1999)](https://doi.org/10.1016/S0012-365X(98)00323-9),
+and Füredi, [*A proof of the stability of extremal graphs* (2015)](https://doi.org/10.1016/j.jctb.2015.05.001).
 
 ## 🔬 What is formalized
 
@@ -559,6 +577,7 @@ visible in its declarations.
 | Lean name | Statement | File |
 |---|---|---|
 | `Erdos617.cliqueTemplateEdges` | the `6+5+5+5+5` clique template has 55 pairs | `Erdos617.lean` |
+| `Erdos617.crossingEdgesOfInternalComplement` | `q` missing internal pairs force `5+q` crossing colour edges | `Erdos617.lean` |
 | `Erdos617.localCapDefectLowerBound` | at most 51 internal edges implies defect at least 13 | `Erdos617.lean` |
 | `Erdos617.defectOfQFourOrFive` | `q ∈ {4,5}` implies defect `∈ {13,15}` | `Erdos617.lean` |
 
@@ -576,6 +595,8 @@ Descartes.lean               Descartes bridge: fourierVar p 0 = Polynomial.signV
 VirtualRoots.lean            virtual roots: ℛ_d construction, count = deg, sortedness, Rolle interlacing
 VirtualRootsCount.lean       exact Budan–Fourier count: #{virtual roots in (a,b]} = V(a) − V(b)
 DeBruijnErdos.lean           De Bruijn–Erdős: infinite graph n-colourable ⟺ every finite subgraph is
+
+# Erdős #617 — Strand 7 standalone arithmetic kernel
 Erdos617.lean                60-edge near-Turán arithmetic kernel for Erdős problem #617
 Erdos617AxiomReport.lean     #print axioms on the four public defect theorems
 
@@ -718,6 +739,13 @@ open SimpleGraph
 import Ihara.Bass
 #print axioms SimpleGraph.bass_determinant            -- Ihara side
 -- each: propext, Classical.choice, Quot.sound
+
+import Erdos617
+#print axioms Erdos617.cliqueTemplateEdges
+#print axioms Erdos617.crossingEdgesOfInternalComplement
+#print axioms Erdos617.defectOfQFourOrFive
+#print axioms Erdos617.localCapDefectLowerBound
+-- each: propext, Quot.sound
 ```
 
 ## Figures and numerical cross-checks
